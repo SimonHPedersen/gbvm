@@ -1,0 +1,152 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Special.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Special.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Special.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#91>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>Instr_Return_t</A>
+<LI><A HREF=#11>printOn</A>
+<LI><A HREF=#18>Instr_ReturnNPPO_t</A>
+<LI><A HREF=#22>printOn</A>
+<LI><A HREF=#28>Instr_ReturnMPAttrInit_t</A>
+<LI><A HREF=#32>printOn</A>
+<LI><A HREF=#38>printOn</A>
+<LI><A HREF=#45>Instr_JumpNPPO_t</A>
+<LI><A HREF=#50>printOn</A>
+<LI><A HREF=#56>Instr_JumpTrueNPPO_t</A>
+<LI><A HREF=#61>printOn</A>
+<LI><A HREF=#67>Instr_JumpSubNPPO_t</A>
+<LI><A HREF=#72>printOn</A>
+<LI><A HREF=#78>printOn</A>
+<LI><A HREF=#85>printOn</A>
+<LI><A HREF=#91>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Instr_Special.cc,v 1.10 2001/05/10 12:36:56 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// --- Return ---</FONT></I>
+
+<A NAME=7>Instr_Return_t::<A HREF=../R/88.html>Instr_Return_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#11>[&gt;]</A>[^]<A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RETURN_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=11><B>void</B> Instr_Return_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#7>[&lt;]</A><A HREF=#18>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Return_t";
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// --- Return no pop po ---</FONT></I>
+
+<A NAME=18>Instr_ReturnNPPO_t::<A HREF=../R/87.html>Instr_ReturnNPPO_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#11>[&lt;]</A><A HREF=#22>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RETURNNPPO_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=22><B>void</B> Instr_ReturnNPPO_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#18>[&lt;]</A><A HREF=#28>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_ReturnNPPO_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// --- ReturnMPAttrInit ---</FONT></I>
+
+<A NAME=28>Instr_ReturnMPAttrInit_t::<A HREF=../R/86.html>Instr_ReturnMPAttrInit_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#22>[&lt;]</A><A HREF=#32>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RETURNMPATTRINIT_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=32><B>void</B> Instr_ReturnMPAttrInit_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#28>[&lt;]</A><A HREF=#38>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_ReturnMPAttrInit_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// --- Cont gather virt ---</FONT></I>
+
+<A NAME=38><B>void</B> Instr_ContGatherVirt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#32>[&lt;]</A><A HREF=#45>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_ContGatherVirt_t: " &lt;&lt; parentAttrName &lt;&lt; "/" &lt;&lt;
+    parentAttrIndex &lt;&lt; " in \"" &lt;&lt; parentMainPartID &lt;&lt; "\"";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// --- Jump no push po ---</FONT></I>
+
+<A NAME=45>Instr_JumpNPPO_t::<A HREF=../R/25.html>Instr_JumpNPPO_t</A>(Instruction *instr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#38>[&lt;]</A><A HREF=#50>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  instrPtr = instr;
+  id = JUMPNPPO_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=50><B>void</B> Instr_JumpNPPO_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#56>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_JumpNPPO_t: pointing to: " &lt;&lt; instrPtr;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// --- Jump on true, no push po ---</FONT></I>
+
+<A NAME=56>Instr_JumpTrueNPPO_t::<A HREF=../R/27.html>Instr_JumpTrueNPPO_t</A>(Instruction *instr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#50>[&lt;]</A><A HREF=#61>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  instrPtr = instr;
+  id = JUMPTRUENPPO_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=61><B>void</B> Instr_JumpTrueNPPO_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#56>[&lt;]</A><A HREF=#67>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_JumpTrueNPPO_t: pointing to: " &lt;&lt; instrPtr;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// --- Jump to subroutine ---</FONT></I>
+
+<A NAME=67>Instr_JumpSubNPPO_t::<A HREF=../R/26.html>Instr_JumpSubNPPO_t</A>(Instruction *instr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#61>[&lt;]</A><A HREF=#72>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  instrPtr = instr;
+  id = JUMPSUBNPPO_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=72><B>void</B> Instr_JumpSubNPPO_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#67>[&lt;]</A><A HREF=#78>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_JumpSubNPPO_t: pointing to: " &lt;&lt; instrPtr;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// --- Copy Top ---</FONT></I>
+
+<A NAME=78><B>void</B> Instr_CopyTop_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#72>[&lt;]</A><A HREF=#85>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_CopyTop_t: with type: " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// --- Copy Top 2 ---</FONT></I>
+
+<A NAME=85><B>void</B> Instr_CopyTop2_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#78>[&lt;]</A><A HREF=#91>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_CopyTop2_t: with type: " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// --- Unsupported instruction ---</FONT></I>
+
+<A NAME=91><B>void</B> Instr_Unsupported_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#85>[&lt;]</A>[&gt;]<A HREF=#7>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Unsupported_t: " &lt;&lt; name;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#91>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,24 @@
+MainPart("'250"
+|
+   PUSHI-integer 2
+   PUSHI-integer 2
+   ADDOP(_+_)_integer
+   PUSHI-integer 3
+   ADDOP(_-_)_integer
+   PUSHI-boolean true
+   PUSHI-boolean false
+   ADDOP(_or_)_boolean
+   PUSHI-boolean false
+   ADDOP(_xor_)_boolean
+   PUSHI-real 2.5
+   PUSHI-real 2.5
+   ADDOP(_+_)_real
+   PUSHI-real 3.5
+   ADDOP(_-_)_real
+   PUSHI-real 2.1
+   RELOP(_<_)_real
+   PUSH-ptn_"object"
+   PUSH-ptn_"object"
+   RELOP(_<_)_pattern reference
+)
+

@@ -1,0 +1,715 @@
+
+MainPart("`2806"
+   "i2str1/1": (
+      PUSH-ptn_"object"
+      ADD-mainpart `76 origin {}
+      INSTALL-ptn 1
+   )
+   "node/11": (
+      PUSH-ptn {"listElement/3"}
+      ADD-mainpart `1406 origin {}
+      INSTALL-ptn 11
+   )
+   "dfs/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1612 origin {}
+      INSTALL-ptn 0
+   )
+   "list/2": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2170 origin {}
+      INSTALL-ptn 2
+   )
+   "listOld/5": (
+      PUSH-ptn {"list/2"}
+      NEW,_ptn->obj
+      INSTALL-obj 5
+   )
+   "listNew/4": (
+      PUSH-ptn {"list/2"}
+      NEW,_ptn->obj
+      INSTALL-obj 4
+   )
+   "listElement/3": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2246 origin {}
+      INSTALL-ptn 3
+   )
+   "makeTree/6": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2658 origin {}
+      INSTALL-ptn 6
+   )
+   "nd/10": (
+      PUSH-ptn {"node/11"}
+      NEW,_ptn->obj
+      INSTALL-obj 10
+   )
+   "root/12": (
+      PUSH-obj {"nd/10"}
+      POP-obj,_O-->P,_PUSH-ptn
+      INSTALL-qua-obj 12
+   )
+   "n1/7": (
+      PUSH-obj {"nd/10"}
+      POP-obj,_O-->P,_PUSH-ptn
+      INSTALL-qua-obj 7
+   )
+   "n2/8": (
+      PUSH-obj {"nd/10"}
+      POP-obj,_O-->P,_PUSH-ptn
+      INSTALL-qua-obj 8
+   )
+   "n3/9": (
+      PUSH-obj {"nd/10"}
+      POP-obj,_O-->P,_PUSH-ptn
+      INSTALL-qua-obj 9
+   )
+   "str/13": (
+      PUSH-ptn {<-1,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 13
+   )
+|
+   PUSH-ptn {"makeTree/6"}
+   NEW,_ptn->tmp 1
+   PUSHI-integer 100
+   POP-integer {tmp(1),"depth/1"}
+   CALL {tmp(1)}
+   PUSH-objref {tmp(1),'root/2'}
+   POP-objref {'root/12'}
+   RESETFRAME
+   namedFor("i"
+      PUSHI-integer 10000
+      RESETFRAME
+   |
+      CALL {<-1,'root/12'}
+      PUSH-ptn {<-1,"dfs/0"}
+      NEW,_ptn->tmp 1
+      PUSH-obj {<-1,'root/12'}
+      POP-objref {tmp(1),'v/1'}
+      CALL {tmp(1)}
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`76"
+   "int/0": (
+      PUSH-ptn {<-2,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+   "str1/1": (
+      PUSH-ptn {<-2,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 1
+   )
+|
+)
+MainPart("`1406"
+   "init/6": (
+      PUSH-ptn_"object"
+      ADD-mainpart `140 origin {}
+      INSTALL-ptn 6
+   )
+   "child1/1": (
+      PUSH-ptn {<-1,"node/11"}
+      INSTALL-qua-obj 1
+   )
+   "child2/2": (
+      PUSH-ptn {<-1,"node/11"}
+      INSTALL-qua-obj 2
+   )
+   "child3/3": (
+      PUSH-ptn {<-1,"node/11"}
+      INSTALL-qua-obj 3
+   )
+   "id/5": (
+      PUSH-ptn {<-2,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 5
+   )
+   "myMark/10": (
+      PUSH-ptn {<-2,"boolean/1"}
+      NEW,_ptn->obj
+      INSTALL-obj 10
+   )
+   "changeChildN/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `448 origin {}
+      INSTALL-ptn 0
+   )
+   "getChild/4": (
+      PUSH-ptn_"object"
+      ADD-mainpart `664 origin {}
+      INSTALL-ptn 4
+   )
+   "setId/12": (
+      PUSH-ptn_"object"
+      ADD-mainpart `738 origin {}
+      INSTALL-ptn 12
+   )
+   "printMe/11": (
+      PUSH-ptn_"object"
+      ADD-mainpart `896 origin {}
+      INSTALL-ptn 11
+   )
+   "mark/9": (
+      PUSH-ptn_"object"
+      ADD-mainpart `946 origin {}
+      INSTALL-ptn 9
+   )
+   "unmark/13": (
+      PUSH-ptn_"object"
+      ADD-mainpart `996 origin {}
+      INSTALL-ptn 13
+   )
+   "isMarked/7": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1184 origin {}
+      INSTALL-ptn 7
+   )
+   "makeChildren/8": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1370 origin {}
+      INSTALL-ptn 8
+   )
+|
+   INNER 0
+)
+MainPart("`140"
+|
+)
+MainPart("`448"
+   "tmpNode/1": (
+      PUSH-ptn {<-2,"node/11"}
+      INSTALL-qua-obj 1
+   )
+   "i/0": (
+      PUSH-ptn {<-3,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 1
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {'tmpNode/1'}
+      POP-objref {<-1,'child1/1'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 2
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {'tmpNode/1'}
+      POP-objref {<-1,'child2/2'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 3
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {'tmpNode/1'}
+      POP-objref {<-1,'child3/3'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`664"
+   "tmpNode/1": (
+      PUSH-ptn {<-2,"node/11"}
+      INSTALL-qua-obj 1
+   )
+   "i/0": (
+      PUSH-ptn {<-3,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 1
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {<-1,'child1/1'}
+      POP-objref {'tmpNode/1'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 2
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {<-1,'child2/2'}
+      POP-objref {'tmpNode/1'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 3
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {<-1,'child3/3'}
+      POP-objref {'tmpNode/1'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`738"
+   "tmpId/0": (
+      PUSH-ptn {<-3,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   PUSH-string {"tmpId/0"}
+   POP-string {<-1,"id/5"}
+   RESETFRAME
+)
+MainPart("`896"
+|
+   PUSH-string {<-1,"id/5"}
+   stdio/out
+   RESETFRAME
+   simpleIf(
+      PUSH-objref {<-1,'child1/1'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-ptn {<-1,'child1/1',^`1406,"printMe/11"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-objref {<-1,'child2/2'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-ptn {<-1,'child2/2',^`1406,"printMe/11"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-objref {<-1,'child3/3'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-ptn {<-1,'child3/3',^`1406,"printMe/11"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`946"
+|
+   PUSHI-boolean true
+   POP-boolean {<-1,"myMark/10"}
+   RESETFRAME
+)
+MainPart("`996"
+|
+   PUSHI-boolean false
+   POP-boolean {<-1,"myMark/10"}
+   RESETFRAME
+)
+MainPart("`1184"
+   "i/0": (
+      PUSH-ptn {<-3,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+   "tmpNode/2": (
+      PUSH-ptn {<-2,"node/11"}
+      INSTALL-qua-obj 2
+   )
+   "returnVal/1": (
+      PUSH-ptn {<-3,"boolean/1"}
+      NEW,_ptn->obj
+      INSTALL-obj 1
+   )
+|
+   PUSHI-boolean true
+   POP-boolean {"returnVal/1"}
+   RESETFRAME
+   PUSH-ptn {<-1,"getChild/4"}
+   NEW,_ptn->tmp 1
+   PUSH-integer {"i/0"}
+   POP-integer {tmp(1),"i/0"}
+   CALL {tmp(1)}
+   CALL {tmp(1),'tmpNode/1'}
+   PUSH-obj {tmp(1),'tmpNode/1'}
+   POP-objref {'tmpNode/2'}
+   RESETFRAME
+   simpleIf(
+      CALL {'tmpNode/2'}
+      PUSH-obj {'tmpNode/2'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-boolean {'tmpNode/2',^`1406,"myMark/10"}
+      POP-boolean {"returnVal/1"}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`1370"
+   "tmpStr/0": (
+      PUSH-ptn {<-3,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   PUSH-ptn {<-2,"node/11"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`1406,"init/6"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "a"
+   POP-string {tmp(2),^`1406,"id/5"}
+   CALL {tmp(3)}
+   PUSH-obj {tmp(2)}
+   POP-objref {<-1,'child1/1'}
+   RESETFRAME
+   PUSH-ptn {<-2,"node/11"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`1406,"init/6"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "b"
+   POP-string {tmp(2),^`1406,"id/5"}
+   CALL {tmp(3)}
+   PUSH-obj {tmp(2)}
+   POP-objref {<-1,'child2/2'}
+   RESETFRAME
+   PUSH-ptn {<-2,"node/11"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`1406,"init/6"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "c"
+   POP-string {tmp(2),^`1406,"id/5"}
+   CALL {tmp(3)}
+   PUSH-obj {tmp(2)}
+   POP-objref {<-1,'child3/3'}
+   RESETFRAME
+)
+MainPart("`1612"
+   "v/1": (
+      PUSH-ptn {<-1,"node/11"}
+      INSTALL-qua-obj 1
+   )
+   "tmpBool/0": (
+      PUSH-ptn {<-2,"boolean/1"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   PUSH-ptn {'v/1',^`1406,"mark/9"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+   PUSH-ptn {'v/1',^`1406,"printMe/11"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+   namedFor("i"
+      PUSHI-integer 3
+      RESETFRAME
+   |
+      PUSH-ptn {<-1,'v/1',^`1406,"isMarked/7"}
+      NEW,_ptn->tmp 1
+      PUSH-index {}
+      POP-integer {tmp(1),"i/0"}
+      CALL {tmp(1)}
+      PUSH-boolean {tmp(1),"returnVal/1"}
+      POP-boolean {<-1,"tmpBool/0"}
+      RESETFRAME
+      simpleIf(
+         PUSH-boolean {<-1,"tmpBool/0"}
+         RESETFRAME
+      |then
+         PUSH-ptn {<-1,'v/1',^`1406,"getChild/4"}
+         NEW,_ptn->tmp 1
+         PUSH-index {}
+         POP-integer {tmp(1),"i/0"}
+         CALL {tmp(1)}
+         CALL {tmp(1),'tmpNode/1'}
+         PUSH-ptn {<-2,"dfs/0"}
+         NEW,_ptn->tmp 2
+         PUSH-obj {tmp(1),'tmpNode/1'}
+         POP-objref {tmp(2),'v/1'}
+         CALL {tmp(2)}
+         RESETFRAME
+      |else
+      )
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`2170"
+   "head/3": (
+      PUSH-ptn {<-1,"listElement/3"}
+      INSTALL-qua-obj 3
+   )
+   "tail/6": (
+      PUSH-ptn {<-1,"listElement/3"}
+      INSTALL-qua-obj 6
+   )
+   "elements/2": (
+      PUSH-ptn {<-2,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 2
+   )
+   "add/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1906 origin {}
+      INSTALL-ptn 0
+   )
+   "add3/1": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2054 origin {}
+      INSTALL-ptn 1
+   )
+   "makeEmpty/5": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2124 origin {}
+      INSTALL-ptn 5
+   )
+   "isEmpty/4": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2152 origin {}
+      INSTALL-ptn 4
+   )
+|
+)
+MainPart("`1906"
+   "tmpNode/0": (
+      PUSH-ptn {<-2,"listElement/3"}
+      INSTALL-qua-obj 0
+   )
+|
+   simpleIf(
+      PUSH-integer {<-1,"elements/2"}
+      PUSHI-integer 0
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {'tmpNode/0'}
+      POP-objref {<-1,'head/3'}
+      RESETFRAME
+      PUSH-objref {<-1,'head/3'}
+      POP-objref {<-1,'tail/6'}
+      RESETFRAME
+      PUSH-integer {<-1,"elements/2"}
+      PUSHI-integer 1
+      ADDOP(_+_)_integer
+      POP-integer {<-1,"elements/2"}
+      RESETFRAME
+   |else
+      PUSH-objref {'tmpNode/0'}
+      CHK_QUA_OBJ {<-1,'tail/6',^`2246,'next/0'}
+      POP-objref {<-1,'tail/6',^`2246,'next/0'}
+      RESETFRAME
+      PUSH-objref {'tmpNode/0'}
+      POP-objref {<-1,'tail/6'}
+      RESETFRAME
+      PUSH-integer {<-1,"elements/2"}
+      PUSHI-integer 1
+      ADDOP(_+_)_integer
+      POP-integer {<-1,"elements/2"}
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`2054"
+   "tmpNode1/0": (
+      PUSH-ptn {<-2,"listElement/3"}
+      INSTALL-qua-obj 0
+   )
+   "tmpNode2/1": (
+      PUSH-ptn {<-2,"listElement/3"}
+      INSTALL-qua-obj 1
+   )
+   "tmpNode3/2": (
+      PUSH-ptn {<-2,"listElement/3"}
+      INSTALL-qua-obj 2
+   )
+|
+   PUSH-ptn {<-1,"add/0"}
+   NEW,_ptn->tmp 1
+   PUSH-objref {'tmpNode1/0'}
+   POP-objref {tmp(1),'tmpNode/0'}
+   CALL {tmp(1)}
+   RESETFRAME
+   PUSH-ptn {<-1,"add/0"}
+   NEW,_ptn->tmp 1
+   PUSH-objref {'tmpNode2/1'}
+   POP-objref {tmp(1),'tmpNode/0'}
+   CALL {tmp(1)}
+   RESETFRAME
+   PUSH-ptn {<-1,"add/0"}
+   NEW,_ptn->tmp 1
+   PUSH-objref {'tmpNode3/2'}
+   POP-objref {tmp(1),'tmpNode/0'}
+   CALL {tmp(1)}
+   RESETFRAME
+)
+MainPart("`2124"
+|
+   PUSHI-integer 0
+   POP-integer {<-1,"elements/2"}
+   RESETFRAME
+   PUSH-objref {<-1,'tail/6'}
+   POP-objref {<-1,'head/3'}
+   RESETFRAME
+)
+MainPart("`2152"
+|
+)
+MainPart("`2246"
+   "next/0": (
+      PUSH-ptn {<-1,"node/11"}
+      INSTALL-qua-obj 0
+   )
+|
+)
+MainPart("`2658"
+   "depth/1": (
+      PUSH-ptn {<-2,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 1
+   )
+   "root/2": (
+      PUSH-ptn {<-1,"node/11"}
+      INSTALL-qua-obj 2
+   )
+   "tmpNode/3": (
+      PUSH-ptn {<-1,"node/11"}
+      INSTALL-qua-obj 3
+   )
+   "continue/0": (
+      PUSH-ptn {<-2,"boolean/1"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   PUSH-ptn {<-1,"node/11"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`1406,"init/6"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "root"
+   POP-string {tmp(2),^`1406,"id/5"}
+   CALL {tmp(3)}
+   PUSH-obj {tmp(2)}
+   POP-objref {'root/2'}
+   RESETFRAME
+   CALL {'root/2'}
+   PUSH-ptn {<-1,"listOld/5","add/0"}
+   NEW,_ptn->tmp 1
+   PUSH-obj {'root/2'}
+   POP-objref {tmp(1),'tmpNode/0'}
+   CALL {tmp(1)}
+   RESETFRAME
+   namedFor("i"
+      PUSH-integer {<-1,"depth/1"}
+      RESETFRAME
+   |
+      PUSHI-boolean true
+      POP-boolean {<-1,"continue/0"}
+      RESETFRAME
+      PUSH-objref {<-2,"listOld/5",'head/3'}
+      CHK_QUA_OBJ {<-1,'tmpNode/3'}
+      POP-objref {<-1,'tmpNode/3'}
+      RESETFRAME
+      while(
+         CALL {<-1,'tmpNode/3'}
+         PUSH-boolean {<-1,"continue/0"}
+         PUSH-obj {<-1,'tmpNode/3'}
+         PUSHI_NONE(obj)
+         RELOP(_<>_)_object reference
+         MULOP(_and_)_boolean
+         RESETFRAME
+      |
+         PUSH-ptn {<-1,'tmpNode/3',^`1406,"makeChildren/8"}
+         NEW,_ptn->tmp 1
+         CALL {tmp(1)}
+         PUSH-ptn {<-2,"listNew/4","add3/1"}
+         NEW,_ptn->tmp 2
+         PUSH-objref {<-1,'tmpNode/3',^`1406,'child1/1'}
+         POP-objref {tmp(2),'tmpNode1/0'}
+         PUSH-objref {<-1,'tmpNode/3',^`1406,'child2/2'}
+         POP-objref {tmp(2),'tmpNode2/1'}
+         PUSH-objref {<-1,'tmpNode/3',^`1406,'child3/3'}
+         POP-objref {tmp(2),'tmpNode3/2'}
+         CALL {tmp(2)}
+         RESETFRAME
+         simpleIf(
+            PUSH-objref {<-1,'tmpNode/3',^`2246,'next/0'}
+            PUSHI_NONE(obj)
+            RELOP(_<>_)_object reference
+            RESETFRAME
+         |then
+            PUSH-objref {<-1,'tmpNode/3',^`2246,'next/0'}
+            POP-objref {<-1,'tmpNode/3'}
+            RESETFRAME
+         |else
+            PUSHI-boolean false
+            POP-boolean {<-1,"continue/0"}
+            RESETFRAME
+         )
+         RESETFRAME
+      )
+      RESETFRAME
+      PUSH-ptn {<-2,"listOld/5","makeEmpty/5"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+      CALL {<-2,"listNew/4"}
+      CALL {<-2,"listOld/5"}
+      RESETFRAME
+   )
+   RESETFRAME
+)

@@ -1,0 +1,978 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Thread.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Thread.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Thread.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#916>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#8>atExitFkt</A>
+<LI><A HREF=#21>Thread_t</A>
+<LI><A HREF=#181>Thread_t</A>
+<LI><A HREF=#225>run</A>
+<LI><A HREF=#743>getState</A>
+<LI><A HREF=#747>sendSignal</A>
+<LI><A HREF=#751>print</A>
+<LI><A HREF=#777>merge</A>
+<LI><A HREF=#916>member</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Thread.cc,v 1.99 2001/05/28 12:56:25 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<B>int</B> instrsExecuted = 0;
+
+<A NAME=8><B>void</B> atExitFkt(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#21>[&gt;]</A>[^]<A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "Last instruction executed was: " &lt;&lt; instrsExecuted &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+<B>void</B> *Thread_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B> *location) <FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> *Thread_t::<B>operator</B> <B>new</B>(size_t size) <FONT COLOR=blue>{</FONT>
+  <B>return</B> malloc(<B>sizeof</B>(Thread_t));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=21>Thread_t::<A HREF=../R/108.html>Thread_t</A>(Pattern_t *pattern, Scheduler_t* sch) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#8>[&lt;]</A><A HREF=#181>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  myScheduler = sch;
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  instrsExecuted = 0;
+  atexit(atExitFkt);
+<FONT COLOR=darkred>#endif</FONT>
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making int stack\n");
+  <I><FONT COLOR=green>//create integer stack</FONT></I>
+<A NAME=32>  ObjectDescriptor_t *stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, 0);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  <I><FONT COLOR=green>//VMObject_t *stackSpace = garbageCollector.addRootObject(stackObjDesc);</FONT></I>
+  intStack = <B>new</B>(allocateRootVM_NT(stackObjDesc))
+    NonRefStack_t&lt;<B>int</B>&gt; (STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+<I><FONT COLOR=green>//  VMObject_t *stackSpace = garbageCollector-&gt;addNewObject(stackObjDesc);</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;intStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) NonRefStack_t&lt;<B>int</B>&gt;(STACK_SIZE, 
+                                                                  stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making bool stack\n");
+  <I><FONT COLOR=green>//bool stack</FONT></I>
+<A NAME=46>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, 0);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  boolStack    = <B>new</B>(allocateRootVM_NT(stackObjDesc))
+    NonRefStack_t&lt;bool&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;boolStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) NonRefStack_t&lt;bool&gt;(STACK_SIZE, 
+                                                                   stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making char stack\n");
+  <I><FONT COLOR=green>//char stack</FONT></I>
+<A NAME=59>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, 0);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  charStack    =  <B>new</B>(allocateRootVM_NT(stackObjDesc))
+    NonRefStack_t&lt;<B>unsigned</B> <B>char</B>&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, 
+                 (<B>void</B>**)&amp;charStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) 
+                     NonRefStack_t&lt;<B>unsigned</B> <B>char</B>&gt;(STACK_SIZE, 
+                                                  stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making real stack\n");
+  <I><FONT COLOR=green>//real stack</FONT></I>
+<A NAME=74>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, 0);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  realStack    = <B>new</B>(allocateRootVM_NT(stackObjDesc))
+    NonRefStack_t&lt;real&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;realStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) NonRefStack_t&lt;real&gt;(STACK_SIZE, 
+                                                                   stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making string stack\n");
+  <I><FONT COLOR=green>//string stack ??????????? FJERNE STRING OBJEKTER FRA ROOT SPACE ?????????????</FONT></I>
+<A NAME=87>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, UINT_MAX);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  stringStack  = <B>new</B>(allocateRootVM_T(stackObjDesc))
+    RefStack_t&lt;<B>char</B>*&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;stringStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) RefStack_t&lt;<B>char</B>*&gt;(STACK_SIZE, 
+                                                                 stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+ 
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making exe stack\n");
+  <I><FONT COLOR=green>//execution stack</FONT></I>
+<A NAME=100>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, 0);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  executionStack = <B>new</B>(allocateRootVM_NT(stackObjDesc))
+    NonRefStack_t&lt;Instruction*&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;executionStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) 
+                     NonRefStack_t&lt;Instruction*&gt;(STACK_SIZE, stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making obj stack\n");
+  <I><FONT COLOR=green>//object stack //DEBUG SIZE</FONT></I>
+<A NAME=113>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, UINT_MAX);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  objectStack = <B>new</B>(allocateRootVM_T(stackObjDesc))
+    RefStack_t&lt;Object_t*&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;objectStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) 
+                     RefStack_t&lt;Object_t*&gt;(STACK_SIZE, 
+                                           stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making ptn stack\n");
+  <I><FONT COLOR=green>//pattern stack</FONT></I>
+<A NAME=126>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, UINT_MAX);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  patternStack = <B>new</B>(allocateRootVM_T(stackObjDesc))
+    RefStack_t&lt;Pattern_t*&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;patternStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) 
+                     RefStack_t&lt;Pattern_t*&gt;(STACK_SIZE, 
+                                            stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making tmp stack\n");
+  <I><FONT COLOR=green>//tmp stack</FONT></I>
+<A NAME=139>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, UINT_MAX);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  tmpStack     = <B>new</B>(allocateRootVM_T(stackObjDesc)) 
+    RefStack_t&lt;AttributeInstance_t*&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT>
+<A NAME=144>  <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;tmpStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) 
+                 RefStack_t&lt;AttributeInstance_t*&gt;(STACK_SIZE, 
+                                                  stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT>
+  DB_OUT(vm_thread,"Thread_t::Thread_t(): making CPO stack\n");
+  <I><FONT COLOR=green>//current part object stack</FONT></I>
+<A NAME=151>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, UINT_MAX);
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  currentPOStack = <B>new</B>(allocateRootVM_T(stackObjDesc))
+    RefStack_t&lt;PartObject_t*&gt;(STACK_SIZE, stackObjDesc);
+<FONT COLOR=darkred>#else</FONT>
+<A NAME=156>  <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;currentPOStack,
+                 <B>new</B>(allocateVM(stackObjDesc)) 
+                     RefStack_t&lt;PartObject_t*&gt;(STACK_SIZE, stackObjDesc));
+<FONT COLOR=darkred>#endif</FONT>
+
+  <I><FONT COLOR=green>//doing: this-&gt;mainObject = pattern-&gt;instantiate(this);</FONT></I>
+  <B>if</B>(pattern)<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//intantiating pattern</FONT></I>
+<A NAME=164>    Object_t *object = pattern-&gt;<A HREF=../D/261.html>instantiate</A>(<B>this</B>);
+<A NAME=165>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;mainObject), object);
+  <FONT COLOR=blue>}</FONT>
+  
+  <I><FONT COLOR=green>//initializing thread execute state</FONT></I>
+  signal = THR_SIGNAL_NONE;
+  state  = THR_STATE_RUNNING;
+<A NAME=171>  pc     = mainObject-&gt;<A HREF=../D/195.html>getFirstInstructionPushPOANF</A>(<B>this</B>);
+<A NAME=172>  executionStack-&gt;<A HREF=../S/43.html#23>push</A>(pc);
+<A NAME=173>  currentPOStack-&gt;<A HREF=../S/43.html#23>push</A>(mainObject-&gt;first());
+  tmpStack-&gt;addNewFrame();
+<A NAME=175>  pc     = mainObject-&gt;first()-&gt;<A HREF=../D/207.html>getMPAttrsInstrPtr</A>()-&gt;first();
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>//This constructor should NOT be used except when initializing the object descriptor</FONT></I>
+<A NAME=181>Thread_t::<A HREF=../R/108.html>Thread_t</A>(ObjectDescriptor_t *objDesc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#21>[&lt;]</A><A HREF=#225>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifndef</FONT> NEW_STYLE_GC
+<A NAME=184>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;intStack      -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=185>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;boolStack     -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=186>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;charStack     -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=187>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;realStack     -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=188>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;stringStack   -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=189>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;executionStack-(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=190>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;objectStack   -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=191>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;patternStack  -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=192>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;tmpStack      -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=193>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;currentPOStack-(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<FONT COLOR=darkred>#endif</FONT>
+  <I><FONT COLOR=green>//OBJECT + CPO markeres</FONT></I>
+<A NAME=196>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;mainObject  -(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+
+  DB_OUT(gc_objd, "Thread_T::Thread_t(): made object descriptor: " &lt;&lt; objDesc);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//this macro is used in the run method (twice)</FONT></I>
+<FONT COLOR=darkred>#define</FONT> CHECK_SIGNALS                                                           \
+  <B>if</B>(signal != THR_SIGNAL_NONE) <FONT COLOR=blue>{</FONT>                                               \
+    <B>switch</B> (signal) <FONT COLOR=blue>{</FONT>                                                           \
+    <B>case</B> THR_SIGNAL_GC_STOP:                                                    \
+      state = THR_STATE_GC_STOPPED;                                             \
+      signal = THR_SIGNAL_NONE;                                                 \
+      <I><FONT COLOR=green>/*possible cleanup before gc goes here (eg. stack traversal in the future)*/</FONT></I> \
+      DB_OUTDENT;                                                               \
+      <B>return</B> state;                                                             \
+      <B>break</B>;                                                                    \
+    <B>case</B> THR_SIGNAL_RESUME:                                                     \
+      state = THR_STATE_RUNNING;                                                \
+      signal = THR_SIGNAL_NONE;                                                 \
+      <B>break</B>;                                                                    \
+    <B>default</B>:                                                                    \
+      cerr &lt;&lt; "Thread_t::run(): unknown signal, " &lt;&lt; signal                     \
+           &lt;&lt; "internal error, quitting!";                                      \
+      exit(1);                                                                  \
+      <B>break</B>;                                                                    \
+    <FONT COLOR=blue>}</FONT>                                                                           \
+  <FONT COLOR=blue>}</FONT>
+
+<A NAME=225><B>int</B> Thread_t::<A HREF=../S/65.html#119>run</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#181>[&lt;]</A><A HREF=#743>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+
+  DB_OUT(vm_status, "mainThread ... starting execution ... wish me luck\n");
+
+  CHECK_SIGNALS;
+
+  <I><FONT COLOR=green>//DB_OUT(vm_status, "mainThread ... my state is: ... " &lt;&lt; state &lt;&lt; endl);</FONT></I>
+
+  <B>while</B>(state == THR_STATE_RUNNING)<FONT COLOR=blue>{</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+    <I><FONT COLOR=green>//check object integrity - this may be very slow!</FONT></I>
+    
+<FONT COLOR=darkred># ifdef</FONT> INTEGRITY_CHECK
+<FONT COLOR=darkred>#  ifdef</FONT> NEW_STYLE_GC
+    <B>if</B>(instrsExecuted%50 == 0) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//if(instrsExecuted &gt; 99600) {</FONT></I>
+      <I><FONT COLOR=green>//DB_ENABLE_GC_ALL;</FONT></I>
+      <I><FONT COLOR=green>//cout &lt;&lt; "(instr: " &lt;&lt; instrsExecuted &lt;&lt; ")" &lt;&lt; flush;</FONT></I>
+<A NAME=245>      garbageCollector.<A HREF=../D/145.html>checkIntegrity</A>();
+    <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#  else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+    <B>if</B>(instrsExecuted%50 == 0) <FONT COLOR=blue>{</FONT>
+<A NAME=249>      garbageCollector-&gt;<A HREF=../D/145.html>checkIntegrity</A>();
+    <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#  endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//INTEGRITY_CHECK</FONT></I>
+
+<A NAME=254>    <A HREF=../D/307.html>print</A>();
+    ++instrsExecuted;
+
+    <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    if(instrsExecuted == 66019){ // DONT_PRINT_UNTIL){</FONT></I>
+<I><FONT COLOR=green>      cout &lt;&lt; "enabling all debug output\n";                                  </FONT></I>
+<I><FONT COLOR=green>      DB_ENABLE_ALL;</FONT></I>
+<I><FONT COLOR=green>    }</FONT></I>
+<I><FONT COLOR=green>    */</FONT></I>
+
+    DB_OUT(vm_thread_instinfo, "Thread_t:: executing instruction " &lt;&lt;
+           instrsExecuted &lt;&lt;": " &lt;&lt; pc &lt;&lt; " with id: " &lt;&lt; pc-&gt;id &lt;&lt; endl);
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+    <B>switch</B>(pc-&gt;id) <FONT COLOR=blue>{</FONT>
+    <B>case</B> ADDMP_ID:
+      ADDMP_MAC;
+      <B>break</B>;
+    <B>case</B> ADDOPPLUS_ID:
+      ADDOPPLUS_MAC;
+      <B>break</B>;
+    <B>case</B> ADDOPMINUS_ID:
+      ADDOPMINUS_MAC;
+      <B>break</B>;
+    <B>case</B> ADDOPOR_ID:
+      ADDOPOR_MAC;
+      <B>break</B>;
+    <B>case</B> ADDOPXOR_ID:
+      ADDOPXOR_MAC;
+      <B>break</B>;
+    <B>case</B> CALL_ID:
+      CALL_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case CALLREP_ID:</FONT></I>
+<I><FONT COLOR=green>      CALLREP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> CHKNONE_ID:
+      CHKNONE_MAC;
+      <B>break</B>;
+    <B>case</B> CHKPTNNONE_ID:
+      CHKPTNNONE_MAC;
+      <B>break</B>;
+    <B>case</B> CHKQUALOBJ_ID:
+      CHKQUALOBJ_MAC;
+      <B>break</B>;
+    <B>case</B> DISCARD_ID:
+      DISCARD_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case ENSURECMP_ID:</FONT></I>
+<I><FONT COLOR=green>      ENSURECMP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case EXTEND_ID:</FONT></I>
+<I><FONT COLOR=green>      EXTEND_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case FORK_ID:</FONT></I>
+<I><FONT COLOR=green>      FORK_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> GATHERVIRT_ID:
+      GATHERVIRT_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case GETSIZE_ID:</FONT></I>
+<I><FONT COLOR=green>      GETSIZE_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> GENERALIF_ID:
+      GENERALIF_MAC;
+      <B>break</B>;
+    <B>case</B> INNER_ID:
+      INNER_MAC;
+      <B>break</B>;
+    <B>case</B> INSTALLPTN_ID:
+      INSTALLPTN_MAC;
+      <B>break</B>;
+    <B>case</B> INSTALLQUALPTN_ID:
+      INSTALLQUALPTN_MAC;
+      <B>break</B>;
+    <B>case</B> INSTALLOBJ_ID:
+      INSTALLOBJ_MAC;
+      <B>break</B>;
+    <B>case</B> INSTALLQUALOBJ_ID:
+      INSTALLQUALOBJ_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case INSTALLREP_ID:</FONT></I>
+<I><FONT COLOR=green>      INSTALLREP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case KILL_ID:</FONT></I>
+<I><FONT COLOR=green>      KILL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case LOCSIMPIF_ID:</FONT></I>
+<I><FONT COLOR=green>      LOCSIMPIF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> MERGE_ID:
+      MERGE_MAC;
+      <B>break</B>;
+    <B>case</B> MULOPMUL_ID:
+      MULOPMUL_MAC;
+      <B>break</B>;
+    <B>case</B> MULOPDIV_ID:
+      MULOPDIV_MAC;
+      <B>break</B>;
+    <B>case</B> MULOPAND_ID:
+      MULOPAND_MAC;
+      <B>break</B>;
+    <B>case</B> MULOPDIVINT_ID:
+      MULOPDIVINT_MAC;
+      <B>break</B>;
+    <B>case</B> MULOPMOD_ID:
+      MULOPMOD_MAC;
+      <B>break</B>;
+    <B>case</B> NEGINT_ID:
+      NEGINT_MAC;
+      <B>break</B>;
+    <B>case</B> NEGREAL_ID:
+      NEGREAL_MAC;
+      <B>break</B>;
+    <B>case</B> NEWPTNOBJ_ID:
+      NEWPTNOBJ_MAC;
+      <B>break</B>;
+    <B>case</B> NEWPTNTMP_ID:
+      NEWPTNTMP_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case NEWREP_ID:</FONT></I>
+<I><FONT COLOR=green>      NEWREP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> NOT_ID:
+      NOT_MAC;
+      <B>break</B>;
+    <B>case</B> NAMEDFOR_ID:
+      NAMEDFOR_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case OSSYSIN_ID:</FONT></I>
+<I><FONT COLOR=green>      OSSYSIN_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case OSSYSINOUT_ID:</FONT></I>
+<I><FONT COLOR=green>      OSSYSINOUT_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PEEKINXOBJREF_ID:</FONT></I>
+<I><FONT COLOR=green>      PEEKINXOBJREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PEEKINXTMPREF_ID:</FONT></I>
+<I><FONT COLOR=green>      PEEKINXTMPREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>     
+    <B>case</B> PEEKOBJREF_ID:
+      PEEKOBJREF_MAC;
+      <B>break</B>;
+    <B>case</B> PEEKTMPREF_ID:
+      PEEKTMPREF_MAC;
+      <B>break</B>;
+    <B>case</B> POPBOOL_ID:
+      POPBOOL_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case POPBOOLVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      POPBOOLVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> POPCHAR_ID:
+      POPCHAR_MAC;
+      <B>break</B>;
+    <B>case</B> POPCHARPUSHINT_ID:
+      POPCHARPUSHINT_MAC;
+      <B>break</B>;
+    <B>case</B> POPCHARPUSHREAL_ID:
+      POPCHARPUSHREAL_MAC;
+      <B>break</B>;
+    <B>case</B> POPCHARPUSHSTR_ID:
+      POPCHARPUSHSTR_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case POPCHARVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      POPCHARVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> POPINTPUSHCHARAT_ID:
+      POPINTPUSHCHARAT_MAC;
+      <B>break</B>;
+    <B>case</B> POPINT_ID:
+      POPINT_MAC;
+      <B>break</B>;
+    <B>case</B> POPINTPUSHCHAR_ID:
+      POPINTPUSHCHAR_MAC;
+      <B>break</B>;
+    <B>case</B> POPINTPUSHREAL_ID:
+      POPINTPUSHREAL_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case POPINTVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      POPINTVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case POPINXOBJREF_ID:</FONT></I>
+<I><FONT COLOR=green>      POPINXOBJREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case POPINXPTNREF_ID:</FONT></I>
+<I><FONT COLOR=green>      POPINXPTNREF_ID;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> POPOBJPUSHPTN_ID:
+      POPOBJPUSHPTN_MAC;
+      <B>break</B>;
+    <B>case</B> POPOBJPUSHTMP_ID:
+      POPOBJPUSHTMP_MAC;
+      <B>break</B>;
+    <B>case</B> POPOBJREF_ID:
+      POPOBJREF_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case POPPTNSPECOBJ_ID:</FONT></I>
+<I><FONT COLOR=green>      POPPTNSPECOBJ_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> POPPTNREF_ID:
+      POPPTNREF_MAC;
+      <B>break</B>;
+    <B>case</B> POPREAL_ID:
+      POPREAL_MAC;
+      <B>break</B>;
+    <B>case</B> POPREALPUSHINT_ID:
+      POPREALPUSHINT_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/* deprecated</FONT></I>
+<I><FONT COLOR=green>    case POPREALVALUE_ID:</FONT></I>
+<I><FONT COLOR=green>      POPREALVALUE_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> POPSTR_ID:
+      POPSTR_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case POPSTRREP_ID:</FONT></I>
+<I><FONT COLOR=green>      POPSTRREP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+      <I><FONT COLOR=green>/* deprecated</FONT></I>
+<I><FONT COLOR=green>    case POPSTRVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      POPSTRVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> POPSTRPUSHCHAR_ID:
+      POPSTRPUSHCHAR_MAC;
+      <B>break</B>;
+    <B>case</B> POPSTRPUSHINT_ID:
+      POPSTRPUSHINT_MAC;
+      <B>break</B>;
+    <B>case</B> POPSTRPUSHREAL_ID:
+      POPSTRPUSHREAL_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHBOOL_ID:
+      PUSHBOOL_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case PUSHBOOLVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHBOOLVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHCHAR_ID:
+      PUSHCHAR_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case PUSHCHARVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHCHARVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHINDEX_ID:
+      PUSHINDEX_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHINT_ID:
+      PUSHINT_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/* deprecated ...</FONT></I>
+<I><FONT COLOR=green>    case PUSHINTVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHINTVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PUSHINXOBJ_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHINXOBJ_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PUSHINXOBJREF_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHINXOBJREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PUSHINXPTNREF_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHINXPTNREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PUSHINXQUAL_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHINXQUAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PUSHINXTMPOBJ_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHINXTMPOBJ_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case PUSHINXTMPOBJREF_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHINXTMPOBJREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHOBJ_ID:
+      PUSHOBJ_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/* parsed to PUSHOBJ</FONT></I>
+<I><FONT COLOR=green>    case PUSHOBJREF_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHOBJREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHPTN_ID:
+      PUSHPTN_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHPTNOBJ_ID:
+      PUSHPTNOBJ_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/* parsed to PUSHPTN</FONT></I>
+<I><FONT COLOR=green>    case PUSHPTNREF_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHPTNREF_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHQUAL_ID:
+      PUSHQUAL_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHREAL_ID:
+      PUSHREAL_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/* deprecated</FONT></I>
+<I><FONT COLOR=green>    case PUSHREALVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHREALVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHSTRLEN_ID:
+      PUSHSTRLEN_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case PUSHSTRREP_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHSTRREP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHSTR_ID:
+      PUSHSTR_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/* deprecated</FONT></I>
+<I><FONT COLOR=green>    case PUSHSTRVAL_ID:</FONT></I>
+<I><FONT COLOR=green>      PUSHSTRVAL_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> PUSHTMPOBJ_ID:
+      PUSHTMPOBJ_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHTMPOBJREF_ID:
+      PUSHTMPOBJREF_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHINONEOBJ_ID:
+      PUSHINONEOBJ_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHINONEPTN_ID:
+      PUSHINONEPTN_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHIBOOLLIT_ID:
+      PUSHIBOOLLIT_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHICHARLIT_ID:
+      PUSHICHARLIT_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHIINTLIT_ID:
+      PUSHIINTLIT_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHIREALLIT_ID:
+      PUSHIREALLIT_MAC;
+      <B>break</B>;
+    <B>case</B> PUSHISTRLIT_ID:
+      PUSHISTRLIT_MAC;
+      <B>break</B>;
+    <B>case</B> RELOPLT_ID:
+      RELOPLT_MAC;
+      <B>break</B>;
+    <B>case</B> RELOPLTEQ_ID:
+      RELOPLTEQ_MAC;
+      <B>break</B>;
+    <B>case</B> RELOPNEQ_ID:
+      RELOPNEQ_MAC;
+      <B>break</B>;
+    <B>case</B> RELOPEQ_ID:
+      RELOPEQ_MAC;
+      <B>break</B>;
+    <B>case</B> RELOPGT_ID:
+      RELOPGT_MAC;
+      <B>break</B>;
+    <B>case</B> RELOPGTEQ_ID:
+      RELOPGTEQ_MAC;
+      <B>break</B>;
+    <B>case</B> RESETFRAME_ID:
+      RESETFRAME_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case RESIZEREP_ID:</FONT></I>
+<I><FONT COLOR=green>      RESIZEREP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case SEMCOUNT_ID:</FONT></I>
+<I><FONT COLOR=green>      SEMCOUNT_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case SEMP_ID:</FONT></I>
+<I><FONT COLOR=green>      SEMP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case SEMTRYP_ID:</FONT></I>
+<I><FONT COLOR=green>      SEMTRYP_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case SEMV_ID:</FONT></I>
+<I><FONT COLOR=green>      SEMV_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>    case SUSPEND_ID:</FONT></I>
+<I><FONT COLOR=green>      SUSPEND_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> SIMPLEFOR_ID:
+      SIMPLEFOR_MAC;
+      <B>break</B>;
+    <B>case</B> SIMPLEIF_ID:
+      SIMPLEIF_MAC;
+      <B>break</B>;
+    <B>case</B> STDIOIN_ID:
+      STDIOIN_MAC;
+      <B>break</B>;
+    <B>case</B> STDIOOUT_ID:
+      STDIOOUT_MAC;
+      <B>break</B>;
+      <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    case WHEN_ID:</FONT></I>
+<I><FONT COLOR=green>      WHEN_MAC;</FONT></I>
+<I><FONT COLOR=green>      break;</FONT></I>
+<I><FONT COLOR=green>      */</FONT></I>
+    <B>case</B> WHILE_ID:
+       WHILE_MAC;
+       <B>break</B>;
+
+      <I><FONT COLOR=green>//Special instructions</FONT></I>
+
+    <B>case</B> RETURN_ID:
+      RETURN_MAC;
+      <B>break</B>;
+    <B>case</B> RETURNNPPO_ID:
+      RETURNNPPO_MAC;
+      <B>break</B>;
+    <B>case</B> RETURNMPATTRINIT_ID:
+      RETURNMPATTRINIT_MAC;
+      <B>break</B>;
+    <B>case</B> CONTGATHERVIRT_ID:
+      CONTGATHERVIRT_MAC;
+      <B>break</B>;
+    <B>case</B> JUMPNPPO_ID:
+      JUMPNPPO_MAC;
+      <B>break</B>;
+    <B>case</B> JUMPTRUENPPO_ID:
+      JUMPTRUENPPO_MAC;
+      <B>break</B>;
+    <B>case</B> JUMPSUBNPPO_ID:
+      JUMPSUBNPPO_MAC;
+      <B>break</B>;
+    <B>case</B> COPYTOP_ID:
+      COPYTOP_MAC;
+      <B>break</B>;
+    <B>case</B> COPYTOP2_ID:
+      COPYTOP2_MAC;
+      <B>break</B>;
+    <B>case</B> UNSUPPORTED_ID:
+      UNSUPPORTED_MAC;
+      <B>break</B>;
+    <B>default</B>: 
+      cerr &lt;&lt; "Thread_t::start(void): unsupported instruction id("
+           &lt;&lt; pc-&gt;id &lt;&lt; "): " &lt;&lt; pc &lt;&lt; endl;
+      exit(1);
+      <B>break</B>;
+    <FONT COLOR=blue>}</FONT>
+    CHECK_SIGNALS; <I><FONT COLOR=green>//check for signals after each instruction</FONT></I>
+  <FONT COLOR=blue>}</FONT>
+  
+  <I><FONT COLOR=green>//print stacks</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=735>  <A HREF=../D/307.html>print</A>();
+<FONT COLOR=darkred>#endif</FONT>  
+
+  DB_OUTDENT;
+  <B>return</B> state;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=743><B>int</B> Thread_t::getState(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#225>[&lt;]</A><A HREF=#747>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> state;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=747><B>void</B> Thread_t::<A HREF=../S/65.html#91>sendSignal</A>(<B>int</B> signal) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#743>[&lt;]</A><A HREF=#751>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>this</B>-&gt;signal = signal;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=751><B>void</B> Thread_t::<A HREF=../R/273.html>print</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#747>[&lt;]</A><A HREF=#777>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_nrstack, "integer stack:   ");
+<A NAME=754>  intStack-&gt;<A HREF=../D/307.html>print</A>();
+  DB_OUT(vm_nrstack, "boolean stack:   ");
+<A NAME=756>  boolStack-&gt;<A HREF=../D/307.html>print</A>();
+  DB_OUT(vm_nrstack, "char stack:      ");
+<A NAME=758>  charStack-&gt;<A HREF=../D/307.html>print</A>();
+  DB_OUT(vm_nrstack, "real stack:      ");
+<A NAME=760>  realStack-&gt;<A HREF=../D/307.html>print</A>();
+  DB_OUT(vm_rstack, "string stack:    ");
+  stringStack-&gt;printStr();
+  DB_OUT(vm_rstack, "object stack:    ");
+<A NAME=764>  objectStack-&gt;<A HREF=../D/307.html>print</A>(1);
+  DB_OUT(vm_rstack, "pattern stack:   ");
+<A NAME=766>  patternStack-&gt;<A HREF=../D/307.html>print</A>(1);
+  DB_OUT(vm_rstack, "tmp stack:       ");
+<A NAME=768>  tmpStack-&gt;<A HREF=../D/307.html>print</A>(1);
+  DB_OUT(vm_rstack, "cpo stack:       ");
+<A NAME=770>  currentPOStack-&gt;<A HREF=../D/307.html>print</A>(1);
+  DB_OUT(vm_rstack, "execution stack: ");
+<A NAME=772>  executionStack-&gt;<A HREF=../D/307.html>print</A>();
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//merges p1&amp;p2 and returns the result or NULL </FONT></I>
+<A NAME=777>Pattern_t* Thread_t::merge(Pattern_t* p1, Pattern_t* p2)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#751>[&lt;]</A><A HREF=#916>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  
+  Mixin_t** p1MixinList = p1-&gt;getMixins(); 
+  <B>unsigned</B> <B>int</B> p1Length = p1-&gt;getLength();                                 
+  Mixin_t** p2MixinList = p2-&gt;getMixins();
+  <B>unsigned</B> <B>int</B> p2Length = p2-&gt;getLength();
+  <B>unsigned</B> <B>int</B> p1I = p1Length-1; <I><FONT COLOR=green>//iterator for p1</FONT></I>
+  <B>unsigned</B> <B>int</B> p2I = p2Length-1; <I><FONT COLOR=green>//iterator for p2</FONT></I>
+  <B>unsigned</B> <B>int</B> resI = 0; <I><FONT COLOR=green>//result iterator</FONT></I>
+
+  <I><FONT COLOR=green>//check for EmptyPattern</FONT></I>
+  <B>if</B>(!p1MixinList[0])<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> p2;
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(!p2MixinList[0])<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> p1;
+  <FONT COLOR=blue>}</FONT>
+
+  DB_OUT(vm_thread_merge, "p1Length: " &lt;&lt; p1Length 
+         &lt;&lt; " p2Length: " &lt;&lt; p2Length &lt;&lt; endl); 
+  DB_OUT(vm_thread_merge, "p1MixinList[p1I]" &lt;&lt; (<B>void</B>*)p1MixinList[p1I] &lt;&lt; endl);
+  <I><FONT COLOR=green>//     &lt;&lt; " p1MixinList[p1I]-&gt;origin: " &lt;&lt; (void*)p1MixinList[p1I]-&gt;origin</FONT></I>
+  <I><FONT COLOR=green>//     &lt;&lt; " p1MixinList[p1I]-&gt;getMainPart(): " </FONT></I>
+  <I><FONT COLOR=green>//     &lt;&lt; (void*)p1MixinList[p1I]-&gt;getMainPart() &lt;&lt; endl);</FONT></I>
+  DB_OUT(vm_thread_merge, "p2MixinList[p2I]" &lt;&lt; (<B>void</B>*)p1MixinList[p2I] &lt;&lt; endl);
+  <I><FONT COLOR=green>// &lt;&lt; " p2MixinList[p2I]-&gt;origin: " &lt;&lt; (void*)p2MixinList[p2I]-&gt;origin</FONT></I>
+  <I><FONT COLOR=green>// &lt;&lt; " p2MixinList[p2I]-&gt;getMainPart(): " </FONT></I>
+  <I><FONT COLOR=green>// &lt;&lt; (void*)p2MixinList[p2I]-&gt;getMainPart() &lt;&lt; endl);</FONT></I>
+
+  <I><FONT COLOR=green>//printing patterns</FONT></I>
+  DB_OUT(vm_thread_merge, "Thread_t::merge: p1" &lt;&lt; endl);
+  DB_INDENT;
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; p1Length; i++)<FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] mainpart id " 
+<A NAME=814>           &lt;&lt; p1MixinList[i]-&gt;<A HREF=../D/208.html>getMainPart</A>()-&gt;getId() &lt;&lt; endl);
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] mainpart " 
+<A NAME=816>           &lt;&lt; (<B>void</B>*)p1MixinList[i]-&gt;<A HREF=../D/208.html>getMainPart</A>() &lt;&lt; endl);
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] origin " 
+           &lt;&lt; (<B>void</B>*)(p1MixinList[i]-&gt;origin) &lt;&lt; endl);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  DB_OUT(vm_thread_merge, "Thread_t::merge: p2" &lt;&lt; endl);
+  DB_INDENT;
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; p2Length; i++)<FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] mainpart id " 
+<A NAME=825>           &lt;&lt; p2MixinList[i]-&gt;<A HREF=../D/208.html>getMainPart</A>()-&gt;getId() &lt;&lt; endl);
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] mainpart " 
+<A NAME=827>           &lt;&lt; (<B>void</B>*)p2MixinList[i]-&gt;<A HREF=../D/208.html>getMainPart</A>() &lt;&lt; endl);
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] origin " 
+           &lt;&lt; (<B>void</B>*)(p2MixinList[i]-&gt;origin) &lt;&lt; endl);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  
+  <I><FONT COLOR=green>//merge p1 &amp; p2</FONT></I>
+  DB_OUT(vm_thread_merge, "Thread_t::merge() merging..." &lt;&lt; endl);
+  bool notP1Finished = 1; 
+  bool notP2Finished = 1; 
+  <B>while</B>(notP1Finished || notP2Finished)<FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_thread_merge, "Thread_t::merge() merging..." &lt;&lt; endl);
+    <B>if</B>((p1MixinList[p1I]-&gt;origin == p2MixinList[p2I]-&gt;origin) &amp;&amp;
+<A NAME=840>       (p1MixinList[p1I]-&gt;<A HREF=../D/208.html>getMainPart</A>() == p2MixinList[p2I]-&gt;<A HREF=../D/208.html>getMainPart</A>()))<FONT COLOR=blue>{</FONT>
+      mergeScratch[resI++] = p1MixinList[p1I];
+      <B>if</B>(p1I)<FONT COLOR=blue>{</FONT>
+        p1I--;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        notP1Finished = 0;
+      <FONT COLOR=blue>}</FONT>
+      <B>if</B>(p2I)<FONT COLOR=blue>{</FONT>
+        p2I--;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        notP2Finished = 0;
+      <FONT COLOR=blue>}</FONT>
+<A NAME=852>    <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(!(<A HREF=../D/276.html>member</A>(p2MixinList, p2I, p1MixinList, p1Length)) &amp;&amp; 
+              notP2Finished)<FONT COLOR=blue>{</FONT>
+      mergeScratch[resI++] = p2MixinList[p2I];
+      <B>if</B>(p2I)<FONT COLOR=blue>{</FONT>
+        p2I--;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        notP2Finished = 0;
+      <FONT COLOR=blue>}</FONT>
+<A NAME=860>    <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(!(<A HREF=../D/276.html>member</A>(p1MixinList, p1I, p2MixinList, p2Length)) &amp;&amp; 
+              notP1Finished)<FONT COLOR=blue>{</FONT>
+      mergeScratch[resI++] = p1MixinList[p1I];
+      <B>if</B>(p1I)<FONT COLOR=blue>{</FONT>
+        p1I--;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        notP1Finished = 0;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      DB_OUT(vm_thread_merge,"Thread_t::merge(): p1MixinList[" &lt;&lt; p1I 
+             &lt;&lt; "]: " &lt;&lt; p1MixinList[p1I] &lt;&lt; endl);
+      DB_OUT(vm_thread_merge,"Thread_t::merge(): p2MixinList[" &lt;&lt; p2I 
+             &lt;&lt; "]: " &lt;&lt; p2MixinList[p2I] &lt;&lt; endl);
+      DB_OUT(vm_thread_merge,"Thread_t::merge(): " 
+             &lt;&lt; "member(p2MixinList, p2I, p1MixinList, p1I) " 
+<A NAME=875>             &lt;&lt; (<B>int</B>)<A HREF=../D/276.html>member</A>(p2MixinList, p2I, p1MixinList, p1I) &lt;&lt; endl);
+      DB_OUT(vm_thread_merge,"Thread_t::merge(): " 
+             &lt;&lt; "member(p1MixinList, p1I, p2MixinList, p2I) " 
+<A NAME=878>             &lt;&lt; (<B>int</B>)<A HREF=../D/276.html>member</A>(p1MixinList, p1I, p2MixinList, p2I) &lt;&lt; endl);
+      DB_OUTDENT;
+      <B>return</B> NULL;
+      <B>break</B>;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_thread_merge, "Thread_t::merge(): merge done, creating " 
+         &lt;&lt; "resulting pattern with " 
+         &lt;&lt; resI &lt;&lt; " mixins " &lt;&lt; endl);
+
+  <I><FONT COLOR=green>//create new pattern for result</FONT></I>
+<A NAME=889>  ObjectDescriptor_t* ptnDesc = <A HREF=../S/68.html#58>getPtnObjectDescriptor</A>(resI);
+<A NAME=890>  Pattern_t *result = <B>new</B>(allocateVM(ptnDesc)) <A HREF=../S/62.html#9>Pattern_t</A>(ptnDesc);
+  DB_OUT(vm_thread_merge, "1 " &lt;&lt; endl);
+  Mixin_t** resultMixinList = result-&gt;getMixins();
+  <I><FONT COLOR=green>//copy result from scratch to new pattern</FONT></I>
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = resI, j = 0; i &gt; 0; i--,j++)<FONT COLOR=blue>{</FONT>
+<A NAME=895>    <A HREF=../D/339.html>setVMReference</A>(result, (<B>void</B>**)&amp;resultMixinList[j], mergeScratch[i-1]);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_thread_merge, "Merge completed: " &lt;&lt; result &lt;&lt; endl);
+
+  DB_OUT(vm_thread_merge, "Thread_t::merge: result" &lt;&lt; endl);
+  DB_INDENT;
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; resI; i++)<FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] mainpart id " 
+<A NAME=903>           &lt;&lt; resultMixinList[i]-&gt;<A HREF=../D/208.html>getMainPart</A>()-&gt;getId() &lt;&lt; endl);
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] mainpart " 
+<A NAME=905>           &lt;&lt; (<B>void</B>*)resultMixinList[i]-&gt;<A HREF=../D/208.html>getMainPart</A>() &lt;&lt; endl);
+    DB_OUT(vm_thread_merge, "mixins[" &lt;&lt; i &lt;&lt; "] origin " 
+           &lt;&lt; (<B>void</B>*)(resultMixinList[i]-&gt;origin) &lt;&lt; endl);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+
+  DB_OUTDENT;
+  <B>return</B> result;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//returns true if element list1[it1] is a member of the rest of list2</FONT></I>
+<A NAME=916><B>char</B> Thread_t::<A HREF=../R/243.html>member</A>(Mixin_t** list1, <B>unsigned</B> <B>int</B> it1, 
+<I><FONT COLOR=green>/* <A HREF=#777>[&lt;]</A>[&gt;]<A HREF=#8>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                      Mixin_t** list2, <B>unsigned</B> <B>int</B> list2Length)<FONT COLOR=blue>{</FONT>
+  DB_OUT(vm_thread_merge,"Thread_t::merge() .... :" &lt;&lt; endl);
+  DB_OUT(vm_thread_merge,"List 1 Mixin " &lt;&lt; it1 
+         &lt;&lt; "'s origin " &lt;&lt; list1[it1]-&gt;origin &lt;&lt; endl);
+  DB_OUT(vm_thread_merge,"List 1 Mixin " &lt;&lt; it1 
+         &lt;&lt; "'s mainpart " &lt;&lt; endl 
+<A NAME=923>         &lt;&lt; list1[it1]-&gt;<A HREF=../D/208.html>getMainPart</A>() &lt;&lt; endl);
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; list2Length; i++)<FONT COLOR=blue>{</FONT>
+    <B>if</B>((list1[it1]-&gt;origin == list2[i]-&gt;origin) &amp;&amp; 
+<A NAME=926>      (list1[it1]-&gt;<A HREF=../D/208.html>getMainPart</A>() == list2[i]-&gt;<A HREF=../D/208.html>getMainPart</A>()))<FONT COLOR=blue>{</FONT>
+      <B>return</B> 1;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#916>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,138 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc/main_debug1.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc/main_debug1.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc/main_debug1.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#21>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#8>Test_t</A>
+<LI><A HREF=#21>main</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: main_debug1.cc,v 1.7 2001/02/28 19:29:37 ilsoe Exp $</FONT></I>
+<FONT COLOR=darkred>#include</FONT> &lt;stdlib.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;stdio.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;iostream.h&gt;
+
+<FONT COLOR=darkred>#include</FONT> "garbage_collector.hpp"
+
+<A NAME=8><B>class</B> <A HREF=../R/107.html>Test_t</A> <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#21>[&gt;]</A>[^]<A HREF=#21>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<B>public</B>:
+  <B>void</B> *<B>operator</B> <B>new</B>(size_t size, <B>void</B> *freePointer) <FONT COLOR=blue>{</FONT>
+    <B>return</B> freePointer;
+  <FONT COLOR=blue>}</FONT>
+  Test_t() <FONT COLOR=blue>{</FONT>
+
+  <FONT COLOR=blue>}</FONT>
+  <B>void</B> *a;
+  <B>void</B> *b;
+  <B>void</B> *c;
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=21><B>int</B> main(<B>int</B> argc, <B>char</B>** argv) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#8>[&lt;]</A>[&gt;]<A HREF=#8>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+  DB_ENABLE(gc_gc);
+  DB_ENABLE(gc_mg);
+  DB_ENABLE(gc_mg_heapdump);
+  DB_ENABLE(gc_remset_dump);
+  DB_ENABLE(gc_car);
+  DB_ENABLE(gc_car_delete);
+  DB_ENABLE(gc_vmo);
+  DB_ENABLE(gc_vmo_dump_refs);
+  DB_ENABLE(gc_vmo_mro_verb);
+  DB_ENABLE(gc_trn);
+  DB_ENABLE(gc_objd);
+  DB_ENABLE(gc_glob_setvmr);
+  DB_ENABLE(gc_integrity);
+
+  <B>unsigned</B> <B>int</B> id = 0;
+
+<A NAME=39>  ObjectDescriptor_t *objDes = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(300,0);
+  
+  <I><FONT COLOR=green>//objDes-&gt;print();</FONT></I>
+
+<A NAME=43>  objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(0);
+<A NAME=44>  objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(1);
+<A NAME=45>  objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(2);
+  
+  <I><FONT COLOR=green>//objDes-&gt;print();</FONT></I>
+
+  <I><FONT COLOR=green>// test 1 BYTES_IN_CAR should be 1024, 2 cars in train</FONT></I>
+    
+<A NAME=51>  VMObject_t *o0 = garbageCollector-&gt;<A HREF=../D/133.html>addRootObject</A>(objDes);
+<A NAME=52>  o0-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=53>  Test_t     *t0 = <B>new</B> (o0-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=55>  VMObject_t *o1 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=56>  o1-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=57>  Test_t     *t1 = <B>new</B> (o1-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=59>  VMObject_t *o2 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=60>  o2-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=61>  Test_t     *t2 = <B>new</B> (o2-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=63>  VMObject_t *o3 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=64>  o3-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=65>  Test_t     *t3 = <B>new</B> (o3-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=67>  VMObject_t *o4 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=68>  o4-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=69>  Test_t     *t4 = <B>new</B> (o4-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=71>  VMObject_t *o5 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=72>  o5-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=73>  Test_t     *t5 = <B>new</B> (o5-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=75>  VMObject_t *o6 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=76>  o6-&gt;<A HREF=../S/13.html#436>setID</A>(id++); 
+<A NAME=77>  Test_t     *t6 = <B>new</B> (o6-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=79>  VMObject_t *o7 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=80>  o7-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=81>  Test_t     *t7 = <B>new</B> (o7-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=83>  VMObject_t *o8 = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<A NAME=84>  o8-&gt;<A HREF=../S/13.html#436>setID</A>(id++);
+<A NAME=85>  Test_t     *t8 = <B>new</B> (o8-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/112.html>Test_t</A>();
+  
+<A NAME=87>  <A HREF=../D/339.html>setVMReference</A>(t0, &amp;(t0-&gt;a), t5);
+<A NAME=88>  <A HREF=../D/339.html>setVMReference</A>(t1, &amp;(t1-&gt;a), t2);
+<A NAME=89>  <A HREF=../D/339.html>setVMReference</A>(t2, &amp;(t2-&gt;a), t3);
+<A NAME=90>  <A HREF=../D/339.html>setVMReference</A>(t3, &amp;(t3-&gt;a), t4);
+<A NAME=91>  <A HREF=../D/339.html>setVMReference</A>(t4, &amp;(t4-&gt;a), t3);
+<A NAME=92>  <A HREF=../D/339.html>setVMReference</A>(t5, &amp;(t5-&gt;a), t1);
+<A NAME=93>  <A HREF=../D/339.html>setVMReference</A>(t5, &amp;(t5-&gt;b), t6);
+<A NAME=94>  <A HREF=../D/339.html>setVMReference</A>(t7, &amp;(t7-&gt;a), t8);
+<A NAME=95>  <A HREF=../D/339.html>setVMReference</A>(t8, &amp;(t8-&gt;a), t7);
+
+  <I><FONT COLOR=green>//testing integrity check</FONT></I>
+
+  t7-&gt;b = (<B>void</B>*)234;
+
+  <B>while</B>(1) <FONT COLOR=blue>{</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=103>    garbageCollector-&gt;<A HREF=../D/145.html>checkIntegrity</A>();
+<FONT COLOR=darkred>#endif</FONT>
+<A NAME=105>    garbageCollector-&gt;<A HREF=../D/171.html>garbageCollect</A>();
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#21>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,22 @@
+MainPart("'250"
+|
+   PUSHI-boolean false
+   PUSHI-boolean true
+   MULOP(_and_)_boolean
+   PUSHI-integer 2
+   PUSHI-integer 3
+   MULOP(_*_)_integer
+   PUSHI-integer 5
+   PUSHI-integer 3
+   MULOP(_div_)_integer
+   PUSHI-integer 9
+   PUSHI-integer 2
+   MULOP(_mod_)_integer
+   PUSHI-real 2.5
+   PUSHI-real 3.5
+   MULOP(_*_)_real
+   PUSHI-real 2.5
+   PUSHI-real 0.5
+   MULOP(_/_)_real
+)
+

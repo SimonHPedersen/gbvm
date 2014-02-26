@@ -1,0 +1,189 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Scheduler.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Scheduler.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Scheduler.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#9>[^]</A><A HREF=#142>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#9>gcs_prepareForGC</A>
+<LI><A HREF=#26>startEngine</A>
+<LI><A HREF=#76>getPredefOffset</A>
+<LI><A HREF=#80>getMainThreadOffset</A>
+<LI><A HREF=#84>getEmptyPatternOffset</A>
+<LI><A HREF=#89>prepareForGC</A>
+<LI><A HREF=#98>getMainPart</A>
+<LI><A HREF=#114>mainLoop</A>
+<LI><A HREF=#142>getEmptyObjectPattern</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Scheduler.cc,v 1.25 2001/05/28 12:56:25 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Scheduler.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+Scheduler_t *scheduler;
+
+<A NAME=9><B>void</B> gcs_prepareForGC(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#26>[&gt;]</A>[^]<A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_sch, "void gcs_prepareForGC(void): called\n");
+  <B>if</B>(scheduler) <FONT COLOR=blue>{</FONT>
+<A NAME=13>    scheduler-&gt;<A HREF=../S/65.html#89>prepareForGC</A>();
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> *Scheduler_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B> *location) <FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> *Scheduler_t::<B>operator</B> <B>new</B>(size_t size) <FONT COLOR=blue>{</FONT>
+  <B>return</B> malloc(<B>sizeof</B>(Thread_t));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=26><B>void</B> Scheduler_t::startEngine(<B>char</B>* fileName)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#9>[&lt;]</A><A HREF=#76>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+
+  DB_OUT(vm_sch, "Scheduler_t::startEngine(): ***Initializing " 
+         &lt;&lt; "object system***\n");  
+
+<A NAME=32>  <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;emptyPattern, 
+                 <B>new</B>(allocateVM(emptyPtnDesc)) EmptyPattern_t());
+
+<A NAME=35>  <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;predef, <A HREF=../S/45.html#5>getPredef</A>(<B>this</B>));
+
+  DB_OUT(vm_sch, "Scheduler_t::startEngine(): *parsing mainparts*\n");  
+
+  InstructionParser parser(fileName);
+<A NAME=40>  mainParts = parser.<A HREF=../S/44.html#236>parse</A>();
+  MainPart *firstMainPart = mainParts-&gt;first();
+  
+  DB_OUT(vm_sch, "Scheduler_t::startEngine(): *parsed mainparts*\n");  
+
+  <I><FONT COLOR=green>//Making the mixin connected with the first mainPart</FONT></I>
+<A NAME=46>  Mixin_t* mixin = <B>new</B>(allocateVM(mixinDesc)) <A HREF=../D/99.html>Mixin_t</A>(firstMainPart, predef);
+
+  DB_OUT(vm_sch, "Scheduler_t::startEngine(): made mixin\n");  
+
+  <I><FONT COLOR=green>//Making the Pattern having this mixin</FONT></I>
+
+  <I><FONT COLOR=green>//The first main part pattern always has one mixin</FONT></I>
+<A NAME=53>  ObjectDescriptor_t *patDesc = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(Pattern_t), 0); 
+<A NAME=54>  Pattern_t *pattern = <B>new</B>(allocateVM(patDesc)) <A HREF=../S/62.html#9>Pattern_t</A>(patDesc);
+  DB_OUT(vm_sch, "Scheduler_t::startEngine(): made pattern\n");  
+
+<A NAME=57>  pattern-&gt;<A HREF=../D/127.html>addMixin</A>(0, mixin);
+
+  DB_OUT(vm_sch, "Scheduler_t::startEngine(): ***pattern made " 
+         &lt;&lt; " starting execution***\n");
+  
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+<A NAME=63>  <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, 
+                 (<B>void</B>**)&amp;mainThread, 
+<A NAME=65>                 <B>new</B> (allocateVM(threadDesc)) <A HREF=../D/113.html>Thread_t</A>(pattern, <B>this</B>));
+
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, 
+                 (<B>void</B>**)&amp;mainThread, 
+<A NAME=70>                 <B>new</B> (allocateRootVM(threadDesc)) <A HREF=../D/113.html>Thread_t</A>(pattern, <B>this</B>));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  mainLoop();
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=76><B>unsigned</B> <B>int</B> Scheduler_t::<A HREF=../S/68.html#170>getPredefOffset</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#26>[&lt;]</A><A HREF=#80>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;predef - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=80><B>unsigned</B> <B>int</B> Scheduler_t::<A HREF=../S/68.html#171>getMainThreadOffset</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#76>[&lt;]</A><A HREF=#84>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;mainThread - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=84><B>unsigned</B> <B>int</B> Scheduler_t::<A HREF=../S/68.html#172>getEmptyPatternOffset</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#80>[&lt;]</A><A HREF=#89>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;emptyPattern - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//gc interface function, see header file</FONT></I>
+<A NAME=89><B>void</B> Scheduler_t::<A HREF=../S/65.html#13>prepareForGC</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#84>[&lt;]</A><A HREF=#98>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>if</B>(mainThread) <FONT COLOR=blue>{</FONT>
+<A NAME=91>    mainThread-&gt;<A HREF=../S/67.html#747>sendSignal</A>(THR_SIGNAL_GC_STOP);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_sch, "Scheduler_t::prepareForGC(): Warning: gc request ignored "
+           &lt;&lt; "- object system not yet initialized!\n");
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=98>MainPart* Scheduler_t::<A HREF=../R/188.html>getMainPart</A>(<B>char</B>* id)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#89>[&lt;]</A><A HREF=#114>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_sch, "Scheduler_t::getMainPart() called with id: " &lt;&lt; id &lt;&lt; endl);
+  MainPart* mp = mainParts-&gt;first();
+  <B>for</B>( ; mp != NULL ; mp = mp -&gt; next())<FONT COLOR=blue>{</FONT>
+    <B>if</B>(!(strcmp(mp-&gt;getId(), id)))<FONT COLOR=blue>{</FONT>
+      DB_OUT(vm_sch, "Scheduler_t::getMainPart(): returning mainpart: " 
+             &lt;&lt; endl &lt;&lt; mp);
+      DB_OUTDENT;
+      <B>return</B> mp;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=114><B>void</B> Scheduler_t::mainLoop() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#98>[&lt;]</A><A HREF=#142>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//has to be reprogrammed to handle more threads</FONT></I>
+  <B>int</B> threadState;
+  DB_INDENT;
+  <B>do</B> <FONT COLOR=blue>{</FONT>
+<A NAME=119>    threadState = mainThread-&gt;<A HREF=../S/67.html#225>run</A>();
+    <B>if</B>(threadState == THR_STATE_GC_STOPPED) <FONT COLOR=blue>{</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+<A NAME=122>      garbageCollector.<A HREF=../D/171.html>garbageCollect</A>();
+<FONT COLOR=darkred>#else</FONT>  <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+      garbageCollector-&gt;garbageCollect();
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+      mainThread-&gt;sendSignal(THR_SIGNAL_RESUME);
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//does not handle all signals in the current implementation</FONT></I>
+  <FONT COLOR=blue>}</FONT> <B>while</B> (threadState == THR_STATE_GC_STOPPED);
+
+  <B>switch</B> (threadState) <FONT COLOR=blue>{</FONT>
+  <B>case</B> THR_STATE_FINISHED:
+    DB_OUT(vm_sch, "Thread terminated normally\n");
+    <B>break</B>;
+  <B>default</B>:
+    DB_OUT(vm_sch, "Thread terminating with state: " &lt;&lt; threadState &lt;&lt; endl);
+    <B>break</B>;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=142>Pattern_t* Scheduler_t::<A HREF=../S/45.html#36>getEmptyObjectPattern</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#114>[&lt;]</A>[&gt;]<A HREF=#9>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> emptyPattern;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#9>[^]</A><A HREF=#142>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

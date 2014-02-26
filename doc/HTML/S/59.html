@@ -1,0 +1,113 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Object.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Object.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Object.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#17>[^]</A><A HREF=#63>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#17>Object_t</A>
+<LI><A HREF=#24>Object_t</A>
+<LI><A HREF=#28>getHeadOffset</A>
+<LI><A HREF=#37>getTailOffset</A>
+<LI><A HREF=#46>getPatternOffset</A>
+<LI><A HREF=#56>initPartObjects</A>
+<LI><A HREF=#63>getFirstInstructionPushPOANF</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Object.cc,v 1.13 2001/05/10 12:36:57 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<B>void</B> *Object_t::<B>operator</B> <B>new</B>(size_t size) <FONT COLOR=blue>{</FONT> 
+  DB_INDENT;
+  DB_OUT(vm_object, "Object_t:new() called - " 
+         &lt;&lt; "* this should only happen during initialization*\n");
+  DB_OUTDENT;
+  <B>return</B> malloc(size);
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> *Object_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B>* location) <FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=17>Object_t::<A HREF=../R/100.html>Object_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#24>[&gt;]</A>[^]<A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_object, "Object_t::Object_t:"
+         " --- initializing object descriptor constructor ---\n");
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=24>Object_t::<A HREF=../R/100.html>Object_t</A>(Pattern_t *ptn) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#17>[&lt;]</A><A HREF=#28>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=25>  <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;pattern, ptn);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=28><B>unsigned</B> <B>int</B> Object_t::<A HREF=../S/68.html#145>getHeadOffset</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#24>[&lt;]</A><A HREF=#37>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//returns the offset to the head pointer (in void pointers)</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_object, "Object_t::getHeadOffset(): " 
+       &lt;&lt; ((<B>unsigned</B> <B>int</B>)&amp;head - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*) &lt;&lt; endl);
+  DB_OUTDENT;
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;head - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=37><B>unsigned</B> <B>int</B> Object_t::<A HREF=../S/68.html#146>getTailOffset</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#28>[&lt;]</A><A HREF=#46>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//returns the offset to the tail pointer (in void pointers)</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_object, "Object_t::getTailOffset(): " 
+       &lt;&lt; ((<B>unsigned</B> <B>int</B>)&amp;tail - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*) &lt;&lt; endl);
+  DB_OUTDENT;
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;tail - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=46><B>unsigned</B> <B>int</B> Object_t::<A HREF=../S/68.html#147>getPatternOffset</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#37>[&lt;]</A><A HREF=#56>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//returns the offset to the tail pointer (in void pointers)</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_object, "Object_t::getPatternOffset(): " 
+       &lt;&lt; ((<B>unsigned</B> <B>int</B>)&amp;pattern - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*) &lt;&lt; endl);
+  DB_OUTDENT;
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;pattern - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=56><B>void</B> Object_t::initPartObjects(Thread_t *myThread) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#46>[&lt;]</A><A HREF=#63>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//iterate all partobjects </FONT></I>
+  <B>for</B>(PartObject_t* po = first(); po !=NULL; po=po-&gt;next())<FONT COLOR=blue>{</FONT>
+<A NAME=59>    po-&gt;<A HREF=../S/61.html#113>initAttributes</A>(myThread);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=63>Instruction *Object_t::<A HREF=../R/176.html>getFirstInstructionPushPOANF</A>(Thread_t *myThread) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#56>[&lt;]</A>[&gt;]<A HREF=#17>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_object, "Object_t::getFirstInstructionPOANF()\n");
+  DB_OUTDENT;
+  <B>if</B>(first())<FONT COLOR=blue>{</FONT>
+<A NAME=68>    <B>return</B> first()-&gt;<A HREF=../D/195.html>getFirstInstructionPushPOANF</A>(myThread);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#17>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

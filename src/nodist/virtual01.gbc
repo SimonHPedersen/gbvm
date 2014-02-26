@@ -1,0 +1,17 @@
+MainPart("`observer.gb:508"
+   "Subject/1": (virtual "subject/1" in "`observer.gb:534"
+      PUSH-ptn {<-2,"string/5"}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`observer.gb:534,"subject/1"}
+      INSTALL-ptn 1
+   )
+   "update/0": (virtual
+      PUSH-ptn_"object"
+      END_OF_GATHERVIRT_CODE
+      GATHER-virt "update/0" in "`observer.gb:508"
+      INSTALL-ptn 1
+   )
+|
+)
+

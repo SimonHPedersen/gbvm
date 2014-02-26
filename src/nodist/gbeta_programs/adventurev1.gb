@@ -1,0 +1,70 @@
+-- betaenv:descriptor --
+(*		  Der var engang en prinsesse osv.\n
+		  proeve = slå et syvtommer søm i i bræt korrekt\n\n		  
+		  => det halve konge rige\n\n
+		  Mange forhaabningsfulde smaaglade maend og kvinder\n
+		  stillede op i koeen...\n';	
+*)
+(#
+FortaellerA: Applicator(#
+	talk:  (# do 'Eventyret om prinsessen og syvtommer soemmet\n'->stdio; #);
+	walk:  (# do 'klink DOnk klink Donk ...'->stdio; #);
+	do
+	talk&walk;
+	#);
+FortaellerB: Applicator(#
+	speak:  (# do 'AEAEAEventyret om prinsessen og syvtommer soemmet\n'->stdio; #);
+	sing:  (# do 'laaaaaaaaaaaaaaaaaaaaaaaaaa'->stdio; #);
+	do
+	speak&sing;
+	#);
+Applicator: (# 
+		do INNER;
+#);
+Noerden: Applicator(#
+	do 'talk: hvor er tastaturet...daaarligt interface...<gaar>\n'->stdio;
+#);
+TarzanJimmy:
+	Applicator(#
+	do 'talk: groul-groul den skal jeg den undentlyme nok faa smadret i hvis halloejsa\n'->stdio;
+	   'punch: <smadrer alt>\n'->stdio;
+#);
+DonJohan: Applicator(#
+	do 'talk: ciao bella, los favor est comunos poor LOOOOOOOOVE \n' -> stdio;
+	   'kiss: <overfalder prinsessen>'-> stdio;
+#);
+Filosoffen: Applicator(#
+	do
+	'talk: at vaere eller ikke at vaere et soem det er vel øeeeh svaret?'->stdio;
+#);
+Munken: Applicator(#
+	do 'mumble: (mumler) dominus inria domes in suuumos ... <soemmet svaever i>\n'->stdio;
+#);
+Anja: Applicator(#
+      do '<overfalder prinsessen og det ender med at blive lidt varmt i lokalet;-)>\n'->stdio;
+#);
+do
+	'\n\n'->stdio;
+	FortaellerA;
+	FortaellerB;
+	FortaellerA&FortaellerB;
+	FortaellerB&FortaellerA;
+	'Anja:.....\n'->stdio; 
+	Anja;
+	'Norden:.....\n'->stdio; 
+	Noerden;		
+	'TJ:.....\n'->stdio; 
+	TarzanJimmy;
+	'DJ:.....\n'->stdio; 
+	DonJohan;
+	'M:.....\n'->stdio; 
+	Munken;
+	'FogA:.....\n'->stdio; 
+	FortaellerA&TarzanJimmy;
+	'MogDJ:.....\n'->stdio; 
+	Munken&DonJohan;
+	'TJogA:.....\n'->stdio; 
+	TarzanJimmy&Anja;
+#)
+
+

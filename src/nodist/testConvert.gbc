@@ -1,0 +1,24 @@
+MainPart("'250"
+|
+   PUSHI-char `a'
+   PUSHI-char `a'
+   PUSHI-char `a'
+   POP-char,_C-->I,_PUSH-integer
+   POP-char,_C-->R,_PUSH-real
+   POP-char,_C-->S,_PUSH-string
+   PUSHI-integer 5
+   PUSHI-integer 97
+   POP-integer,_I-->C,_PUSH-char
+   POP-integer,_I-->R,_PUSH-real
+   PUSH-ptn_"object"
+   NEW,_ptn->obj
+   POP-obj,_O-->P,_PUSH-ptn
+   PUSHI-real 1.5
+   POP-real,_R-->I,_PUSH-integer
+   PUSHI-string "a"
+   PUSHI-string "a"
+   PUSHI-string "a"
+   POP-string1,_S1-->C,_PUSH-char
+   POP-string1,_S1-->I,_PUSH-integer
+   POP-string1,_S1-->R,_PUSH-real
+)

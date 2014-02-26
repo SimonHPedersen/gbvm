@@ -1,0 +1,85 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/testTrainTable.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/testTrainTable.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/testTrainTable.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>main</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: testTrainTable.cc,v 1.1 2001/03/16 08:26:19 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "TrainTable.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "Car.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+<A NAME=7><B>int</B> main()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>void</B> * carSpace;
+ 
+  carSpace = malloc(BYTES_IN_CAR);
+<A NAME=11>  Car_t* c1 = <B>new</B>(carSpace) <A HREF=../D/2.html>Car_t</A>();
+  cout &lt;&lt; "c1: " &lt;&lt; (<B>void</B>*)c1 &lt;&lt; endl;
+  carSpace = malloc(BYTES_IN_CAR);
+<A NAME=14>  Car_t* c2 = <B>new</B>(carSpace) <A HREF=../D/2.html>Car_t</A>();
+  cout &lt;&lt; "c2: " &lt;&lt; (<B>void</B>*)c2 &lt;&lt; endl;
+  carSpace = malloc(BYTES_IN_CAR);
+<A NAME=17>  Car_t* c3 = <B>new</B>(carSpace) <A HREF=../D/2.html>Car_t</A>();
+  cout &lt;&lt; "c3: " &lt;&lt; (<B>void</B>*)c3 &lt;&lt; endl;
+
+<A NAME=20>  TrainTable_t* tt = <B>new</B> <A HREF=../D/116.html>TrainTable_t</A>();
+<A NAME=21>  tt-&gt;<A HREF=../D/134.html>addTrain</A>(c1,c2);
+<A NAME=22>  tt-&gt;<A HREF=../D/134.html>addTrain</A>(c1,c3);
+<A NAME=23>  tt-&gt;<A HREF=../D/134.html>addTrain</A>(c2,c2);
+<A NAME=24>  tt-&gt;<A HREF=../D/134.html>addTrain</A>(c3,c1);
+<A NAME=25>  cout &lt;&lt; "getLastCar(0) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(0) &lt;&lt; endl;
+<A NAME=26>  cout &lt;&lt; "getLastCar(1) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(1) &lt;&lt; endl;
+<A NAME=27>  cout &lt;&lt; "getLastCar(2) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(2) &lt;&lt; endl;
+<A NAME=28>  cout &lt;&lt; "getLastCar(3) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(3) &lt;&lt; endl;
+<A NAME=29>  cout &lt;&lt; "getFirstCar(0) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(0) &lt;&lt; endl;
+<A NAME=30>  cout &lt;&lt; "getFirstCar(1) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(1) &lt;&lt; endl;
+<A NAME=31>  cout &lt;&lt; "getFirstCar(2) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(2) &lt;&lt; endl;
+<A NAME=32>  cout &lt;&lt; "getFirstCar(3) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(3) &lt;&lt; endl;
+  <I><FONT COLOR=green>//cout &lt;&lt; "getFirstCar(4) : " &lt;&lt; (void*)tt-&gt;getFirstCar(4) &lt;&lt; endl;</FONT></I>
+  
+<A NAME=35>  tt-&gt;<A HREF=../D/325.html>setFirstCar</A>(3, NULL);
+<A NAME=36>  tt-&gt;<A HREF=../D/329.html>setLastCar</A>(3, NULL);
+<A NAME=37>  cout &lt;&lt; "getFirstCar(3) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(3) &lt;&lt; endl;
+<A NAME=38>  cout &lt;&lt; "getLastCar(3) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(3) &lt;&lt; endl;
+
+<A NAME=40>  tt-&gt;<A HREF=../D/316.html>removeTrain</A>();
+<A NAME=41>  tt-&gt;<A HREF=../D/134.html>addTrain</A>(c1,c1);
+<A NAME=42>  tt-&gt;<A HREF=../D/316.html>removeTrain</A>();
+<A NAME=43>  tt-&gt;<A HREF=../D/134.html>addTrain</A>(c2,c2);
+<A NAME=44>  tt-&gt;<A HREF=../D/316.html>removeTrain</A>();
+<A NAME=45>  tt-&gt;<A HREF=../D/134.html>addTrain</A>(c3,c3);
+<A NAME=46>  cout &lt;&lt; "getLastCar(3) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(3) &lt;&lt; endl;
+<A NAME=47>  cout &lt;&lt; "getLastCar(4) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(4) &lt;&lt; endl;
+<A NAME=48>  cout &lt;&lt; "getLastCar(5) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(5) &lt;&lt; endl;
+<A NAME=49>  cout &lt;&lt; "getLastCar(6) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/204.html>getLastCar</A>(6) &lt;&lt; endl;
+<A NAME=50>  cout &lt;&lt; "getFirstCar(3) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(3) &lt;&lt; endl;
+<A NAME=51>  cout &lt;&lt; "getFirstCar(4) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(4) &lt;&lt; endl;
+<A NAME=52>  cout &lt;&lt; "getFirstCar(5) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(5) &lt;&lt; endl;
+<A NAME=53>  cout &lt;&lt; "getFirstCar(6) : " &lt;&lt; (<B>void</B>*)tt-&gt;<A HREF=../D/194.html>getFirstCar</A>(6) &lt;&lt; endl;
+  <I><FONT COLOR=green>//cout &lt;&lt; "getFirstCar(7) : " &lt;&lt; (void*)tt-&gt;getFirstCar(7) &lt;&lt; endl;</FONT></I>
+<A NAME=55>  tt-&gt;<A HREF=../D/325.html>setFirstCar</A>(7,NULL);
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#7>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

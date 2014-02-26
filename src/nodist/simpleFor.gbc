@@ -1,0 +1,12 @@
+MainPart("`54"
+|
+   simpleFor(
+      PUSHI-integer 10000
+      RESETFRAME
+   |
+      PUSHI-string "***** Hello World *****"
+      stdio/out
+      RESETFRAME
+   )
+   RESETFRAME
+)

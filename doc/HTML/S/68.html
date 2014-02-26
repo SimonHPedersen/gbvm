@@ -1,0 +1,237 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/vm_globals.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/vm_globals.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/vm_globals.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#44>[^]</A><A HREF=#75>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#44>getStrObjectDescriptor</A>
+<LI><A HREF=#58>getPtnObjectDescriptor</A>
+<LI><A HREF=#75>fixObjectDescriptors</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: vm_globals.cc,v 1.27 2001/05/28 12:56:26 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>//these global variables are completed only after running fixObjectDescriptors()</FONT></I>
+
+ObjectDescriptor_t *predefBoolPODesc   
+<A NAME=8>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(PredefinedPartObject_t&lt;bool&gt;), 0);
+ObjectDescriptor_t *predefCharPODesc   
+<A NAME=10>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(PredefinedPartObject_t&lt;<B>char</B>&gt;), 0);
+ObjectDescriptor_t *predefIntPODesc    
+<A NAME=12>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(PredefinedPartObject_t&lt;<B>int</B>&gt;), 0);
+ObjectDescriptor_t *predefRealPODesc   
+<A NAME=14>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(PredefinedPartObject_t&lt;real&gt;), 0);
+ObjectDescriptor_t *predefStringPODesc 
+<A NAME=16>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(PredefinedStringPartObject_t), 0);
+
+ObjectDescriptor_t *mixinDesc  
+<A NAME=19>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(Mixin_t), 0);
+ObjectDescriptor_t *objectDesc 
+<A NAME=21>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(Object_t), 0);
+ObjectDescriptor_t *threadDesc 
+<A NAME=23>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(Thread_t), 0);
+ObjectDescriptor_t *objRefDesc 
+<A NAME=25>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(ObjectReference_t), 0);
+ObjectDescriptor_t *ptnRefDesc 
+<A NAME=27>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(PatternReference_t), 0);
+ObjectDescriptor_t *schedDesc  
+<A NAME=29>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(Scheduler_t), 0);
+ObjectDescriptor_t *oneCharStringDesc 
+<A NAME=31>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(2*<B>sizeof</B>(<B>char</B>), 0); <I><FONT COLOR=green>//includes zero-termination</FONT></I>
+ObjectDescriptor_t *emptyPtnDesc 
+<A NAME=33>  = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(EmptyPattern_t), 0); 
+
+<B>static</B> ObjectDescriptor_t* strDescs[MAXSTRLENGTH/<B>sizeof</B>(<B>void</B>*)];
+<B>static</B> ObjectDescriptor_t* ptnDescs[MAXPTNLENGTH];
+
+MainPart *sharedStringPredefMP = <B>new</B> MainPart();
+MainPart *sharedBooleanPredefMP = <B>new</B> MainPart();
+MainPart *sharedCharPredefMP = <B>new</B> MainPart();
+MainPart *sharedIntPredefMP = <B>new</B> MainPart();
+MainPart *sharedRealPredefMP = <B>new</B> MainPart();
+
+<A NAME=44>ObjectDescriptor_t* <A HREF=../S/53.html#311>getStrObjectDescriptor</A>(<B>unsigned</B> <B>int</B> length)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#58>[&gt;]</A>[^]<A HREF=#75>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(length &gt; MAXSTRLENGTH) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "getStrObjectDescriptor(): string too long ("
+         &lt;&lt; length &lt;&lt; "), increase MAXSTRLENGTH\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  <B>return</B> (length % <B>sizeof</B>(<B>void</B>*))
+    ? strDescs[(length &amp; ~(<B>sizeof</B>(<B>void</B>*) - 1)) / <B>sizeof</B>(<B>void</B>*)]
+    : strDescs[(length / <B>sizeof</B>(<B>void</B>*)) - 1];
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//length = number of mixins</FONT></I>
+<A NAME=58>ObjectDescriptor_t* <A HREF=../S/67.html#889>getPtnObjectDescriptor</A>(<B>unsigned</B> <B>int</B> length)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#44>[&lt;]</A><A HREF=#75>[&gt;]</A><A HREF=#44>[^]</A><A HREF=#75>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(length &gt;= MAXPTNLENGTH) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "getPtnObjectDescriptor(): pattern too long, (" 
+         &lt;&lt; length &lt;&lt; "), increase MAXPTNLENGTH\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  <I><FONT COLOR=green>// lazy evaluation</FONT></I>
+  <B>if</B>(!ptnDescs[length])<FONT COLOR=blue>{</FONT>
+    ptnDescs[length] 
+<A NAME=69>      = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(Pattern_t) + 
+                               ((<B>sizeof</B>(<B>void</B>*)) * (length - 1)), 0); 
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> ptnDescs[length];
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=75><B>void</B> <A HREF=../S/69.html#71>fixObjectDescriptors</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#58>[&lt;]</A>[&gt;]<A HREF=#44>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+  <I><FONT COLOR=green>// --- create predefined part objects' (primitive's) object descriptors ---</FONT></I>
+
+  <I><FONT COLOR=green>// - bool -</FONT></I>
+  PredefinedPartObject_t&lt;bool&gt; *dummyPOBool 
+    = <B>new</B> PredefinedPartObject_t&lt;bool&gt;(0, 0);
+<A NAME=82>  predefBoolPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOBool-&gt;<A HREF=../S/61.html#15>getMixinOffset</A>());
+<A NAME=83>  predefBoolPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOBool-&gt;<A HREF=../S/61.html#19>getObjectOffset</A>());
+<A NAME=84>  predefBoolPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOBool-&gt;<A HREF=../S/61.html#24>get_nextOffset</A>());
+<A NAME=85>  predefBoolPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOBool-&gt;<A HREF=../S/61.html#29>get_prevOffset</A>());
+  free(dummyPOBool);
+
+  <I><FONT COLOR=green>// - char -</FONT></I>
+  PredefinedPartObject_t&lt;<B>char</B>&gt; *dummyPOChar 
+    = <B>new</B> PredefinedPartObject_t&lt;<B>char</B>&gt;(0, 0);
+<A NAME=91>  predefCharPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOChar-&gt;<A HREF=../S/61.html#15>getMixinOffset</A>());
+<A NAME=92>  predefCharPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOChar-&gt;<A HREF=../S/61.html#19>getObjectOffset</A>());
+<A NAME=93>  predefCharPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOChar-&gt;<A HREF=../S/61.html#24>get_nextOffset</A>());
+<A NAME=94>  predefCharPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOChar-&gt;<A HREF=../S/61.html#29>get_prevOffset</A>());
+  free(dummyPOChar);
+
+  <I><FONT COLOR=green>// - integer -</FONT></I>
+  PredefinedPartObject_t&lt;<B>int</B>&gt; *dummyPOInt 
+    = <B>new</B> PredefinedPartObject_t&lt;<B>int</B>&gt;(0, 0);
+<A NAME=100>  predefIntPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOInt-&gt;<A HREF=../S/61.html#15>getMixinOffset</A>());
+<A NAME=101>  predefIntPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOInt-&gt;<A HREF=../S/61.html#19>getObjectOffset</A>());
+<A NAME=102>  predefIntPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOInt-&gt;<A HREF=../S/61.html#24>get_nextOffset</A>());
+<A NAME=103>  predefIntPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOInt-&gt;<A HREF=../S/61.html#29>get_prevOffset</A>());
+  free(dummyPOInt);
+
+  <I><FONT COLOR=green>// - real -</FONT></I>
+  PredefinedPartObject_t&lt;real&gt; *dummyPOReal 
+    = <B>new</B> PredefinedPartObject_t&lt;real&gt;(0, 0);
+<A NAME=109>  predefRealPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOReal-&gt;<A HREF=../S/61.html#15>getMixinOffset</A>());
+<A NAME=110>  predefRealPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOReal-&gt;<A HREF=../S/61.html#19>getObjectOffset</A>());
+<A NAME=111>  predefRealPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOReal-&gt;<A HREF=../S/61.html#24>get_nextOffset</A>());
+<A NAME=112>  predefRealPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPOReal-&gt;<A HREF=../S/61.html#29>get_prevOffset</A>());
+  free(dummyPOReal);
+
+  <I><FONT COLOR=green>// - string -</FONT></I>
+  PredefinedStringPartObject_t* dummyPredefStrPO 
+<A NAME=117>    = <B>new</B> <A HREF=../S/61.html#192>PredefinedStringPartObject_t</A>(0,0);
+  <I><FONT COLOR=green>//mark prev and next pointers (for gc)</FONT></I>
+<A NAME=119>  predefStringPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPredefStrPO-&gt;<A HREF=../S/61.html#24>get_nextOffset</A>());
+<A NAME=120>  predefStringPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPredefStrPO-&gt;<A HREF=../S/61.html#29>get_prevOffset</A>());
+<A NAME=121>  predefStringPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPredefStrPO-&gt;<A HREF=../S/61.html#15>getMixinOffset</A>());
+<A NAME=122>  predefStringPODesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPredefStrPO-&gt;<A HREF=../S/61.html#19>getObjectOffset</A>());
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  <I><FONT COLOR=green>//no need to mark str as reference since we do not move str_PO's</FONT></I>
+  <I><FONT COLOR=green>//(resident in stack/root space)</FONT></I>
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  predefStringPODesc-&gt;setReferenceAt(dummyPredefStrPO-&gt;getStrOffset());
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+
+  free(dummyPredefStrPO);
+
+  <I><FONT COLOR=green>// --- Gbeta &amp; vm entities ---</FONT></I>
+
+  <I><FONT COLOR=green>// - mixin -</FONT></I>
+  <I><FONT COLOR=green>//set reference points in general objectDescriptor (for Mixin_t)</FONT></I>
+  <I><FONT COLOR=green>//we need a dummy-object for this</FONT></I>
+<A NAME=137>  Mixin_t *dummyMixin = <B>new</B> <A HREF=../D/99.html>Mixin_t</A>(0, 0);
+<A NAME=138>  mixinDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyMixin-&gt;<A HREF=../S/58.html#37>getOriginOffset</A>());
+  free(dummyMixin);
+
+  <I><FONT COLOR=green>// - object -</FONT></I>
+  <I><FONT COLOR=green>//set reference points in general objectDescriptor (for Object_t)</FONT></I>
+  <I><FONT COLOR=green>//we need a dummy-object for this</FONT></I>
+<A NAME=144>  Object_t *dummyObj = <B>new</B> <A HREF=../D/103.html>Object_t</A>();
+<A NAME=145>  objectDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyObj-&gt;<A HREF=../S/59.html#28>getHeadOffset</A>());
+<A NAME=146>  objectDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyObj-&gt;<A HREF=../S/59.html#37>getTailOffset</A>());
+<A NAME=147>  objectDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyObj-&gt;<A HREF=../S/59.html#46>getPatternOffset</A>());
+  free(dummyObj);
+
+  <I><FONT COLOR=green>// - thread -</FONT></I>
+  <I><FONT COLOR=green>//set reference points in object descriptor</FONT></I>
+  <I><FONT COLOR=green>//dummy-constructor handles setting the reference points in threadDesc</FONT></I>
+<A NAME=153>  Thread_t *dummyThread = <B>new</B> <A HREF=../D/113.html>Thread_t</A>(threadDesc);
+  free(dummyThread);
+
+  <I><FONT COLOR=green>// - object ref -</FONT></I>
+<A NAME=157>  ObjectReference_t *dummyObjRef = <B>new</B> <A HREF=../S/60.html#13>ObjectReference_t</A>();
+<A NAME=158>  objRefDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyObjRef-&gt;<A HREF=../D/234.html>getQualificationOffset</A>());
+<A NAME=159>  objRefDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyObjRef-&gt;<A HREF=../D/246.html>getValueOffset</A>());
+  free(dummyObjRef);
+
+  <I><FONT COLOR=green>// - pattern ref -</FONT></I>
+<A NAME=163>  PatternReference_t *dummyPtnRef = <B>new</B> <A HREF=../S/63.html#13>PatternReference_t</A>();
+<A NAME=164>  ptnRefDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPtnRef-&gt;<A HREF=../D/234.html>getQualificationOffset</A>());
+<A NAME=165>  ptnRefDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummyPtnRef-&gt;<A HREF=../D/246.html>getValueOffset</A>());
+  free(dummyPtnRef);
+
+  <I><FONT COLOR=green>// - scheduler -</FONT></I>
+  Scheduler_t *dummySched = <B>new</B> Scheduler_t();
+<A NAME=170>  schedDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummySched-&gt;<A HREF=../S/65.html#76>getPredefOffset</A>());
+<A NAME=171>  schedDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummySched-&gt;<A HREF=../S/65.html#80>getMainThreadOffset</A>());
+<A NAME=172>  schedDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(dummySched-&gt;<A HREF=../S/65.html#84>getEmptyPatternOffset</A>());
+  free(dummySched);
+
+  <I><FONT COLOR=green>// - one char string -</FONT></I>
+  <I><FONT COLOR=green>//no fixing needed</FONT></I>
+
+  <I><FONT COLOR=green>// - empty pattern (descriptor) -</FONT></I>
+  <I><FONT COLOR=green>//no fixing needed</FONT></I>
+
+  <I><FONT COLOR=green>// - empty pattern -</FONT></I>
+  <I><FONT COLOR=green>//has been moved to scheduler, to make a non-root object</FONT></I>
+
+  <I><FONT COLOR=green>// - create string object descriptor array -</FONT></I>
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; (MAXSTRLENGTH / <B>sizeof</B>(<B>void</B>*)); i++)<FONT COLOR=blue>{</FONT>
+<A NAME=186>    strDescs[i] = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(i * <B>sizeof</B>(<B>void</B>*) + <B>sizeof</B>(<B>void</B>*), 0);
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//add shared mainpart for PredefMixins</FONT></I>
+<A NAME=190>  sharedStringPredefMP-&gt;<A HREF=../S/44.html#33>setObjectDescriptor</A>(predefStringPODesc); 
+<A NAME=191>  sharedStringPredefMP-&gt;addMPAttrInitInstr(<B>new</B> <A HREF=../S/56.html#28>Instr_ReturnMPAttrInit_t</A>());
+
+<A NAME=193>  sharedBooleanPredefMP-&gt;<A HREF=../S/44.html#33>setObjectDescriptor</A>(predefBoolPODesc);
+<A NAME=194>  sharedBooleanPredefMP-&gt;addMPAttrInitInstr(<B>new</B> <A HREF=../S/56.html#28>Instr_ReturnMPAttrInit_t</A>());
+
+<A NAME=196>  sharedCharPredefMP-&gt;<A HREF=../S/44.html#33>setObjectDescriptor</A>(predefCharPODesc); 
+<A NAME=197>  sharedCharPredefMP-&gt;addMPAttrInitInstr(<B>new</B> <A HREF=../S/56.html#28>Instr_ReturnMPAttrInit_t</A>());
+
+<A NAME=199>  sharedIntPredefMP-&gt;<A HREF=../S/44.html#33>setObjectDescriptor</A>(predefIntPODesc);
+<A NAME=200>  sharedIntPredefMP-&gt;addMPAttrInitInstr(<B>new</B> <A HREF=../S/56.html#28>Instr_ReturnMPAttrInit_t</A>());
+
+<A NAME=202>  sharedRealPredefMP-&gt;<A HREF=../S/44.html#33>setObjectDescriptor</A>(predefRealPODesc);
+<A NAME=203>  sharedRealPredefMP-&gt;addMPAttrInitInstr(<B>new</B> <A HREF=../S/56.html#28>Instr_ReturnMPAttrInit_t</A>());
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#44>[^]</A><A HREF=#75>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

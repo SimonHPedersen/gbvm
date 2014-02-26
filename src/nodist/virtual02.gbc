@@ -1,0 +1,34 @@
+MainPart("`keld.gb:42"
+   "update/0": (virtual "update/0" in "`observer.gb:508"
+      PUSHI-string "***** 1 *****"
+      stdio/out
+      END_OF_GATHERVIRT_CODE
+      PUSHI-string "***** 2 *****"
+      stdio/out
+      PUSH-ptn_"object"
+      ADD-mainpart `observer.gb:508 origin {}
+      INSTALL-ptn 0
+   )
+|
+   PUSHI-string "***** 3 *****"
+   stdio/out
+   PUSH-ptn_"object"
+   ADD-mainpart `observer.gb:508 origin {}
+   NEW,_ptn->tmp 1
+)
+MainPart("`observer.gb:508"
+   "update/0": (virtual
+      PUSHI-string "***** 4 *****"
+      stdio/out
+      PUSH-ptn_"object"
+      END_OF_GATHERVIRT_CODE
+      PUSHI-string "***** 5 *****"
+      stdio/out
+      GATHER-virt "update/0" in "`observer.gb:508"
+      INSTALL-ptn 0
+   )
+|
+   PUSHI-string "***** 6 *****"
+   stdio/out
+)
+

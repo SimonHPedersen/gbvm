@@ -1,0 +1,111 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Install.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Install.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Install.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#60>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#8>Instr_InstallPtn_t</A>
+<LI><A HREF=#18>printOn</A>
+<LI><A HREF=#22>Instr_InstallObj_t</A>
+<LI><A HREF=#32>printOn</A>
+<LI><A HREF=#36>Instr_InstallQualPtn_t</A>
+<LI><A HREF=#46>printOn</A>
+<LI><A HREF=#50>Instr_InstallQualObj_t</A>
+<LI><A HREF=#60>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Instr_Install.cc,v 1.5 2001/05/10 12:36:53 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Thread.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "Instr_Install.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<A NAME=8>Instr_InstallPtn_t::<A HREF=../S/44.html#754>Instr_InstallPtn_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#18>[&gt;]</A>[^]<A HREF=#60>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = INSTALLPTN_ID;
+  <B>if</B>(sscanf(pc,"%i",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_InstallPtn_t::Instr_InstallPtn_t(): parse error - "
+         &lt;&lt;  "could not parse int "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=18><B>void</B> Instr_InstallPtn_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#8>[&lt;]</A><A HREF=#22>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#60>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_InstallPtn_t with index" &lt;&lt; index;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=22>Instr_InstallObj_t::<A HREF=../S/44.html#758>Instr_InstallObj_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#18>[&lt;]</A><A HREF=#32>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#60>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = INSTALLOBJ_ID;
+  <B>if</B>(sscanf(pc,"%i",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_InstallObj_t::Instr_InstallObj_t(): parse error - "
+         &lt;&lt; "could not parse int "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=32><B>void</B> Instr_InstallObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#22>[&lt;]</A><A HREF=#36>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#60>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_InstallObj_t with index" &lt;&lt; index;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=36>Instr_InstallQualPtn_t::<A HREF=../S/44.html#762>Instr_InstallQualPtn_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#32>[&lt;]</A><A HREF=#46>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#60>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = INSTALLQUALPTN_ID;
+  <B>if</B>(sscanf(pc,"%i",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_InstallQualPtn_t::Instr_InstallQualPtn_t(): parse error - "
+         &lt;&lt;  "could not parse int "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=46><B>void</B> Instr_InstallQualPtn_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#36>[&lt;]</A><A HREF=#50>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#60>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_InstallQualPtn_t with index" &lt;&lt; index;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=50>Instr_InstallQualObj_t::<A HREF=../S/44.html#766>Instr_InstallQualObj_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#46>[&lt;]</A><A HREF=#60>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#60>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = INSTALLQUALOBJ_ID;
+  <B>if</B>(sscanf(pc,"%i",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_InstallQualObj_t::Instr_InstallQualObj_t(): parse error - "
+         &lt;&lt;  "could not parse int "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=60><B>void</B> Instr_InstallQualObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#50>[&lt;]</A>[&gt;]<A HREF=#8>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_InstallQualObj_t with index" &lt;&lt; index;
+<FONT COLOR=blue>}</FONT>
+
+
+
+
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#60>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

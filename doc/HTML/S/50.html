@@ -1,0 +1,269 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Multiline.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Multiline.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Multiline.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#208>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#8>printOn</A>
+<LI><A HREF=#21>printOn</A>
+<LI><A HREF=#45>printOn</A>
+<LI><A HREF=#69>printOn</A>
+<LI><A HREF=#103>printOn</A>
+<LI><A HREF=#121>printOn</A>
+<LI><A HREF=#133>printOn</A>
+<LI><A HREF=#153>printOn</A>
+<LI><A HREF=#184>printOn</A>
+<LI><A HREF=#208>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Instr_Multiline.cc,v 1.6 2001/03/22 18:54:42 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Thread.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "Instr_Multiline.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<A NAME=8><B>void</B> WhenAlternative::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#21>[&gt;]</A>[^]<A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instruction* curins=eval_instrs.first();
+  dest &lt;&lt; ind &lt;&lt; '|' &lt;&lt; (exact? "=":"") &lt;&lt; "case" &lt;&lt; endl;
+<A NAME=11>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=12>  <B>while</B> (curins) <FONT COLOR=blue>{</FONT> curins-&gt;<A HREF=../D/309.html>printOn</A>(dest); curins=curins-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=13>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; "|then" &lt;&lt; endl;
+  curins=body_instrs.first();
+<A NAME=16>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=17>  <B>while</B> (curins) <FONT COLOR=blue>{</FONT> curins-&gt;<A HREF=../D/309.html>printOn</A>(dest); curins=curins-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=18>  <A HREF=../S/44.html#24>outdent</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=21><B>void</B> Instr_NamedFor::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#8>[&lt;]</A><A HREF=#45>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "namedFor(\"" &lt;&lt; indexname &lt;&lt; '"' &lt;&lt; endl;
+  Instruction* current=eval_instrs.first();
+<A NAME=24>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=27>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=31>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; '|' &lt;&lt; endl;
+<A NAME=33>  <A HREF=../S/44.html#23>indent</A>();
+  current=body_instrs.first();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=37>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; ind;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=41>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45><B>void</B> Instr_SimpleFor::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#21>[&lt;]</A><A HREF=#69>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "simpleFor(" &lt;&lt; endl;
+  Instruction* current=eval_instrs.first();
+<A NAME=48>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=51>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=55>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; '|' &lt;&lt; endl;
+<A NAME=57>  <A HREF=../S/44.html#23>indent</A>();
+  current=body_instrs.first();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=61>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=65>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=69><B>void</B> Instr_SimpleIf::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#103>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "simpleIf(" &lt;&lt; endl;
+  Instruction* current=eval_instrs.first();
+<A NAME=72>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=75>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=79>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; "|then" &lt;&lt; endl;
+  current=then_instrs.first();
+<A NAME=82>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=85>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=89>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; "|else" &lt;&lt; endl;
+  current=else_instrs.first();
+<A NAME=92>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=95>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=99>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=103><B>void</B> Instr_LocatedSimpleIf::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#69>[&lt;]</A><A HREF=#121>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "locatedSimpleIf( " &lt;&lt; where_txt &lt;&lt; endl;
+  Instruction* current=eval_instrs.first();
+<A NAME=106>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=107>  <B>while</B> (current) <FONT COLOR=blue>{</FONT> current-&gt;<A HREF=../D/309.html>printOn</A>(dest); current=current-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=108>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; "|then" &lt;&lt; endl;
+  current=then_instrs.first();
+<A NAME=111>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=112>  <B>while</B> (current) <FONT COLOR=blue>{</FONT> current-&gt;<A HREF=../D/309.html>printOn</A>(dest); current=current-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=113>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; "|else" &lt;&lt; endl;
+  current=else_instrs.first();
+<A NAME=116>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=117>  <B>while</B> (current) <FONT COLOR=blue>{</FONT> current-&gt;<A HREF=../D/309.html>printOn</A>(dest); current=current-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=118>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+<A NAME=121><B>void</B> Selection::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#103>[&lt;]</A><A HREF=#133>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instruction* current=instrs.first();
+  dest &lt;&lt; ind &lt;&lt; "|case" &lt;&lt; endl;
+<A NAME=124>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=127>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=130>  <A HREF=../S/44.html#24>outdent</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=133><B>void</B> Alternative::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#121>[&lt;]</A><A HREF=#153>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Selection* cursel=sels.first();
+  <B>while</B> (cursel) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=137>    cursel-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    cursel=cursel-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+  dest &lt;&lt; ind &lt;&lt; "|then" &lt;&lt; endl;
+  Instruction* curins=instrs.first();
+<A NAME=143>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (curins) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=146>    curins-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    curins=curins-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=150>  <A HREF=../S/44.html#24>outdent</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=153><B>void</B> Instr_GeneralIf::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#133>[&lt;]</A><A HREF=#184>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "generalIf(" &lt;&lt; endl;
+  Instruction* curins=eval_instrs.first();
+<A NAME=156>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (curins) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=159>    curins-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    curins=curins-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=163>  <A HREF=../S/44.html#24>outdent</A>();
+  Alternative* curalt = alts.first();
+  <B>while</B> (curalt) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=167>    curalt-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    curalt=curalt-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+  dest &lt;&lt; ind &lt;&lt; "|else" &lt;&lt; endl;
+  curins=else_instrs.first();
+<A NAME=173>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (curins) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=176>    curins-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    curins=curins-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=180>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=184><B>void</B> Instr_While::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#153>[&lt;]</A><A HREF=#208>[&gt;]</A><A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "while(" &lt;&lt; endl;
+  Instruction* current=eval_instrs.first();
+<A NAME=187>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=190>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=194>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; '|' &lt;&lt; endl;
+<A NAME=196>  <A HREF=../S/44.html#23>indent</A>();
+  current=body_instrs.first();
+  <B>while</B> (current) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind;
+<A NAME=200>    current-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+    dest &lt;&lt; endl;
+    current=current-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=204>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=208><B>void</B> Instr_When::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#184>[&lt;]</A>[&gt;]<A HREF=#8>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "when(" &lt;&lt; endl;
+  Instruction* curins=eval_instrs.first();
+<A NAME=211>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=212>  <B>while</B> (curins) <FONT COLOR=blue>{</FONT> curins-&gt;<A HREF=../D/309.html>printOn</A>(dest); curins=curins-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=213>  <A HREF=../S/44.html#24>outdent</A>();
+  WhenAlternative* curwalt = walts.first();
+<A NAME=215>  <B>while</B> (curwalt) <FONT COLOR=blue>{</FONT> curwalt-&gt;<A HREF=../D/309.html>printOn</A>(dest); curwalt=curwalt-&gt;next(); <FONT COLOR=blue>}</FONT>
+  dest &lt;&lt; ind &lt;&lt; "|else" &lt;&lt; endl;
+  curins=else_instrs.first();
+<A NAME=218>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=219>  <B>while</B> (curins) <FONT COLOR=blue>{</FONT> curins-&gt;<A HREF=../D/309.html>printOn</A>(dest); curins=curins-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=220>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A><A HREF=#208>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

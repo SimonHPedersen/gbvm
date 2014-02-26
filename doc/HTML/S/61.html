@@ -1,0 +1,304 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/PartObject.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/PartObject.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/PartObject.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#15>[^]</A><A HREF=#227>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#15>getMixinOffset</A>
+<LI><A HREF=#19>getObjectOffset</A>
+<LI><A HREF=#24>get_nextOffset</A>
+<LI><A HREF=#29>get_prevOffset</A>
+<LI><A HREF=#35>getObject</A>
+<LI><A HREF=#39>getOrigin</A>
+<LI><A HREF=#43>getMainPartId</A>
+<LI><A HREF=#47>getMPAttrsInstrPtr</A>
+<LI><A HREF=#57>UserPartObject_t</A>
+<LI><A HREF=#78>UserPartObject_t</A>
+<LI><A HREF=#113>initAttributes</A>
+<LI><A HREF=#116>setAttribute</A>
+<LI><A HREF=#125>getAttribute</A>
+<LI><A HREF=#152>getAttributeAddress</A>
+<LI><A HREF=#156>getFirstInstructionPushPOANF</A>
+<LI><A HREF=#177>initAttribute</A>
+<LI><A HREF=#182>getVirtAttr</A>
+<LI><A HREF=#192>PredefinedStringPartObject_t</A>
+<LI><A HREF=#204>getFirstInstructionPushPOANF</A>
+<LI><A HREF=#213>getStrOffset</A>
+<LI><A HREF=#217>getStr</A>
+<LI><A HREF=#227>setStr</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: PartObject.cc,v 1.36 2001/05/25 09:31:21 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// Super PartObject_t -----------------------------------------</FONT></I>
+
+<B>void</B>* PartObject_t::<B>operator</B> <B>new</B>(size_t size)<FONT COLOR=blue>{</FONT>
+  <B>return</B> malloc(size);
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B>* PartObject_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B>* location)<FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=15><B>unsigned</B> <B>int</B> PartObject_t::<A HREF=../R/191.html>getMixinOffset</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#19>[&gt;]</A>[^]<A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;mixin - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=19><B>unsigned</B> <B>int</B> PartObject_t::<A HREF=../R/200.html>getObjectOffset</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#15>[&lt;]</A><A HREF=#24>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;object - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=24><B>unsigned</B> <B>int</B> PartObject_t::<A HREF=../R/222.html>get_nextOffset</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#19>[&lt;]</A><A HREF=#29>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//returns the offset to the _next pointer (in void pointers)</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;_next - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=29><B>unsigned</B> <B>int</B> PartObject_t::<A HREF=../R/223.html>get_prevOffset</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#24>[&lt;]</A><A HREF=#35>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//returns the offset to the _prev pointer (in void pointers)</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;_prev - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=35>Object_t* PartObject_t::<A HREF=../R/198.html>getObject</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#29>[&lt;]</A><A HREF=#39>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> object;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=39>PartObject_t* PartObject_t::<A HREF=../R/203.html>getOrigin</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#35>[&lt;]</A><A HREF=#43>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=40>  <B>return</B> mixin-&gt;<A HREF=../D/224.html>getOrigin</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=43><B>char</B>* PartObject_t::<A HREF=../R/189.html>getMainPartId</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#39>[&lt;]</A><A HREF=#47>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=44>  <B>return</B> mixin-&gt;<A HREF=../D/208.html>getMainPart</A>()-&gt;getId();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=47>Lst&lt;Instruction&gt;* PartObject_t::<A HREF=../R/187.html>getMPAttrsInstrPtr</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#43>[&lt;]</A><A HREF=#57>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=48>  <B>return</B> mixin-&gt;<A HREF=../D/207.html>getMPAttrsInstrPtr</A>();
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// UserPartObject_t -----------------------------------------</FONT></I>
+
+<B>void</B>* UserPartObject_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B>* location)<FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=57>UserPartObject_t::<A HREF=../R/114.html>UserPartObject_t</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#47>[&lt;]</A><A HREF=#78>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_po, "UserPartObject_t::UserPartObject_t(ObjectDescriptor_t *objDes):"
+         &lt;&lt; " Only allowed in bytecode loading (not necessarily an error)\n");
+  <I><FONT COLOR=green>//mark references in object (for gc)</FONT></I>
+<A NAME=62>  <B>unsigned</B> <B>int</B> length = objDes-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+  <B>unsigned</B> <B>int</B> refsStart = <B>sizeof</B>(UserPartObject_t)/<B>sizeof</B>(<B>void</B>*) - 1;
+  <B>for</B>(<B>unsigned</B> <B>int</B> ref = refsStart; ref &lt; length; ref++) <FONT COLOR=blue>{</FONT>
+<A NAME=65>    objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(ref);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//mark prev and next pointers (for gc)</FONT></I>
+<A NAME=68>  objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(<A HREF=../S/61.html#24>get_nextOffset</A>());
+<A NAME=69>  objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(<A HREF=../S/61.html#29>get_prevOffset</A>());
+  <I><FONT COLOR=green>//mark mixin reference if present (for gc)</FONT></I>
+<A NAME=71>  objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(<A HREF=../S/61.html#15>getMixinOffset</A>());
+  <I><FONT COLOR=green>//mark my object</FONT></I>
+<A NAME=73>  objDes-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(<A HREF=../S/61.html#19>getObjectOffset</A>());
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=78>UserPartObject_t::<A HREF=../R/114.html>UserPartObject_t</A>(Mixin_t* mixin, Object_t* object) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#57>[&lt;]</A><A HREF=#113>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//doing this-&gt;mixin=mixin</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_po, "UserPartObject_t::UserPartObject_t(): " 
+         &lt;&lt; "doing this-&gt;mixin=mixin\n");
+  <B>this</B>-&gt;mixin = 0;
+  <B>if</B>(mixin)<FONT COLOR=blue>{</FONT>
+<A NAME=85>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;mixin), mixin);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//doing this-&gt;object = object;</FONT></I>
+  DB_OUT(vm_po, "UserPartObject_t::UserPartObject_t(): " 
+         &lt;&lt; "doing this-&gt;object=object\n");
+  <B>this</B>-&gt;object = 0;
+  <B>if</B>(object)<FONT COLOR=blue>{</FONT>
+<A NAME=92>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;object), object);
+  <FONT COLOR=blue>}</FONT>
+
+  DB_OUT(vm_po, "UserPartObject_t::UserPartObject_t(): " 
+         &lt;&lt; "getting nof attributes\n");  
+
+  <I><FONT COLOR=green>//clear all attributes</FONT></I>
+  <B>if</B>(mixin)<FONT COLOR=blue>{</FONT>
+    <B>unsigned</B> <B>int</B> numberOfAttributes = mixin-&gt;
+<A NAME=101>      <A HREF=../D/208.html>getMainPart</A>()-&gt;<A HREF=../S/44.html#45>getNumberOfAttributes</A>();
+    
+    DB_OUT(vm_po, "UserPartObject_t::UserPartObject_t(): " 
+           &lt;&lt; "clearing attributes\n");  
+
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; numberOfAttributes; i++)<FONT COLOR=blue>{</FONT>
+      attributes[i] = 0;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=113><B>void</B> UserPartObject_t::<A HREF=../S/59.html#59>initAttributes</A>(Thread_t *myThread)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#78>[&lt;]</A><A HREF=#116>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=116><B>void</B> UserPartObject_t::<A HREF=../R/287.html>setAttribute</A>(<B>unsigned</B> <B>int</B> index, 
+<I><FONT COLOR=green>/* <A HREF=#113>[&lt;]</A><A HREF=#125>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                    AttributeInstance_t* value)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  DB_OUT(vm_po, "UserPartObject_t::setAttribute() at index: " &lt;&lt; index 
+       &lt;&lt; " with address " &lt;&lt; &amp;attributes[index] &lt;&lt; endl);
+<A NAME=121>  <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;attributes[index], value);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=125>AttributeInstance_t *UserPartObject_t::<A HREF=../R/159.html>getAttribute</A>(<B>unsigned</B> <B>int</B> index, 
+<I><FONT COLOR=green>/* <A HREF=#116>[&lt;]</A><A HREF=#152>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                    Thread_t *myThread)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  DB_OUT(vm_po, "UserPartObject_t::getAttribute() at index: " &lt;&lt; index 
+         &lt;&lt; " with address " &lt;&lt; &amp;attributes[index] 
+         &lt;&lt; " myMixin " &lt;&lt; (<B>void</B>*)mixin &lt;&lt; " myMainPart: " &lt;&lt; 
+<A NAME=131>         (<B>void</B>*)mixin-&gt;<A HREF=../D/208.html>getMainPart</A>() &lt;&lt; endl);
+<A NAME=132>  <B>if</B>(index &gt;= mixin-&gt;<A HREF=../D/208.html>getMainPart</A>()-&gt;<A HREF=../S/44.html#45>getNumberOfAttributes</A>())<FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "UserPartObject_t::getAttribute(): error this part object: " 
+         &lt;&lt; <B>this</B> &lt;&lt; " does not have that many attributes: " &lt;&lt; index &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(!attributes[index])<FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_po, "UserPartObject_t::getAttribute(): dynamic initialisation " 
+           &lt;&lt; "necessary setting thread-&gt;dynamicInitInst\n");
+<A NAME=140>    myThread-&gt;dynamicInitInst = mixin-&gt;<A HREF=../D/176.html>getAttrInstrPtr</A>(index)-&gt;first();
+    DB_OUT(vm_po, "UserPartObject_t::getAttribute(): setting " 
+           &lt;&lt; "thread-&gt;dynamicInitInst: "
+           &lt;&lt; myThread-&gt;dynamicInitInst);
+    myThread-&gt;dynamicInitPO = <B>this</B>;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_po, "UserPartObject_t::getAttribute(): returning: " 
+         &lt;&lt; attributes[index] &lt;&lt; endl);
+  DB_OUTDENT;
+  <B>return</B> attributes[index];
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=152>AttributeInstance_t **UserPartObject_t::getAttributeAddress(<B>unsigned</B> <B>int</B> index)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#125>[&lt;]</A><A HREF=#156>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> &amp;attributes[index];
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=156>Instruction *UserPartObject_t::<A HREF=../R/176.html>getFirstInstructionPushPOANF</A>(Thread_t *myThread)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#152>[&lt;]</A><A HREF=#177>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_po, "UserPartObject_t::execute(): executing partObject\n");
+
+  <I><FONT COLOR=green>//get dopart instructions</FONT></I>
+<A NAME=161>  Lst&lt;Instruction&gt; *instrs = mixin-&gt;<A HREF=../D/202.html>getInstructionListPtr</A>();
+
+  <I><FONT COLOR=green>//myThread-&gt;setCurrentPartObject(this);</FONT></I>
+
+  <I><FONT COLOR=green>//Side effect 1 !!! - this method also pushes this PO to currentPOStack</FONT></I>
+<A NAME=166>  myThread-&gt;currentPOStack-&gt;<A HREF=../S/43.html#23>push</A>(<B>this</B>);
+
+  <I><FONT COLOR=green>//Side effect 2 !!! - this method also adds a new frame to the tmpStack</FONT></I>
+  myThread-&gt;tmpStack-&gt;addNewFrame();
+
+  DB_OUTDENT;
+  <B>return</B> instrs-&gt;first();
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//-- private methods of UserPartObject</FONT></I>
+
+<A NAME=177><B>void</B> UserPartObject_t::initAttribute(<B>unsigned</B> <B>int</B> index, Thread_t *myThread)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#156>[&lt;]</A><A HREF=#182>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cerr &lt;&lt; "UserPartObject_t::initAttribute(): not implemented/used(?)\n";
+  exit(1);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=182>AttributeVirtual *UserPartObject_t::<A HREF=../S/61.html#186>getVirtAttr</A>(<B>char</B> *parentAttrName,
+<I><FONT COLOR=green>/* <A HREF=#177>[&lt;]</A><A HREF=#192>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                <B>int</B> parentAttrIndex,
+                                                <B>char</B> *parentMainPartID) <FONT COLOR=blue>{</FONT>
+<A NAME=185>  MainPart *mp = mixin-&gt;<A HREF=../D/208.html>getMainPart</A>();
+<A NAME=186>  <B>return</B> (mp-&gt;<A HREF=../D/247.html>getVirtAttr</A>(parentAttrName, parentAttrIndex, parentMainPartID));
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// --------- PredefinedStringPartObject_t -----------------------------------</FONT></I>
+
+<A NAME=192>PredefinedStringPartObject_t::<A HREF=../R/105.html>PredefinedStringPartObject_t</A>(Mixin_t* mixin, 
+<I><FONT COLOR=green>/* <A HREF=#182>[&lt;]</A><A HREF=#204>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                           Object_t* object)<FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//doing: this-&gt;mixin = mixin</FONT></I>
+  <B>if</B>(mixin)<FONT COLOR=blue>{</FONT>
+<A NAME=196>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;mixin), mixin);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//doing: this-&gt;object = object;</FONT></I>
+  <B>if</B>(object)<FONT COLOR=blue>{</FONT>
+<A NAME=200>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;object), object);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=204>Instruction* PredefinedStringPartObject_t::<A HREF=../R/176.html>getFirstInstructionPushPOANF</A>(Thread_t
+<I><FONT COLOR=green>/* <A HREF=#192>[&lt;]</A><A HREF=#213>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                                        *myThread)<FONT COLOR=blue>{</FONT>
+  <B>if</B>(next())<FONT COLOR=blue>{</FONT>
+<A NAME=207>    <B>return</B> next()-&gt;<A HREF=../D/195.html>getFirstInstructionPushPOANF</A>(myThread);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=213><B>unsigned</B> <B>int</B> PredefinedStringPartObject_t::getStrOffset()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#204>[&lt;]</A><A HREF=#217>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;str - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=217><B>char</B>* PredefinedStringPartObject_t::getStr()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#213>[&lt;]</A><A HREF=#227>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(!str)<FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "WARNING: PredefinedStringPartObject_t::getStr(): str = 0x0" &lt;&lt; endl;
+    cerr &lt;&lt; "instructions executed: " &lt;&lt; instrsExecuted &lt;&lt; endl;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+  <B>return</B> str;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=227><B>void</B> PredefinedStringPartObject_t::setStr(<B>char</B>* _str)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#217>[&lt;]</A>[&gt;]<A HREF=#15>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  str = _str;
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;str, _str);
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#15>[^]</A><A HREF=#227>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

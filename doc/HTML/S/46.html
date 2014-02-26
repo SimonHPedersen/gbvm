@@ -1,0 +1,103 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Add.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Add.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Add.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#10>[^]</A><A HREF=#56>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#10>Instr_AddOpPlus_t</A>
+<LI><A HREF=#15>Instr_AddOpPlus_t</A>
+<LI><A HREF=#20>printOn</A>
+<LI><A HREF=#26>Instr_AddOpMinus_t</A>
+<LI><A HREF=#32>printOn</A>
+<LI><A HREF=#38>Instr_AddOpOr_t</A>
+<LI><A HREF=#44>printOn</A>
+<LI><A HREF=#50>Instr_AddOpXor_t</A>
+<LI><A HREF=#56>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: Instr_Add.cc,v 1.7 2001/03/22 18:54:41 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Thread.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "Instr_Add.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// ----- Plus -----</FONT></I>
+
+<A NAME=10>Instr_AddOpPlus_t::<A HREF=../R/12.html>Instr_AddOpPlus_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#15>[&gt;]</A>[^]<A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = ADDOPPLUS_ID;
+<A NAME=12>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=15>Instr_AddOpPlus_t::<A HREF=../R/12.html>Instr_AddOpPlus_t</A>(<B>int</B> _type)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#10>[&lt;]</A><A HREF=#20>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = ADDOPPLUS_ID;
+  type = _type;
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=20><B>void</B> Instr_AddOpPlus_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#15>[&lt;]</A><A HREF=#26>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_AddOpPlus_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Minus -----</FONT></I>
+
+<A NAME=26>Instr_AddOpMinus_t::<A HREF=../S/44.html#698>Instr_AddOpMinus_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#20>[&lt;]</A><A HREF=#32>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = ADDOPMINUS_ID;
+<A NAME=28>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=32><B>void</B> Instr_AddOpMinus_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#26>[&lt;]</A><A HREF=#38>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_AddOpMinus_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Or -----</FONT></I>
+
+<A NAME=38>Instr_AddOpOr_t::<A HREF=../S/44.html#702>Instr_AddOpOr_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#32>[&lt;]</A><A HREF=#44>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = ADDOPOR_ID;
+<A NAME=40>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=44><B>void</B> Instr_AddOpOr_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#38>[&lt;]</A><A HREF=#50>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_AddOpOr_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Xor -----</FONT></I>
+
+<A NAME=50>Instr_AddOpXor_t::<A HREF=../S/44.html#706>Instr_AddOpXor_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#44>[&lt;]</A><A HREF=#56>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = ADDOPXOR_ID;
+<A NAME=52>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=56><B>void</B> Instr_AddOpXor_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#50>[&lt;]</A>[&gt;]<A HREF=#10>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_AddOpXor_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#10>[^]</A><A HREF=#56>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

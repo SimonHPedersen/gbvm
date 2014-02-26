@@ -1,0 +1,395 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/TrainTable.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/TrainTable.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/TrainTable.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#32>[^]</A><A HREF=#255>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#32>TrainTable_t</A>
+<LI><A HREF=#42>addTrain</A>
+<LI><A HREF=#56>removeTrain</A>
+<LI><A HREF=#69>getLastCar</A>
+<LI><A HREF=#92>getFirstCar</A>
+<LI><A HREF=#117>getFromCar</A>
+<LI><A HREF=#122>removeFromCar</A>
+<LI><A HREF=#127>getLastTrainLastCar</A>
+<LI><A HREF=#145>getLastTrainFirstCar</A>
+<LI><A HREF=#164>setLastCar</A>
+<LI><A HREF=#185>setFirstCar</A>
+<LI><A HREF=#205>renumberTrainsAndCars</A>
+<LI><A HREF=#239>printOn</A>
+<LI><A HREF=#255>doLiveStat</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: TrainTable.cc,v 1.22 2001/06/08 10:26:25 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "TrainTable.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<I><FONT COLOR=green>//used to clear entries</FONT></I>
+<I><FONT COLOR=green>//element_t emptyElement;</FONT></I>
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green> * NB! if train 1 is requested train 0 must be returned, etc.</FONT></I>
+<I><FONT COLOR=green> * NB! if train 1 is inserted it must placed in buffer[0] !!</FONT></I>
+<I><FONT COLOR=green> */</FONT></I>
+
+<I><FONT COLOR=green>// ----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, TrainTable_t* tt) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(tt) <FONT COLOR=blue>{</FONT>
+<A NAME=18>    tt-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-vmo ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, TrainTable_t&amp; tt) <FONT COLOR=blue>{</FONT>
+<A NAME=26>  tt.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- member functions ------</FONT></I>
+
+<A NAME=32>TrainTable_t::<A HREF=../R/111.html>TrainTable_t</A>() : first(0), last(0), count(0)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#42>[&gt;]</A>[^]<A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+  <I><FONT COLOR=green>//clear table</FONT></I>
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; MAX_NUMBER_OF_TRAINS; i++)<FONT COLOR=blue>{</FONT>
+     buffer[i].firstCar = 0;
+     buffer[i].lastCar  = 0;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//adds a new train to this rinbuffer</FONT></I>
+<A NAME=42><B>void</B> TrainTable_t::<A HREF=../R/128.html>addTrain</A>(Car_t* firstCar, Car_t* lastCar)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#32>[&lt;]</A><A HREF=#56>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>if</B>(count &lt; (MAX_NUMBER_OF_TRAINS-1))<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//never fill the last element - we don't want first==last</FONT></I>
+    buffer[last].firstCar = firstCar;
+    buffer[last].lastCar = lastCar;
+    last = (last + 1) % MAX_NUMBER_OF_TRAINS;
+    count++;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "TrainTable::addTrain(): ERROR train table is full\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//removes the first train</FONT></I>
+<A NAME=56><B>void</B> TrainTable_t::<A HREF=../R/281.html>removeTrain</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#42>[&lt;]</A><A HREF=#69>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>if</B>(count &gt; 0)<FONT COLOR=blue>{</FONT>
+    buffer[first].firstCar = NULL;
+    buffer[first].lastCar = NULL;
+    first = (first + 1) % MAX_NUMBER_OF_TRAINS;
+    count--;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "TrainTable::removeTrain(): ERROR train table was empty \n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//returns pointer to last car in train </FONT></I>
+<A NAME=69>Car_t* TrainTable_t::<A HREF=../R/184.html>getLastCar</A>(<B>unsigned</B> <B>int</B> trainNumber)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#56>[&lt;]</A><A HREF=#92>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//cout &lt;&lt; "glc(): first: " &lt;&lt; first &lt;&lt; " last: " &lt;&lt; last &lt;&lt; endl;</FONT></I>
+  <B>unsigned</B> <B>int</B> reqElement = (trainNumber-1) % MAX_NUMBER_OF_TRAINS;
+  <B>if</B>(first &lt;= last)<FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &lt; last &amp;&amp; reqElement &gt;= first)<FONT COLOR=blue>{</FONT>
+      <B>return</B> buffer[reqElement].lastCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::getLastCar(): requested not in [first;last]\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &gt;= first || reqElement &lt; last)<FONT COLOR=blue>{</FONT>
+      <B>return</B> buffer[reqElement].lastCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::getLastCar(): requested not in" 
+           &lt;&lt; "[last;0[ or [0;first]\n"; 
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> 
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//returns pointer to first car in train</FONT></I>
+<A NAME=92>Car_t* TrainTable_t::<A HREF=../R/175.html>getFirstCar</A>(<B>unsigned</B> <B>int</B> trainNumber)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#69>[&lt;]</A><A HREF=#117>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>unsigned</B> <B>int</B> reqElement = (trainNumber-1) % MAX_NUMBER_OF_TRAINS;
+  <I><FONT COLOR=green>//cout &lt;&lt; "gfc(): first: " &lt;&lt; first &lt;&lt; " last: " &lt;&lt; last &lt;&lt; "reqElement: " &lt;&lt; reqElement &lt;&lt; endl;</FONT></I>
+  <B>if</B>(first &lt;= last)<FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &lt; last &amp;&amp; reqElement &gt;= first)<FONT COLOR=blue>{</FONT>
+      DB_OUTDENT;
+      <B>return</B> buffer[reqElement].firstCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::getLastCar(): requested not in [first;last]\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &gt;= first || reqElement &lt; last)<FONT COLOR=blue>{</FONT>
+      DB_OUTDENT;
+      <B>return</B> buffer[reqElement].firstCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::getLastCar(): requested not in" 
+           &lt;&lt; "[last;0[ or [0;first]\n"; 
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> 
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//returns pointer to first car in train</FONT></I>
+<A NAME=117>Car_t* TrainTable_t::<A HREF=../R/178.html>getFromCar</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#92>[&lt;]</A><A HREF=#122>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> buffer[first].firstCar;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//removes the from car. Assumes that it is not the only one</FONT></I>
+<A NAME=122><B>void</B> TrainTable_t::<A HREF=../S/30.html#124>removeFromCar</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#117>[&lt;]</A><A HREF=#127>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  buffer[first].firstCar = buffer[first].firstCar-&gt;next();
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//returns pointer to last car in last train</FONT></I>
+<A NAME=127>Car_t* TrainTable_t::<A HREF=../R/186.html>getLastTrainLastCar</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#122>[&lt;]</A><A HREF=#145>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>unsigned</B> <B>int</B> index;
+  <B>if</B>(last != first) <FONT COLOR=blue>{</FONT>
+    <B>if</B>(last == 0) <FONT COLOR=blue>{</FONT>
+      index = MAX_NUMBER_OF_TRAINS -1;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      index = last - 1;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    index = last;
+  <FONT COLOR=blue>}</FONT>
+
+  <B>return</B> buffer[index].lastCar;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STACK_RESCUE
+
+<I><FONT COLOR=green>//returns pointer to first car in last train</FONT></I>
+<A NAME=145>Car_t* TrainTable_t::<A HREF=../S/29.html#137>getLastTrainFirstCar</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#127>[&lt;]</A><A HREF=#164>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>unsigned</B> <B>int</B> index;
+  <B>if</B>(last != first) <FONT COLOR=blue>{</FONT>
+    <B>if</B>(last == 0) <FONT COLOR=blue>{</FONT>
+      index = MAX_NUMBER_OF_TRAINS -1;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      index = last - 1;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    index = last;
+  <FONT COLOR=blue>}</FONT>
+
+  <B>return</B> buffer[index].firstCar;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STACK_RESCUE</FONT></I>
+
+
+<I><FONT COLOR=green>//sets to last car in train </FONT></I>
+<A NAME=164><B>void</B> TrainTable_t::<A HREF=../R/293.html>setLastCar</A>(<B>unsigned</B> <B>int</B> trainNumber, Car_t* lastCar)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#145>[&lt;]</A><A HREF=#185>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>unsigned</B> <B>int</B> reqElement = (trainNumber-1) % MAX_NUMBER_OF_TRAINS;
+  <B>if</B>(first &lt;= last)<FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &lt; last &amp;&amp; reqElement &gt;= first)<FONT COLOR=blue>{</FONT>
+      buffer[reqElement].lastCar = lastCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::setLastCar(): requested not in [first;last]\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &gt;= first || reqElement &lt; last)<FONT COLOR=blue>{</FONT>
+      buffer[reqElement].lastCar = lastCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::setLastCar(): requested not in" 
+           &lt;&lt; "[last;0[ or [0;first]\n"; 
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> 
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//returns pointer to first car in train</FONT></I>
+<A NAME=185><B>void</B> TrainTable_t::<A HREF=../R/290.html>setFirstCar</A>(<B>unsigned</B> <B>int</B> trainNumber, Car_t* firstCar)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#164>[&lt;]</A><A HREF=#205>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>unsigned</B> <B>int</B> reqElement = (trainNumber-1) % MAX_NUMBER_OF_TRAINS;
+  <B>if</B>(first &lt;= last)<FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &lt; last &amp;&amp; reqElement &gt;= first)<FONT COLOR=blue>{</FONT>
+      buffer[reqElement].firstCar = firstCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::getLastCar(): requested not in [first;last]\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>if</B>(reqElement &gt;= first || reqElement &lt; last)<FONT COLOR=blue>{</FONT>
+      buffer[reqElement].firstCar = firstCar;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainTable_t::setFirstCar(): requested not in" 
+           &lt;&lt; "[last;0[ or [0;first]\n"; 
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> 
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=205><B>void</B> TrainTable_t::<A HREF=../S/34.html#169>renumberTrainsAndCars</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#185>[&lt;]</A><A HREF=#239>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//we reorder so the first train gets the number used internally + 1</FONT></I>
+  <I><FONT COLOR=green>//This way we don't have to reorder elements in the internal buffer</FONT></I>
+
+  <B>if</B>(trainGeneration.lastTrain &gt;= (HALF_INT_MAX -500)) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//magic number - we don't believe more than 500 new trains can be created during a gc</FONT></I>
+    <I><FONT COLOR=green>//do train renumbering...</FONT></I>
+    <B>unsigned</B> <B>int</B> newTrainNumber = first + 1;
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = first; i != last;
+        i = (i + 1) % MAX_NUMBER_OF_TRAINS, newTrainNumber++)
+      <FONT COLOR=blue>{</FONT>
+        Car_t *tmpCar = buffer[i].firstCar; <I><FONT COLOR=green>//first car in train</FONT></I>
+        <B>unsigned</B> <B>int</B> newCarNumber = 0;
+        <B>while</B>(tmpCar)<FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//iterates train</FONT></I>
+          trainGeneration.setCarTrain(tmpCar, newTrainNumber, newCarNumber);
+          newCarNumber++;
+          tmpCar = tmpCar-&gt;getNext();
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//update train numbers in train generation</FONT></I>
+    trainGeneration.firstTrain = first + 1;
+    trainGeneration.lastTrain  = newTrainNumber - 1;
+<A NAME=226>  <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(buffer[first].lastCar).getTrain()
+            &gt;= (HALF_INT_MAX) - 500) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//do car renumbering in first train</FONT></I>
+    Car_t *tmpCar = buffer[first].firstCar; <I><FONT COLOR=green>//first car in train</FONT></I>
+    <B>unsigned</B> <B>int</B> newCarNumber = 0;
+    <B>while</B>(tmpCar)<FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//iterates train</FONT></I>
+      trainGeneration.setCar(tmpCar, newCarNumber);
+      newCarNumber++;
+      tmpCar = tmpCar-&gt;getNext();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=239><B>void</B> TrainTable_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#205>[&lt;]</A><A HREF=#255>[&gt;]</A><A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = first; i &lt; last; i++)<FONT COLOR=blue>{</FONT>
+    Car_t* tmpCar = buffer[i].firstCar;
+<A NAME=243>    CarTrain_t ct = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(tmpCar);
+    stream &lt;&lt; "----- Train " &lt;&lt; ct.getTrain() &lt;&lt; endl;
+    <B>while</B>(tmpCar)<FONT COLOR=blue>{</FONT>
+      stream &lt;&lt; endl &lt;&lt; tmpCar;
+      tmpCar = tmpCar-&gt;getNext();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT
+
+<A NAME=255><B>void</B> TrainTable_t::<A HREF=../R/146.html>doLiveStat</A>(size_t *live, size_t *dead, size_t *unused) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#239>[&lt;]</A>[&gt;]<A HREF=#32>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> undefined
+  size_t liveBytes = 0, deadBytes = 0, unusedBytes = 0, tmpLiveBytes, tmpDeadBytes, tmpUnusedBytes;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//undefined</FONT></I>
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = first; i != last; i = (i + 1) % MAX_NUMBER_OF_TRAINS)<FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//first != last ever!!!</FONT></I>
+    Car_t* tmpCar = buffer[i].firstCar;
+    <B>while</B>(tmpCar)<FONT COLOR=blue>{</FONT>
+<A NAME=263>      tmpCar-&gt;<A HREF=../D/156.html>doLiveStat</A>(live, dead, unused);
+<FONT COLOR=darkred>#ifdef</FONT> undefined
+      tmpLiveBytes = tmpCar-&gt;liveBytes
+        + tmpCar-&gt;liveObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*));
+      liveBytes += tmpLiveBytes;
+
+      tmpDeadBytes = tmpCar-&gt;deadBytes
+        + tmpCar-&gt;deadObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*));
+      deadBytes += tmpDeadBytes;
+
+      tmpUnusedBytes = BYTES_IN_CAR
+        + <B>sizeof</B>(<B>void</B>*) - <B>sizeof</B>(Car_t) - (tmpLiveBytes + tmpDeadBytes);
+      unusedBytes += tmpUnusedBytes;
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT_VERB
+      cout &lt;&lt; "-SUB MEM STAT: live: " &lt;&lt; tmpLiveBytes &lt;&lt; " dead: "
+           &lt;&lt; tmpDeadBytes &lt;&lt; " unused: " &lt;&lt; tmpUnusedBytes &lt;&lt; endl;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT_VERB</FONT></I>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//undefined</FONT></I>
+      tmpCar = tmpCar-&gt;getNext();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> undefined
+  cout &lt;&lt; "\nMEMORY STAT: live: " &lt;&lt; liveBytes &lt;&lt; " dead: "
+       &lt;&lt; deadBytes &lt;&lt; " unused: " &lt;&lt; unusedBytes &lt;&lt; endl;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//undefined</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+
+<A NAME=295><B>void</B> TrainTable_t::<A HREF=../D/172.html>gatherObjRefs</A>(VMOHash_t * validObjRefs)<FONT COLOR=blue>{</FONT>
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = first; i != last; i = (i + 1) % MAX_NUMBER_OF_TRAINS)<FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//first != last ever!!!</FONT></I>
+    Car_t* tmpCar = buffer[i].firstCar;
+    <B>while</B>(tmpCar)<FONT COLOR=blue>{</FONT>
+<A NAME=300>      tmpCar-&gt;<A HREF=../D/172.html>gatherObjRefs</A>(validObjRefs);
+      tmpCar = tmpCar-&gt;getNext();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=307><B>int</B> TrainTable_t::<A HREF=../D/147.html>checkObjRefs</A>(VMOHash_t * validObjRefs) <FONT COLOR=blue>{</FONT>
+  <B>unsigned</B> <B>int</B> errors = 0;
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = first; i != last; i = (i + 1) % MAX_NUMBER_OF_TRAINS)<FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//first != last ever!!!</FONT></I>
+    Car_t* tmpCar = buffer[i].firstCar;
+    <B>while</B>(tmpCar)<FONT COLOR=blue>{</FONT>
+<A NAME=313>      errors += tmpCar-&gt;<A HREF=../D/147.html>checkObjRefs</A>(validObjRefs);
+      tmpCar = tmpCar-&gt;getNext();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> errors;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=320>bool TrainTable_t::<A HREF=../D/276.html>member</A>(<B>void</B>* address)<FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//iterates traintable </FONT></I>
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = first; i &lt;= last; i++)<FONT COLOR=blue>{</FONT>
+    Car_t* tmpCar = buffer[i].firstCar;
+    <I><FONT COLOR=green>//iterates cars in train</FONT></I>
+    <B>while</B>(tmpCar)<FONT COLOR=blue>{</FONT>
+<A NAME=326>      <B>if</B>(tmpCar-&gt;<A HREF=../D/276.html>member</A>(address))<FONT COLOR=blue>{</FONT>
+        <B>return</B> true;
+      <FONT COLOR=blue>}</FONT>
+      tmpCar = tmpCar-&gt;getNext();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  
+  <B>return</B> false;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#32>[^]</A><A HREF=#255>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,658 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/Car.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/Car.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/Car.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#24>[^]</A><A HREF=#585>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#24>Car_t</A>
+<LI><A HREF=#31>Car_t</A>
+<LI><A HREF=#45>Car_t</A>
+<LI><A HREF=#63>allocateVMO</A>
+<LI><A HREF=#88>member</A>
+<LI><A HREF=#97>moveObj</A>
+<LI><A HREF=#127>moveObjHere</A>
+<LI><A HREF=#156>copyObj</A>
+<LI><A HREF=#184>doGCScan</A>
+<LI><A HREF=#257>printOn</A>
+<LI><A HREF=#278>moveExtObjects</A>
+<LI><A HREF=#319>moveIntObjects</A>
+<LI><A HREF=#346>isExtRefdTrain</A>
+<LI><A HREF=#373>hasExtRememberReference</A>
+<LI><A HREF=#377>hasIntRememberReference</A>
+<LI><A HREF=#381>gatherObjRefs</A>
+<LI><A HREF=#395>checkObjRefs</A>
+<LI><A HREF=#548>doLiveStat</A>
+<LI><A HREF=#585>availSpace</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Car.cc,v 1.45 2001/06/08 10:26:23 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Car.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<I><FONT COLOR=green>//----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Car_t* car) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(car) <FONT COLOR=blue>{</FONT>
+<A NAME=10>    car-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-car ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Car_t&amp; car) <FONT COLOR=blue>{</FONT>
+<A NAME=18>  car.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- constructors/destructors -----</FONT></I>
+
+<A NAME=24>Car_t::<A HREF=../R/1.html>Car_t</A>():nextCar(0) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#31>[&gt;]</A>[^]<A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  freePtr = scanPtr = data;
+<A NAME=26>  extRemSet = <B>new</B> <A HREF=../S/28.html#28>RememberedSet_t</A>();
+<A NAME=27>  intRemSet = <B>new</B> <A HREF=../S/28.html#28>RememberedSet_t</A>();
+  cout &lt;&lt; "Car_t::Car_t default constr run\n";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=31>Car_t::<A HREF=../R/1.html>Car_t</A>(<B>unsigned</B> <B>int</B> train, <B>unsigned</B> <B>int</B> car):
+<I><FONT COLOR=green>/* <A HREF=#24>[&lt;]</A><A HREF=#45>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  nextCar(0) <FONT COLOR=blue>{</FONT>
+  freePtr = scanPtr = data;
+<A NAME=34>  extRemSet = <B>new</B> <A HREF=../S/28.html#28>RememberedSet_t</A>();
+<A NAME=35>  intRemSet = <B>new</B> <A HREF=../S/28.html#28>RememberedSet_t</A>();
+  
+  trainGeneration.setCarTrain(<B>this</B>, train, car);
+  <B>if</B>(car == 0) <FONT COLOR=blue>{</FONT>
+<A NAME=39>    ttable.<A HREF=../D/134.html>addTrain</A>(<B>this</B>, <B>this</B>);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=41>    ttable.<A HREF=../D/329.html>setLastCar</A>(train, <B>this</B>);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45>Car_t::~<A HREF=../R/1.html>Car_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#31>[&lt;]</A><A HREF=#63>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  DB_INDENT;
+  <B>for</B>(VMObject_t *vmo = (VMObject_t*)data;
+      vmo &lt; freePtr;
+      vmo = NEXT_VMO(vmo)) <FONT COLOR=blue>{</FONT>
+    <B>if</B>(!vmo-&gt;isForward()) <FONT COLOR=blue>{</FONT>
+<A NAME=52>      DB_OUT(gc_gc, "~Car_t(): * deleted object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; " *\n");
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  <B>delete</B>(extRemSet);
+  <B>delete</B>(intRemSet);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- member functions -----</FONT></I>
+
+<A NAME=63>VMObject_t *Car_t::<A HREF=../R/132.html>allocateVMO</A>(ObjectDescriptor_t *objDesc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#88>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+
+
+  <I><FONT COLOR=green>//DB_OUT(gc_car, "Car_t::allocateVMO(): available space: " &lt;&lt; availSpace()</FONT></I>
+  <I><FONT COLOR=green>//     &lt;&lt; endl);</FONT></I>
+
+<A NAME=70>  size_t objSize = objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>() + <B>sizeof</B>(VMObject_t)
+    - <B>sizeof</B>(<B>void</B>*);
+  <I><FONT COLOR=green>//availSpace();</FONT></I>
+<A NAME=73>  <B>if</B>(objSize &gt; <A HREF=../D/141.html>availSpace</A>()) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>// not enough space</FONT></I>
+    DB_OUT(gc_car, "Car_t::allocateVMO(): out of space\n");
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <B>void</B> *newDataPtr = freePtr;
+  freePtr = (<B>void</B>*)((size_t)freePtr + (size_t)objSize);
+<A NAME=82>  VMObject_t *vmo = <B>new</B>(newDataPtr, objDesc)<A HREF=../D/121.html>VMObject_t</A>();
+  DB_OUTDENT;
+
+  <B>return</B> vmo;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=88>bool Car_t::<A HREF=../R/243.html>member</A>(<B>void</B> *address) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#63>[&lt;]</A><A HREF=#97>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> (getCar(address) == <B>this</B>);
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  return ((size_t)address &lt; (size_t)data</FONT></I>
+<I><FONT COLOR=green>          || (size_t)address &gt;= ((size_t)this + BYTES_IN_CAR)) ?</FONT></I>
+<I><FONT COLOR=green>    false : true;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=97><B>void</B> * Car_t::<A HREF=../R/246.html>moveObj</A>(<B>void</B> *object) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#88>[&lt;]</A><A HREF=#127>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=98>  <B>void</B> * newLoc = <A HREF=../S/23.html#156>copyObj</A>(object);
+  <B>if</B>(newLoc) <FONT COLOR=blue>{</FONT>
+    <B>return</B> newLoc;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//ok, we have to find another destination</FONT></I>
+<A NAME=103>  CarTrain_t thisCarTrain = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(<B>this</B>);
+<A NAME=104>  Car_t *lastCar = ttable.<A HREF=../D/204.html>getLastCar</A>(thisCarTrain.getTrain());
+  <B>if</B>(lastCar != <B>this</B>) <FONT COLOR=blue>{</FONT>
+<A NAME=106>    newLoc = lastCar-&gt;<A HREF=../S/23.html#156>copyObj</A>(object);
+    <B>if</B>(newLoc) <FONT COLOR=blue>{</FONT>
+      <B>return</B> newLoc;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<A NAME=111>  CarTrain_t lastCarInTrain = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(lastCar);
+<A NAME=112>  <B>void</B> *carSpace = trainGeneration.<A HREF=../D/136.html>allocCarSpace</A>();
+<A NAME=113>  Car_t *newCar = <B>new</B>(carSpace)<A HREF=../D/2.html>Car_t</A>(lastCarInTrain.getTrain(),
+                                     lastCarInTrain.getCar() + 1);
+  lastCar-&gt;setNext(newCar);
+
+<A NAME=117>  newLoc = newCar-&gt;<A HREF=../S/23.html#156>copyObj</A>(object);
+  <B>if</B>(newLoc) <FONT COLOR=blue>{</FONT>
+    <B>return</B> newLoc;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "Car::moveObj(): object was too big to fit inside car\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STACK_RESCUE
+<A NAME=127><B>void</B> * Car_t::<A HREF=../S/29.html#140>moveObjHere</A>(<B>void</B> *object) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#97>[&lt;]</A><A HREF=#156>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  VMObject_t *vmo = VMO_FROM_VOIDP(object);
+
+  <B>void</B> * forward = vmo-&gt;getForwardPtr();
+  <B>if</B>(forward) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car, "Car::copyObj(): returning forward ptr: " &lt;&lt; forward &lt;&lt; endl);
+    <B>return</B> forward;
+  <FONT COLOR=blue>}</FONT>
+
+  size_t objectSize = vmo-&gt;getFullVMOLength();
+
+<A NAME=138>  <B>if</B>((objectSize + CAR_FILL_THR_BYTES) &gt; <A HREF=../D/141.html>availSpace</A>()) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//not enough space</FONT></I>
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//copy the object</FONT></I>
+  memcpy(freePtr, vmo, objectSize);
+  
+  forward = VOIDP_FROM_VMO(freePtr);
+  vmo-&gt;setForwardPtr(forward);
+  freePtr = (<B>void</B>*)(((size_t)freePtr) + objectSize);
+
+  <I><FONT COLOR=green>//update dirty cars</FONT></I>
+<A NAME=151>  trainGeneration.dirtyCars-&gt;<A HREF=../D/260.html>insert</A>(<B>this</B>);
+  <B>return</B> forward;
+<FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STACK_RESCUE</FONT></I>
+
+<A NAME=156><B>void</B> * Car_t::<A HREF=../R/141.html>copyObj</A>(<B>void</B> *object) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#127>[&lt;]</A><A HREF=#184>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  VMObject_t *vmo = VMO_FROM_VOIDP(object);
+
+  <B>void</B> * forward = vmo-&gt;getForwardPtr();
+  <B>if</B>(forward) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car, "Car::copyObj(): returning forward ptr: " &lt;&lt; forward &lt;&lt; endl);
+    <B>return</B> forward;
+  <FONT COLOR=blue>}</FONT>
+
+  size_t objectSize = vmo-&gt;getFullVMOLength();
+
+<A NAME=167>  <B>if</B>(objectSize &gt; <A HREF=../D/141.html>availSpace</A>()) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//not enough space</FONT></I>
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//copy the object</FONT></I>
+  memcpy(freePtr, vmo, objectSize);
+  
+  forward = VOIDP_FROM_VMO(freePtr);
+  vmo-&gt;setForwardPtr(forward);
+  freePtr = (<B>void</B>*)(((size_t)freePtr) + objectSize);
+
+  <I><FONT COLOR=green>//update dirty cars</FONT></I>
+<A NAME=180>  trainGeneration.dirtyCars-&gt;<A HREF=../D/260.html>insert</A>(<B>this</B>);
+  <B>return</B> forward;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=184><B>void</B> Car_t::<A HREF=../R/145.html>doGCScan</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#156>[&lt;]</A><A HREF=#257>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//NOTE: THIS CODE IS VERY SIMILAR TO THE CODE IN StackSpace::moveObjects()</FONT></I>
+
+  DB_INDENT;
+<A NAME=188>  Car_t *fromCar = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+
+  <I><FONT COLOR=green>//VMObject_t *scan = (VMObject_t*)stackSpacePtr;</FONT></I>
+  <B>void</B> **scanObj;
+  <B>for</B>(;scanPtr &lt; freePtr; scanPtr = NEXT_VMO((VMObject_t*)scanPtr)) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//scan stack objects</FONT></I>
+    scanObj = (<B>void</B>**)VOIDP_FROM_VMO((VMObject_t*)scanPtr);
+
+    DB_OUT(gc_car_gcsc, "Car_t::doGCScan(): scanPtr at: " &lt;&lt; scanPtr
+           &lt;&lt; " freePtr at: " &lt;&lt; freePtr &lt;&lt; endl);
+<A NAME=197>    ObjectDescriptor_t *objDesc = ((VMObject_t*)scanPtr)-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+<A NAME=198>    <B>unsigned</B> <B>int</B> *refMask = objDesc-&gt;<A HREF=../S/22.html#86>getReferenceMask</A>();
+<A NAME=199>    <B>unsigned</B> <B>int</B> refsInObject = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+    <B>unsigned</B> <B>int</B> intsInMask = (refsInObject/(<B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8))+1;
+    <B>int</B> bits2Check = <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+    <B>void</B> **objRefPtr; <I><FONT COLOR=green>//pointer to the location where the references in</FONT></I>
+                      <I><FONT COLOR=green>//the objects are</FONT></I>
+
+    <I><FONT COLOR=green>//i counts integers in mask</FONT></I>
+    <I><FONT COLOR=green>//j counts the bits in each mask</FONT></I>
+
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; intsInMask; i++)<FONT COLOR=blue>{</FONT>
+      <B>int</B> mask = refMask[i];
+      <B>if</B>(mask) <FONT COLOR=blue>{</FONT>
+        <B>if</B>(i == (intsInMask -1)) <FONT COLOR=blue>{</FONT>
+          bits2Check = refsInObject - (intsInMask - 1) * <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+        <FONT COLOR=blue>}</FONT>
+        <B>for</B>(<B>int</B> j = 0; j &lt; bits2Check; j++)<FONT COLOR=blue>{</FONT>
+          <B>if</B>((1&lt;&lt;j) &amp; mask)<FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//we've got a reference, let's find it</FONT></I>
+            objRefPtr = &amp;scanObj[i * <B>sizeof</B>(<B>int</B>) * 8 + j];
+            <B>if</B>(*objRefPtr) <FONT COLOR=blue>{</FONT>
+              <I><FONT COLOR=green>//ok, we've got a reference</FONT></I>
+<A NAME=220>              <B>if</B>(introSpace.<A HREF=../D/276.html>member</A>(*objRefPtr) || fromCar-&gt;<A HREF=../D/276.html>member</A>(*objRefPtr)) <FONT COLOR=blue>{</FONT>
+                DB_OUT(gc_car_gcsc, "Car_t::doGCScan(): found "
+                       "interesting ref from scanned obj: " &lt;&lt; objRefPtr
+                       &lt;&lt; endl);
+                <I><FONT COLOR=green>/<I><FONT COLOR=green>/*objRefPtr = moveObj(*objRefPtr);</FONT></I></FONT></I>
+<A NAME=225>                <B>void</B> *newLoc = <A HREF=../S/23.html#97>moveObj</A>(*objRefPtr);
+                setVMReferenceGC(objRefPtr, objRefPtr, newLoc);
+              <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+                DB_OUT(gc_car_gcsc, "Car_t::doGCScan(): found "
+                       "ref to nonmoved object: " &lt;&lt; objRefPtr
+                       &lt;&lt; endl);
+<A NAME=231>                <B>if</B>(!stackSpace.<A HREF=../D/276.html>member</A>(*objRefPtr)) <FONT COLOR=blue>{</FONT>
+                  DB_OUT(gc_car_gcsc, "Car_t::doGCScan(): was not from stackspace***\n");
+                  updateRemRefGC(objRefPtr, *objRefPtr);
+                <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+                  DB_OUT(gc_car_gcsc, "Car_t::doGCScan(): was from stackspace***\n");
+                <FONT COLOR=blue>}</FONT>
+                  
+              <FONT COLOR=blue>}</FONT>
+            <FONT COLOR=blue>}</FONT>
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_car_gcsc, "Car_t::doGCScan(): leaving car\n");
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(scanPtr != freePtr) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "Car_t::doGCScan(): ERROR: scanPtr and freePtr different"
+      " after scan\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//debug</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=257><B>void</B> Car_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#184>[&lt;]</A><A HREF=#278>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+<A NAME=260>  stream &lt;&lt; "--- Car " &lt;&lt; trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(((<B>void</B>*)<B>this</B>)).getCar() 
+         &lt;&lt; " at " &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; " with train " 
+<A NAME=262>         &lt;&lt; trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(((<B>void</B>*)<B>this</B>)).getTrain(); 
+<A NAME=263>  <A HREF=../S/35.html#157>dumpBlock</A>(data, (size_t)((size_t)freePtr - (size_t)data), stream);
+  stream &lt;&lt; endl;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(DB_ENABLED(gc_remset_ext_dump)) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_remset_ext_dump, "Train-external RememberedSet: " &lt;&lt; endl); 
+<A NAME=268>    extRemSet-&gt;<A HREF=../S/28.html#86>dumpRemSet</A>(data, (size_t)freePtr - (size_t)data, stream);
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(DB_ENABLED(gc_remset_int_dump)) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_remset_int_dump, "Train-internal RememberedSet: " &lt;&lt; endl);
+<A NAME=272>    intRemSet-&gt;<A HREF=../S/28.html#86>dumpRemSet</A>(data, (size_t)freePtr - (size_t)data, stream);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=278><B>void</B> Car_t::<A HREF=../R/244.html>moveExtObjects</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#257>[&lt;]</A><A HREF=#319>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//NOTE: only suitable for being used on the from-car!!!</FONT></I>
+  DB_INDENT;
+  Car_t * destCar;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=283>  <B>if</B>(<B>this</B> != ttable.<A HREF=../S/31.html#117>getFromCar</A>()) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "Car_t::moveExtObjects(): tried to run moveObjects on car which"
+      " was not first car in first train\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  <I><FONT COLOR=green>//External remember references</FONT></I>
+  <B>for</B>(remSetIt_t i = extRemSet-&gt;getIterator(), endIt = extRemSet-&gt;getEndIterator(); i != endIt; ++i) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car, "Car::moveExtObjects(): external reference\n");
+<A NAME=292>    <B>if</B>(<A HREF=../D/276.html>member</A>(**i)) <FONT COLOR=blue>{</FONT>  <I><FONT COLOR=green>//the reference should still point to us</FONT></I>
+      <I><FONT COLOR=green>// *i  is the value, that is the address of the reference</FONT></I>
+      <I><FONT COLOR=green>//     (pointer to the object which contains the pointer to the object to move)</FONT></I>
+      <I><FONT COLOR=green>// **i is the reference (pointer to the object to move)</FONT></I>
+      
+      DB_OUT(gc_car, "Car::moveExtObjects(): found valid external remember reference to:"
+           &lt;&lt; **i &lt;&lt; endl);
+      
+      destCar = Car_t::getCar(*i); <I><FONT COLOR=green>//object should be moved to where it's referenced from</FONT></I>
+      <I><FONT COLOR=green>//      if(trainGeneration.getCarTrain(destCar).getTrain() == fromCarTrain.getTrain()) {</FONT></I>
+      <I><FONT COLOR=green>//        DB_OUT(gc_introSp, "IntroductorySpace::moveExtObjects(): caught attempt to move new objects into first train\n");</FONT></I>
+      <I><FONT COLOR=green>//        destCar = ttable.getLastTrainLastCar();</FONT></I>
+      <I><FONT COLOR=green>//      }</FONT></I>
+      
+<A NAME=306>      <B>void</B> * newLoc = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(**i); <I><FONT COLOR=green>//this handles forwardPtrs and dirtycars</FONT></I>
+      
+      <I><FONT COLOR=green>//note: the first parameter here should have been the reference to the object, but</FONT></I>
+      <I><FONT COLOR=green>//in this version of the gc, we don't use the source pointer...</FONT></I>
+      setVMReferenceGC(*i , *i, newLoc);
+      <I><FONT COLOR=green>//also handles remembered set. We HAVE to do this, since we don't know if it is a forward</FONT></I>
+      <I><FONT COLOR=green>// pointer and the object thus have been moved to an older car in which case the remembered</FONT></I>
+      <I><FONT COLOR=green>//set has to be updated</FONT></I>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=319><B>void</B> Car_t::<A HREF=../S/34.html#293>moveIntObjects</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#278>[&lt;]</A><A HREF=#346>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//NOTE: only suitable for being used on the from-car!!!</FONT></I>
+  DB_INDENT;
+  Car_t * destCar;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=324>  <B>if</B>(<B>this</B> != ttable.<A HREF=../S/31.html#117>getFromCar</A>()) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "Car_t::moveIntObjects(): tried to run moveObjects on car which"
+      " was not first car in first train\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  <I><FONT COLOR=green>//Internal remember references</FONT></I>
+  <B>for</B>(remSetIt_t i = intRemSet-&gt;getIterator(), endIt = intRemSet-&gt;getEndIterator(); i != endIt; ++i) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car, "Car::moveIntObjects(): internal reference\n");
+<A NAME=333>    <B>if</B>(<A HREF=../D/276.html>member</A>(**i)) <FONT COLOR=blue>{</FONT>  <I><FONT COLOR=green>//the reference should still point to us</FONT></I>
+      DB_OUT(gc_car, "Car::moveIntObjects(): found valid internal remember reference to:"
+             &lt;&lt; **i &lt;&lt; endl);
+      destCar = Car_t::getCar(*i); <I><FONT COLOR=green>//object should be moved to where it's referenced from</FONT></I>
+<A NAME=337>      <B>void</B> * newLoc = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(**i); <I><FONT COLOR=green>//this handles forwardPtrs and dirtycars</FONT></I>
+      setVMReferenceGC(*i , *i, newLoc);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_car, "Car::moveIntObjects(): returning\n");
+  DB_OUTDENT
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=346>bool Car_t::<A HREF=../S/34.html#277>isExtRefdTrain</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#319>[&lt;]</A><A HREF=#373>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=347>  <B>if</B>(extRemSet-&gt;<A HREF=../D/160.html>empty</A>())<FONT COLOR=blue>{</FONT>
+    <B>return</B> false;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=350>    remSetIt_t it = extRemSet-&gt;<A HREF=../D/203.html>getIterator</A>();
+<A NAME=351>    <B>for</B>( ; it != extRemSet-&gt;<A HREF=../D/191.html>getEndIterator</A>() ; ++it)<FONT COLOR=blue>{</FONT>
+<A NAME=352>      <B>if</B>(<A HREF=../D/276.html>member</A>(**it))<FONT COLOR=blue>{</FONT>
+        <B>return</B> true;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> false;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>void Car_t::addExtRememberReference(void** refAdr){</FONT></I>
+<I><FONT COLOR=green>  extRemSet-&gt;insert(refAdr);</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>void Car_t::addIntRememberReference(void** refAdr){</FONT></I>
+<I><FONT COLOR=green>  intRemSet-&gt;insert(refAdr);</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green>*/</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+
+<A NAME=373>bool Car_t::<A HREF=../R/224.html>hasExtRememberReference</A>(<B>void</B>** refAdr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#346>[&lt;]</A><A HREF=#377>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=374>  <B>return</B> extRemSet-&gt;<A HREF=../D/269.html>lookup</A>(refAdr);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=377>bool Car_t::<A HREF=../R/225.html>hasIntRememberReference</A>(<B>void</B>** refAdr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#373>[&lt;]</A><A HREF=#381>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=378>  <B>return</B> intRemSet-&gt;<A HREF=../D/269.html>lookup</A>(refAdr);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=381><B>void</B> Car_t::<A HREF=../R/155.html>gatherObjRefs</A>(VMOHash_t *vmoRefs) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#377>[&lt;]</A><A HREF=#395>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  VMObject_t *vmo = (VMObject_t*)&amp;data[0];
+  <B>while</B>(vmo &lt; freePtr) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//DB_OUT(gc_integrity, "VMObject at: " &lt;&lt; (void*)vmo &lt;&lt; endl);</FONT></I>
+    <I><FONT COLOR=green>//    *vmoRefArray = vmo; <I><FONT COLOR=green>/* + sizeof(VMObject_t) - sizeof(void*); //ref to internal object...*/</FONT></I></FONT></I>
+    <I><FONT COLOR=green>//    vmoRefArray++;</FONT></I>
+<A NAME=388>    vmoRefs-&gt;<A HREF=../D/260.html>insert</A>(vmo);
+    <I><FONT COLOR=green>//get next object</FONT></I>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=395><B>int</B> Car_t::<A HREF=../R/138.html>checkObjRefs</A>(VMOHash_t *vmoRefs) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#381>[&lt;]</A><A HREF=#548>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>int</B> retval = 0;
+  VMObject_t *vmo = (VMObject_t*)&amp;data[0];
+  ObjectDescriptor_t *objDesc;
+
+  <I><FONT COLOR=green>//check that car numbers are ok</FONT></I>
+<A NAME=402>  CarTrain_t thisCarTrain = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(<B>this</B>);
+  <B>if</B>(nextCar) <FONT COLOR=blue>{</FONT>
+<A NAME=404>    CarTrain_t nextCarTrain = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(nextCar);
+    <B>if</B>(thisCarTrain.getTrain() != nextCarTrain.getTrain()) <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "Car_t::checkObjRefs(): trains were different for cars in the same train...\n";
+      retval++;
+    <FONT COLOR=blue>}</FONT>
+    <B>if</B>((thisCarTrain.getCar() + 1) != nextCarTrain.getCar()) <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "Car_t::checkObjRefs(): found bad car numbering in train: "
+           &lt;&lt; thisCarTrain.getTrain() &lt;&lt; " bad cars were at: "
+           &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; " and " &lt;&lt; (<B>void</B>*)nextCar &lt;&lt;endl;
+      retval++;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//check all objects in car</FONT></I>
+  <B>while</B>(vmo &lt; freePtr) <FONT COLOR=blue>{</FONT>
+<A NAME=419>    <B>if</B>(!(objDesc = vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>())) <FONT COLOR=blue>{</FONT>
+<A NAME=420>      cerr &lt;&lt; "Car_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; 
+        ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " without ObjDesc!" &lt;&lt; endl;
+      cerr &lt;&lt; "Train was: " <I><FONT COLOR=green>/*&lt;&lt; trainRef.getTrainNumber()*/</FONT></I> &lt;&lt; " and car was: "
+           &lt;&lt; <I><FONT COLOR=green>/*carNumber &lt;&lt;*/</FONT></I> endl;
+      retval++;
+      DB_OUTDENT;
+      <B>return</B> retval;
+    <FONT COLOR=blue>}</FONT>
+    <B>if</B>(<B>void</B> * forward = vmo-&gt;getForwardPtr()) <FONT COLOR=blue>{</FONT>
+<A NAME=429>      cerr &lt;&lt; "Car_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; 
+        ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " with forward pointer set to:" &lt;&lt;
+        forward &lt;&lt; endl;
+      retval++;
+    <FONT COLOR=blue>}</FONT>
+<A NAME=434>    <B>unsigned</B> <B>int</B> numberOfRefs = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+    <I><FONT COLOR=green>//check each reference</FONT></I>
+    <B>for</B>(<B>unsigned</B> <B>int</B> refInVMO = 0; refInVMO &lt; numberOfRefs; refInVMO++) <FONT COLOR=blue>{</FONT>
+<A NAME=437>      <B>if</B>(objDesc-&gt;<A HREF=../S/22.html#122>hasReferenceAt</A>(refInVMO) &amp;&amp; vmo-&gt;data[refInVMO]) <FONT COLOR=blue>{</FONT>
+        VMObject_t *vmoRef = VMO_FROM_VOIDP(vmo-&gt;data[refInVMO]);
+        <B>void</B> **vmoRefLoc;
+
+<A NAME=441>        <B>if</B>(vmoRefs-&gt;<A HREF=../D/269.html>lookup</A>(vmoRef)) <FONT COLOR=blue>{</FONT>
+          vmoRefLoc = &amp;(vmo-&gt;data[refInVMO]);
+          <I><FONT COLOR=green>//check remembered sets integrity</FONT></I>
+<A NAME=444>          <B>if</B>(ttable.<A HREF=../D/276.html>member</A>(vmoRef)) <FONT COLOR=blue>{</FONT>
+            Car_t *refCar = Car_t::getCar(vmoRef);
+            <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>              CarTrain_t *refCarTrain = trainGeneration.getCarTrain(vmoRef);</FONT></I>
+<I><FONT COLOR=green>              if(*refCarTrain &lt; *thisCarTrain) {</FONT></I>
+<I><FONT COLOR=green>            */</FONT></I>
+<A NAME=450>            CarTrain_t refCarTrain = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(vmoRef);
+            <B>if</B>(refCarTrain &lt; thisCarTrain) <FONT COLOR=blue>{</FONT>
+              <I><FONT COLOR=green>//there should be some kind of remembered set item</FONT></I>
+              <B>if</B>(refCarTrain.getTrain() == thisCarTrain.getTrain()) <FONT COLOR=blue>{</FONT>
+                                           <I><FONT COLOR=green>//internal reference should be present</FONT></I>
+<A NAME=455>                <B>if</B>(!(refCar-&gt;<A HREF=../S/23.html#377>hasIntRememberReference</A>(vmoRefLoc))) <FONT COLOR=blue>{</FONT>
+                  cerr &lt;&lt; "Car::checkObjRefs(): ERROR: COULD NOT FIND INTERNAL REM REF "
+<A NAME=457>                       &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ") IN CAR: "
+                       &lt;&lt; (<B>void</B>*)refCar &lt;&lt; endl;
+                  retval++;
+                <FONT COLOR=blue>}</FONT>                          <I><FONT COLOR=green>//external reference should not be present</FONT></I>
+<A NAME=461>                <B>if</B>(refCar-&gt;<A HREF=../S/23.html#373>hasExtRememberReference</A>(vmoRefLoc)) <FONT COLOR=blue>{</FONT>
+                  cerr &lt;&lt; "Car::checkObjRefs(): ERROR: FOUND EXTERNAL REM REF "
+<A NAME=463>                       &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ") IN CAR: "
+                       &lt;&lt; (<B>void</B>*)refCar &lt;&lt; endl;
+                <FONT COLOR=blue>}</FONT>
+              <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>                     <I><FONT COLOR=green>//internal reference should not be present</FONT></I>
+<A NAME=467>                <B>if</B>(refCar-&gt;<A HREF=../S/23.html#377>hasIntRememberReference</A>(vmoRefLoc)) <FONT COLOR=blue>{</FONT>
+                  cerr &lt;&lt; "Car::checkObjRefs(): ERROR: FOUND INTERNAL REM REF "
+<A NAME=469>                       &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ") IN CAR: "
+                       &lt;&lt; (<B>void</B>*)refCar &lt;&lt; endl;
+                <FONT COLOR=blue>}</FONT>                          <I><FONT COLOR=green>//external reference should be present</FONT></I>
+<A NAME=472>                <B>if</B>(!(refCar-&gt;<A HREF=../S/23.html#373>hasExtRememberReference</A>(vmoRefLoc))) <FONT COLOR=blue>{</FONT>
+                  cerr &lt;&lt; "Car::checkObjRefs(): ERROR: COULD NOT FIND EXTERNAL REM REF "
+<A NAME=474>                       &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ") IN CAR: "
+                       &lt;&lt; (<B>void</B>*)refCar &lt;&lt; endl;
+                  retval++;
+                <FONT COLOR=blue>}</FONT>
+              <FONT COLOR=blue>}</FONT>
+            <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//no remembered set item should be present</FONT></I>
+
+              <I><FONT COLOR=green>//external reference should not be present</FONT></I>
+<A NAME=482>              <B>if</B>(refCar-&gt;<A HREF=../S/23.html#373>hasExtRememberReference</A>(vmoRefLoc)) <FONT COLOR=blue>{</FONT>
+                cerr &lt;&lt; "Car::checkObjRefs(): ERROR: FOUND EXTERNAL REM REF "
+<A NAME=484>                     &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ") IN CAR: "
+                     &lt;&lt; (<B>void</B>*)refCar &lt;&lt; endl;
+                retval++;
+              <FONT COLOR=blue>}</FONT>
+              <I><FONT COLOR=green>//internal reference should not be present</FONT></I>
+<A NAME=489>              <B>if</B>(refCar-&gt;<A HREF=../S/23.html#377>hasIntRememberReference</A>(vmoRefLoc)) <FONT COLOR=blue>{</FONT>
+                cerr &lt;&lt; "Car::checkObjRefs(): ERROR: FOUND INTERNAL REM REF "
+<A NAME=491>                     &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ") IN CAR: "
+                     &lt;&lt; (<B>void</B>*)refCar &lt;&lt; endl;
+                retval++;
+              <FONT COLOR=blue>}</FONT>
+            <FONT COLOR=blue>}</FONT>
+          <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//vmoRef was not in train-space</FONT></I>
+<A NAME=497>            <B>if</B>(!(introSpace.<A HREF=../D/276.html>member</A>(vmoRef))) <FONT COLOR=blue>{</FONT>
+<A NAME=498>              <B>if</B>(!(stackSpace.<A HREF=../D/276.html>member</A>(vmoRef))) <FONT COLOR=blue>{</FONT>
+                cerr &lt;&lt; "Car::checkObjRefs(): ERROR: REF WAS NOT TO EITHER "
+                  "TRAINGEN, INTROSPACE, OR STACKSPACE\n" &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from "
+<A NAME=501>                  "object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; "\n";
+                retval++;
+              <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+                cout &lt;&lt; "Car::checkObjRefs(): WARNING: Found ref to stack-space/root-space, from vmobject:\n"
+<A NAME=505>                     &lt;&lt; vmo &lt;&lt; " with object descriptor:\n" &lt;&lt; vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>()
+                     &lt;&lt; " reference number was " &lt;&lt; refInVMO &lt;&lt; " and referenced object was:\n"
+<A NAME=507>                     &lt;&lt; vmoRef &lt;&lt; " Object Descriptor was:\n" &lt;&lt; vmoRef-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>() &lt;&lt; endl;
+              <FONT COLOR=blue>}</FONT>
+            <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+              <I><FONT COLOR=green>//remembered set should be present in the intro space</FONT></I>
+              <B>if</B>(!(introSpace.hasRememberReference(vmoRefLoc))) <FONT COLOR=blue>{</FONT>
+                cerr &lt;&lt; "Car::checkObjRefs(): ERROR: COULD NOT FIND REM REF "
+<A NAME=513>                     &lt;&lt; (<B>void</B>*)vmoRefLoc &lt;&lt; "(from object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>()
+                     &lt;&lt; ") IN INTROSPACE\n";
+                retval++;
+              <FONT COLOR=blue>}</FONT>
+            <FONT COLOR=blue>}</FONT>
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>// reference not found</FONT></I>
+<A NAME=520>          cerr &lt;&lt; "Car_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt;
+            ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " with illegal object pointer" &lt;&lt; endl;
+          <I><FONT COLOR=green>//  cerr &lt;&lt; "Object descriptor: " &lt;&lt; endl;</FONT></I>
+          <I><FONT COLOR=green>//  vmo-&gt;getObjectDescriptor()-&gt;print();</FONT></I>
+          cerr &lt;&lt; "Train was: " <I><FONT COLOR=green>/*&lt;&lt; trainRef.getTrainNumber()*/</FONT></I> &lt;&lt; " and car was: "
+               &lt;&lt; <I><FONT COLOR=green>/*carNumber &lt;&lt;*/</FONT></I> endl;
+          cerr &lt;&lt; "Bad reference was number: " &lt;&lt; refInVMO &lt;&lt; " with value: "
+               &lt;&lt; (<B>void</B>*)(vmo-&gt;data[refInVMO]) &lt;&lt; endl;
+          cerr &lt;&lt; "Object with illegal pointer has typeid: "
+               &lt;&lt; <I><FONT COLOR=green>/*typeid(VOIDP_FROM_VMO(vmo)).name() &lt;&lt;*/</FONT></I> endl;
+          retval++;
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> retval;
+<FONT COLOR=blue>}</FONT>
+
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT
+
+<I><FONT COLOR=green>//counts the live/dead objects (live objects have their fwdPtr set</FONT></I>
+<I><FONT COLOR=green>//in a mark-phase. This method clears fwdPtrs, calculates the stats</FONT></I>
+<I><FONT COLOR=green>//prints them if that's wanted and adds them to what its given pointers to.</FONT></I>
+<A NAME=548><B>void</B> Car_t::<A HREF=../R/146.html>doLiveStat</A>(size_t *live, size_t *dead, size_t *unused) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#395>[&lt;]</A><A HREF=#585>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  size_t liveObjects = 0, deadObjects = 0, liveBytes = 0, deadBytes = 0;
+  <B>for</B>(VMObject_t *vmoIndex = (VMObject_t*)data; vmoIndex &lt; freePtr; vmoIndex = NEXT_VMO(vmoIndex)) <FONT COLOR=blue>{</FONT>
+<A NAME=551>    ObjectDescriptor_t *objDesc = vmoIndex-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+    <B>if</B>(vmoIndex-&gt;isForward()) <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//a live object</FONT></I>
+      vmoIndex-&gt;setForwardBit(false);
+      ++liveObjects;
+<A NAME=556>      liveBytes += objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//a dead object</FONT></I>
+      ++deadObjects;
+<A NAME=560>      deadBytes += objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT_VERB
+<A NAME=565>  CarTrain_t ct = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(<B>this</B>);
+  cout &lt;&lt; "Livestat for: " &lt;&lt; ct.getTrain() &lt;&lt; ", " &lt;&lt; ct.getCar() &lt;&lt; endl
+       &lt;&lt; "  Live/dead objects: " &lt;&lt; liveObjects &lt;&lt; "/" &lt;&lt; deadObjects &lt;&lt; endl
+       &lt;&lt; "  Live/dead bytes  : " &lt;&lt; liveBytes &lt;&lt; "/" &lt;&lt; deadBytes &lt;&lt; endl
+       &lt;&lt; "   -in vmo bytes   : " &lt;&lt; liveBytes + liveObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*))
+       &lt;&lt; "/" &lt;&lt; deadBytes + deadObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)) &lt;&lt; endl;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT_VERB</FONT></I>
+
+  size_t liveBytesH = liveBytes + liveObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)); <I><FONT COLOR=green>//includes headers</FONT></I>
+  size_t deadBytesH = deadBytes + deadObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)); <I><FONT COLOR=green>//includes headers</FONT></I>
+  *live   += liveBytesH;
+  *dead   += deadBytesH;
+  *unused += (BYTES_IN_CAR + <B>sizeof</B>(<B>void</B>*) - <B>sizeof</B>(Car_t)  <I><FONT COLOR=green>//the free bytes in a car without its header</FONT></I>
+              - (liveBytesH + deadBytesH));                  <I><FONT COLOR=green>//bytes used by dead or alive objects</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+
+<I><FONT COLOR=green>// ----- private member functions -----</FONT></I>
+
+<A NAME=585>size_t Car_t::<A HREF=../R/133.html>availSpace</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#548>[&lt;]</A>[&gt;]<A HREF=#24>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((size_t)<B>this</B> + BYTES_IN_CAR) - (size_t)freePtr;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- public static functions ------</FONT></I>
+
+<I><FONT COLOR=green>//Car_t* Car_t::getCar(void* v){</FONT></I>
+<I><FONT COLOR=green>//  return (Car_t*)(((int)v)&amp;CAR_MASK);</FONT></I>
+<I><FONT COLOR=green>//}</FONT></I>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#24>[^]</A><A HREF=#585>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

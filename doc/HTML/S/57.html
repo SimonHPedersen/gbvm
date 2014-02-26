@@ -1,0 +1,114 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instructions.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instructions.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instructions.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#61>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>execute</A>
+<LI><A HREF=#13>parseType</A>
+<LI><A HREF=#61>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Instructions.cc,v 1.11 2001/05/21 11:42:51 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<A NAME=5>Instr_Return_t *sharedReturnInst = <B>new</B> <A HREF=../S/56.html#7>Instr_Return_t</A>();
+
+<A NAME=7>Instruction* Instruction::execute(Thread_t *myThread) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#13>[&gt;]</A>[^]<A HREF=#61>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "Instruction::execute(): General function doing nothing\n";
+  exit(1);
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=13><B>void</B> WithType::<A HREF=../R/267.html>parseType</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#7>[&lt;]</A><A HREF=#61>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#61>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_parse, "WithType::parseType(): pc " &lt;&lt; pc &lt;&lt; " " &lt;&lt; endl);
+  <B>if</B>(!strncmp(pc, "integer", 7))<FONT COLOR=blue>{</FONT>
+    type = INTEGER_ID;
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "real", 4))<FONT COLOR=blue>{</FONT>
+    type = REAL_ID;
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "boolean", 7))<FONT COLOR=blue>{</FONT>
+    type = BOOLEAN_ID;
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "string", 6))<FONT COLOR=blue>{</FONT>
+    type = STRING_ID;
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "char", 4))<FONT COLOR=blue>{</FONT>
+    type = CHAR_ID;
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "objref", 6))<FONT COLOR=blue>{</FONT>
+    type = OBJECT_ID;
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "object", 6))<FONT COLOR=blue>{</FONT>
+    <B>if</B>(!strncmp(&amp;pc[7], "reference", 7))<FONT COLOR=blue>{</FONT>
+      type = OBJECTREFERENCE_ID;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      type = OBJECT_ID;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "ptn", 3))<FONT COLOR=blue>{</FONT>
+    type = PATTERN_ID;
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, "pattern", 7))<FONT COLOR=blue>{</FONT>
+    <B>if</B>(!strncmp(&amp;pc[8], "reference", 9))<FONT COLOR=blue>{</FONT>
+      type = PATTERNREFERENCE_ID;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      type = PATTERN_ID;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> 
+  <B>else</B> <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "WithType::parseType(): ERROR: did not recognize type: " &lt;&lt; pc 
+         &lt;&lt; " in instruction " &lt;&lt; <B>this</B> &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// -----------</FONT></I>
+
+<A NAME=61><B>void</B> Instr_EmptySingle_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#13>[&lt;]</A>[&gt;]<A HREF=#7>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_EmptySingle_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Printing of run-time entities</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Instruction* inst) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(inst) <FONT COLOR=blue>{</FONT>
+<A NAME=70>    inst-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null Instruction ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Instruction&amp; inst) <FONT COLOR=blue>{</FONT>
+<A NAME=79>  inst.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#61>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

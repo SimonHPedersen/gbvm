@@ -1,0 +1,152 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/main_debug2.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/main_debug2.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/main_debug2.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#5>[^]</A><A HREF=#28>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#5>DummyStack</A>
+<LI><A HREF=#13>DummyObj</A>
+<LI><A HREF=#21>dumpObj</A>
+<LI><A HREF=#28>main</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: main_debug2.cc,v 1.15 2001/04/10 12:01:23 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "garbage_collector.hpp"
+
+<A NAME=5><B>class</B> <A HREF=../R/6.html>DummyStack</A> <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#13>[&gt;]</A>[^]<A HREF=#28>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<B>public</B>:
+  <B>void</B> * <B>operator</B> <B>new</B>(size_t size, <B>void</B> * location) <FONT COLOR=blue>{</FONT>
+    <B>return</B> location;
+  <FONT COLOR=blue>}</FONT>
+  <B>void</B> * refs[900];
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=13><B>class</B> <A HREF=../R/5.html>DummyObj</A> <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#5>[&lt;]</A><A HREF=#21>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#28>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<B>public</B>:
+  <B>void</B> * <B>operator</B> <B>new</B>(size_t size, <B>void</B> * location) <FONT COLOR=blue>{</FONT>
+    <B>return</B> location;
+  <FONT COLOR=blue>}</FONT>
+  <B>void</B> *refs[10];
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=21><B>void</B> dumpObj(<B>void</B>** object, <B>int</B> length) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#13>[&lt;]</A><A HREF=#28>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#28>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>for</B>(<B>int</B> i = 0; i &lt; 10; i++) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; *object &lt;&lt; endl;
+    object++;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=28><B>int</B> main(<B>int</B> argc, <B>char</B> **argv) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#21>[&lt;]</A>[&gt;]<A HREF=#5>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+  DB_ENABLE_ALL;
+
+  DB_DISABLE(gc_dumpblock);
+
+  <I><FONT COLOR=green>//create a dummy object descriptor</FONT></I>
+<A NAME=35>  ObjectDescriptor_t *refStackDesc = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(1000, UINT_MAX);
+  cout &lt;&lt; refStackDesc;
+
+<A NAME=38>  ObjectDescriptor_t *objDesc = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>((<B>unsigned</B> <B>int</B>)BYTES_IN_CAR/6, 0);
+  cout &lt;&lt; objDesc;
+
+  <B>for</B>(<B>int</B> i = 0; i &lt; 10; i++) <FONT COLOR=blue>{</FONT>
+<A NAME=42>    objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(i);
+  <FONT COLOR=blue>}</FONT>
+
+  cout &lt;&lt; "allocating stack\n";
+
+  VMObject_t * vmo1       = garbageCollector.addStackObject(refStackDesc);
+<A NAME=48>  DummyStack * ref_stack  = <B>new</B>(vmo1-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/7.html>DummyStack</A>();
+
+  cout &lt;&lt; "allocating dummy objects\n";
+
+  <B>for</B>(<B>int</B> j = 0; j &lt; 10; j++) <FONT COLOR=blue>{</FONT>
+    VMObject_t * vmo2;
+    DummyObj *dummyO2, *dummyO3 = 0;
+    <B>for</B>(<B>int</B> i = j*5; i &lt; (5 + j*5); i++) <FONT COLOR=blue>{</FONT>
+<A NAME=56>      vmo2 = garbageCollector.<A HREF=../D/128.html>addNewObject</A>(objDesc);
+<A NAME=57>      dummyO2 = <B>new</B>(vmo2-&gt;<A HREF=../S/13.html#450>getDataPtr</A>())<A HREF=../D/6.html>DummyObj</A>();
+      ref_stack-&gt;refs[i] = dummyO2;
+      <B>if</B>(dummyO3) <FONT COLOR=blue>{</FONT>
+<A NAME=60>        <A HREF=../D/339.html>setVMReference</A>(dummyO2, &amp;(dummyO2-&gt;refs[0]), dummyO3);
+      <FONT COLOR=blue>}</FONT>
+      <B>if</B>(j) <FONT COLOR=blue>{</FONT>
+<A NAME=63>        <A HREF=../D/339.html>setVMReference</A>(ref_stack-&gt;refs[i-5], &amp;((DummyObj*)ref_stack-&gt;refs[i-5])-&gt;refs[1], dummyO2);
+      <FONT COLOR=blue>}</FONT>
+      dummyO3 = dummyO2;
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//  vmo2  = garbageCollector.addNewObject(objDesc);</FONT></I>
+    <I><FONT COLOR=green>//  dummyO1 = new(vmo2-&gt;getDataPtr())DummyObj();</FONT></I>
+    
+    
+    <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>      cout &lt;&lt; "dumping ref_stack:\n";</FONT></I>
+<I><FONT COLOR=green>      dumpObj((void**)ref_stack, 10);</FONT></I>
+<I><FONT COLOR=green>      cout &lt;&lt; "dumping ref_stack vmo:\n";</FONT></I>
+<I><FONT COLOR=green>      dumpObj((void**)vmo1, 10);</FONT></I>
+<I><FONT COLOR=green>      cout &lt;&lt; "dumping dummyO1:\n";</FONT></I>
+<I><FONT COLOR=green>      dumpObj((void**)dummyO1, 10);</FONT></I>
+<I><FONT COLOR=green>      cout &lt;&lt; "\n\n";</FONT></I>
+<I><FONT COLOR=green>    */</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=82>    garbageCollector.<A HREF=../D/253.html>heapDump</A>();
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+<A NAME=85>    garbageCollector.<A HREF=../D/171.html>garbageCollect</A>();
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=87>    garbageCollector.<A HREF=../D/253.html>heapDump</A>();
+<A NAME=88>    garbageCollector.<A HREF=../D/145.html>checkIntegrity</A>();
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+
+
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//remove some references from the stack</FONT></I>
+  <B>for</B>(<B>int</B> i = 0; i &lt; 10; i++) <FONT COLOR=blue>{</FONT>
+    ref_stack-&gt;refs[i] = 0;
+    ref_stack-&gt;refs[49 - i] = 0;
+    ref_stack-&gt;refs[i*2 + 10] = 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//#ifdef UNDEFINED</FONT></I>
+  <B>for</B>(<B>int</B> i = 0; i &lt; 200; i++) <FONT COLOR=blue>{</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=105>    garbageCollector.<A HREF=../D/253.html>heapDump</A>();
+<A NAME=106>    garbageCollector.<A HREF=../D/145.html>checkIntegrity</A>();
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+    
+<A NAME=109>    garbageCollector.<A HREF=../D/171.html>garbageCollect</A>();
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=111>    garbageCollector.<A HREF=../D/253.html>heapDump</A>();
+<A NAME=112>    garbageCollector.<A HREF=../D/145.html>checkIntegrity</A>();
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//#endif //UNDEFINED</FONT></I>
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#5>[^]</A><A HREF=#28>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,8 @@
+-- betaenv:descriptor --
+(#   
+do 
+  (for 10000 repeat
+        '***** Hello World *****'->stdio;
+  for)
+
+#)

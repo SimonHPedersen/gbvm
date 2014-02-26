@@ -1,0 +1,93 @@
+<HTML>
+<HEAD>
+<TITLE>src/nodist/printer.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/nodist/printer.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/nodist/printer.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#9>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#9>main</A>
+</OL>
+<HR>
+<PRE>
+<FONT COLOR=darkred>#include</FONT> &lt;iostream.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;stdlib.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;stdio.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;time.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;sys/times.h&gt;
+
+<FONT COLOR=darkred>#define</FONT> ITERATIONS 10000
+
+<A NAME=9><B>int</B> main(<B>int</B> argc, <B>char</B> **argv) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>struct</B> tms before;
+  <B>struct</B> tms after;
+
+  <B>if</B>((clock_t)-1 == times(&amp;before)) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector_t::garbageCollect(): error getting time\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+
+  <B>double</B> gc_worst_time = 0, gc_avg_time = 0, gctimes = 0;
+
+  <B>while</B>(gctimes &lt; ITERATIONS) <FONT COLOR=blue>{</FONT>
+    <B>struct</B> tms beforeGCTime, afterGCTime;
+    
+    <B>if</B>((clock_t)-1 == times(&amp;beforeGCTime)) <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "GarbageCollector_t::garbageCollect(): error getting time\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+
+    <B>if</B>((clock_t)-1 == times(&amp;afterGCTime)) <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "GarbageCollector_t::garbageCollect(): error getting time\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+    
+    <B>int</B> tics = afterGCTime.tms_utime - beforeGCTime.tms_utime;
+    <B>double</B> secs = ((<B>double</B>)tics)/CLK_TCK;
+    
+    cout &lt;&lt; "\ngc took: " &lt;&lt; tics &lt;&lt; " ticks ~ " &lt;&lt; secs &lt;&lt; " seconds\n";
+    
+    <B>if</B>(gc_worst_time &lt; secs) gc_worst_time = secs;
+    
+    gc_avg_time = (gc_avg_time * gctimes + secs) / (gctimes + 1);
+    
+    ++gctimes;
+    
+    cout &lt;&lt; "Average is: " &lt;&lt; gc_avg_time &lt;&lt; " secs, worst is: " &lt;&lt; gc_worst_time &lt;&lt; endl;
+  <FONT COLOR=blue>}</FONT>
+  cout &lt;&lt; "\ngc's: " &lt;&lt; gctimes &lt;&lt; " avg. time: " &lt;&lt; gc_avg_time
+       &lt;&lt; " sec, worst: " &lt;&lt; gc_worst_time &lt;&lt; " sec, total: "
+       &lt;&lt; gctimes*gc_avg_time &lt;&lt; endl;
+
+
+
+  <B>if</B>((clock_t)-1 == times(&amp;after)) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector_t::garbageCollect(): error getting time\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+  <B>int</B> time_in_tics = after.tms_utime - before.tms_utime;
+  <B>double</B> time_in_secs = ((<B>double</B>)time_in_tics)/CLK_TCK;
+
+  cout &lt;&lt; "\nONE_PRINTOUT_TAKES: " &lt;&lt; time_in_secs/ITERATIONS &lt;&lt; endl;
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#9>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

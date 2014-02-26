@@ -1,0 +1,110 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/vm_main.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/vm_main.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/vm_main.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>main</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: vm_main.cc,v 1.52 2001/06/05 10:04:47 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Scheduler.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<A NAME=7><B>int</B> main(<B>int</B> argc, <B>char</B>** argv)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//DB_DISABLE_ALL;</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE_ALL;</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE_GC_ALL;</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE_VM_ALL;</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_gc);                      //garbage collector class</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_notify);                  //notification of garbage collections</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_mg);                      //mature generation</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_car);                     //car</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_car_collect);             //write which objects get collected</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_car_delete);              //</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_vmo);                     //virtual machine object (VMObject)</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_vmo_dump_refs);           //virtual machine object (VMObject)</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_vmo_mro_verb);            //moveReferencedObjects verbose</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_trn);                     //train</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_objd);                    //object descriptor</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_objd_const);              //object descriptor constructor</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_glob_setvmr);             //set vm reference</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_glob_setvmr_verb);        //set vm reference</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_memblk);                  //gc mememory blocks</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_tg);                      //gc train generation</FONT></I>
+
+  <I><FONT COLOR=green>//DB_DISABLE(gc_integrity);              //disable integrity check output</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_bcl);                       //byte-code-loader</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_bcl_inst);                  //instruction</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_bcl_rtp);                   //run-time-path</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_sch);                       //scheduler</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_thread);                    //thread</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_gbe);                       //GBetaEntities.cc, .hpp</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_mixin);                     //mixin</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_object);                    //object</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_po);                        //part object</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_stack);                     //stacks (ref-stack)</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_stack_warn);                //warnings from stacks</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_parse_misc);</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_parse_multi);</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_iexe);                      //instruction execution</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_iexe_spec);                 //instruction execution </FONT></I>
+<I><FONT COLOR=green>                                             - special instr</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_thread);                    //thread</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_rtp);                       //runtime paths</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_thread_merge);              //merge debug information</FONT></I>
+<I><FONT COLOR=green>  DB_ENABLE(vm_ptn);                       //pattern</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(vm_stack_warn);</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(vm_parse);                   //parsing of bytecode</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(vm_rstack);                  //stacks (ref-stack)</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(vm_nrstack);                 //stacks (ref-stack)</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(vm_thread_instinfo);         ///<I><FONT COLOR=green>/*** instruction execution ***</FONT></I></FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(vm_gbe);                     //GBetaEntities.cc, .hpp</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(vm_status);                  //GBetaEntities.cc, .hpp</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_vmo_id);                  //When is a new vmobject created?</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(first_index_var_unique);     ////instruction execution</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(cmn_lists);                  //common lists</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_mg_heapdump);</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_remset_dump);</FONT></I>
+  <I><FONT COLOR=green>//DB_ENABLE(gc_vmo_dump_refs);</FONT></I>
+
+  <B>if</B>(argc != 2)<FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "USAGE: " &lt;&lt; argv[0] &lt;&lt; " &lt;filename&gt;" &lt;&lt; endl; 
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=71>  <A HREF=../S/68.html#75>fixObjectDescriptors</A>();
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  scheduler = <B>new</B>(allocateRootVM_T(schedDesc)) Scheduler_t();
+<A NAME=74>  garbageCollector.<A HREF=../D/313.html>registerMutator</A>(gcs_prepareForGC);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  scheduler = <B>new</B>(allocateRootVM(schedDesc)) Scheduler_t();
+<A NAME=77>  garbageCollector-&gt;<A HREF=../D/313.html>registerMutator</A>(gcs_prepareForGC);
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  scheduler-&gt;startEngine(argv[1]);
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#7>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

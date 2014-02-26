@@ -1,0 +1,218 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/TrainGeneration.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/TrainGeneration.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/TrainGeneration.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#5>[^]</A><A HREF=#147>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#5>TrainGeneration_t</A>
+<LI><A HREF=#26>TrainGeneration_t</A>
+<LI><A HREF=#31>addNewObject</A>
+<LI><A HREF=#61>addNewTrainFirst</A>
+<LI><A HREF=#75>addNewTrainLast</A>
+<LI><A HREF=#80>deleteFirstTrain</A>
+<LI><A HREF=#111>deleteFirstTrainsFirstCar</A>
+<LI><A HREF=#147>allocCarSpace</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: TrainGeneration.cc,v 1.29 2001/05/21 11:42:45 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<A NAME=5>TrainGeneration_t::<A HREF=../S/6.html#17>TrainGeneration_t</A>(<B>int</B> heapSizeInCars):
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#26>[&gt;]</A>[^]<A HREF=#147>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  lastMemBlkSize(heapSizeInCars)
+<FONT COLOR=blue>{</FONT>
+  <B>if</B>(heapSizeInCars &lt;= 0) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "TrainGeneration_t(): constructor was given 0 or negative size\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//make dirycars object pointer</FONT></I>
+<A NAME=14>  dirtyCars = <B>new</B> <A HREF=../S/24.html#21>DirtyCars_t</A>();
+
+  <I><FONT COLOR=green>//clear array</FONT></I>
+  memset((<B>void</B> *)adr2CarTrainTbl, 0, <B>sizeof</B>(CarTrain_t[ADR_2_CT_SIZE]));
+
+  <I><FONT COLOR=green>//allocate memory blocks</FONT></I>
+<A NAME=20>  memoryBlocks.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../D/98.html>MemoryBlock_t</A>(heapSizeInCars));
+
+  <I><FONT COLOR=green>//THIS HAS TO BE 1, INTROSPACE AND STACKSPACE ARE 0</FONT></I>
+  firstTrain = lastTrain = 1;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=26>TrainGeneration_t::~<A HREF=../S/6.html#17>TrainGeneration_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#5>[&lt;]</A><A HREF=#31>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#147>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>delete</B>(dirtyCars);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=31>VMObject_t *TrainGeneration_t::<A HREF=../R/122.html>addNewObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#26>[&lt;]</A><A HREF=#61>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#147>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_tg, "TrainGeneration_t::addNewObject()\n");
+  
+<A NAME=35>  Car_t *lastCar = ttable.<A HREF=../S/31.html#127>getLastTrainLastCar</A>();
+  <B>if</B>(!lastCar) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//train generation _can_ be empty (like initially)</FONT></I>
+<A NAME=37>    <A HREF=../S/30.html#61>addNewTrainFirst</A>();
+<A NAME=38>    lastCar = ttable.<A HREF=../S/31.html#127>getLastTrainLastCar</A>();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=40>  VMObject_t *vmo = lastCar-&gt;<A HREF=../D/139.html>allocateVMO</A>(objDes);
+  <B>if</B>(vmo) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> vmo;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//we have to allocate a new last car</FONT></I>
+
+<A NAME=48>  Car_t *newLastCar = <B>new</B>(<A HREF=../D/136.html>allocCarSpace</A>())
+<A NAME=49>    <A HREF=../D/2.html>Car_t</A>(lastTrain, (<A HREF=../S/3.html#290>getCarTrain</A>(lastCar).getCar() + 1));
+  lastCar-&gt;setNext(newLastCar);
+<A NAME=51>  <B>if</B>((vmo = newLastCar-&gt;<A HREF=../D/139.html>allocateVMO</A>(objDes))) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> vmo;
+  <FONT COLOR=blue>}</FONT>
+  cerr &lt;&lt; "TrainGeneration::addNewObject(): could not allocate space for"
+    " new object with object descriptor: " &lt;&lt; objDes &lt;&lt; endl;
+  exit(1);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=61><B>void</B> TrainGeneration_t::<A HREF=../R/123.html>addNewTrainFirst</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#31>[&lt;]</A><A HREF=#75>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#147>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=64>  <B>if</B>(ttable.<A HREF=../S/31.html#117>getFromCar</A>()) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "TrainGeneration_t::addNewTrainFirst(): tried to add "
+      "a new first train when there was already one, shame on you!\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  DB_OUT(gc_tg, "TrainGeneration::addNewTrainFirst()\n");
+<A NAME=71>  <B>new</B>(<A HREF=../D/136.html>allocCarSpace</A>())<A HREF=../D/2.html>Car_t</A>(firstTrain, 0);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=75><B>void</B> TrainGeneration_t::<A HREF=../R/124.html>addNewTrainLast</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#61>[&lt;]</A><A HREF=#80>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#147>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=76>  <B>new</B>(<A HREF=../D/136.html>allocCarSpace</A>())<A HREF=../D/2.html>Car_t</A>(++lastTrain, 0);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=80><B>void</B> TrainGeneration_t::<A HREF=../R/142.html>deleteFirstTrain</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#75>[&lt;]</A><A HREF=#111>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#147>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  firstTrain++;
+<A NAME=83>  Car_t *tmpCar = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+  Car_t *nextCar;
+  <B>while</B>(tmpCar) <FONT COLOR=blue>{</FONT>
+    nextCar = tmpCar-&gt;next();
+    MemoryBlock_t *mblk = memoryBlocks.first();
+    <B>while</B>(mblk) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//search for the memblk to free car in</FONT></I>
+<A NAME=89>      <B>switch</B> (mblk-&gt;<A HREF=../D/169.html>freeCar</A>(tmpCar)) <FONT COLOR=blue>{</FONT>
+      <B>case</B> 0:
+        mblk = mblk-&gt;next();
+        <B>break</B>;
+      <B>case</B> 1:
+        mblk = 0;
+        <B>break</B>;
+      <B>case</B> 2:
+        DB_OUT(gc_tg, "TrainGeneration::deleteFirstTrain(): delete memory"
+               " block here\n");
+        mblk = 0;
+        <B>break</B>;
+      <B>default</B>:
+        cerr &lt;&lt; "TrainGeneration::deleteFirstTrain(): interal error\n";
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    tmpCar = nextCar;
+  <FONT COLOR=blue>}</FONT>
+<A NAME=107>  ttable.<A HREF=../D/316.html>removeTrain</A>();
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=111><B>void</B> TrainGeneration_t::<A HREF=../S/34.html#301>deleteFirstTrainsFirstCar</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#80>[&lt;]</A><A HREF=#147>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#147>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<A NAME=113>  Car_t *tmpCar = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+  Car_t *nextCar;
+  <B>if</B>(!(nextCar = tmpCar-&gt;next())) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//train consists of only one car, kill it!</FONT></I>
+    DB_OUT(gc_tg, "TrainGeneration::deleteFirstTrainsFirstCar(): "
+           "deleting train consisting of one car\n");
+<A NAME=119>    <A HREF=../S/30.html#80>deleteFirstTrain</A>();
+    DB_OUTDENT;
+    <B>return</B>;
+  <FONT COLOR=blue>}</FONT>
+
+<A NAME=124>  ttable.<A HREF=../S/31.html#122>removeFromCar</A>();
+  MemoryBlock_t *mblk = memoryBlocks.first();
+  <B>while</B>(mblk) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//search for the memblk to free car in</FONT></I>
+<A NAME=127>    <B>switch</B> (mblk-&gt;<A HREF=../D/169.html>freeCar</A>(tmpCar)) <FONT COLOR=blue>{</FONT>
+    <B>case</B> 0:
+      mblk = mblk-&gt;next();
+      <B>break</B>;
+    <B>case</B> 1:
+      mblk = 0;
+      <B>break</B>;
+    <B>case</B> 2:
+      DB_OUT(gc_tg, "TrainGeneration::deleteFirstTrainsFirstCar(): delete memory"
+             " block here\n");
+      mblk = 0;
+      <B>break</B>;
+    <B>default</B>:
+      cerr &lt;&lt; "TrainGeneration::deleteFirstTrainsFirstCar(): interal error\n";
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=147><B>void</B>* TrainGeneration_t::<A HREF=../R/130.html>allocCarSpace</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#111>[&lt;]</A>[&gt;]<A HREF=#5>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//try to add a new car</FONT></I>
+  <B>void</B> *carSpace = 0;
+  <B>for</B>(MemoryBlock_t *mblk = memoryBlocks.first(); mblk; mblk = mblk-&gt;next())<FONT COLOR=blue>{</FONT>
+<A NAME=152>    <B>if</B>((carSpace = mblk-&gt;<A HREF=../D/136.html>allocCarSpace</A>())) <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_tg, "TrainGeneration_t::allocateCar(): allocated"
+             " space for new car at: " &lt;&lt; (<B>void</B>*)carSpace &lt;&lt; "\n");
+      DB_OUTDENT;
+      <B>return</B> carSpace;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+  <B>if</B>(!carSpace) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//try to add a new memory block</FONT></I>
+    lastMemBlkSize *= BLOCK_SIZE_MULTIPLIER;
+<A NAME=163>    memoryBlocks.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../D/98.html>MemoryBlock_t</A>(lastMemBlkSize));
+<A NAME=164>    <B>if</B>(!(carSpace = (Car_t*)memoryBlocks.last()-&gt;<A HREF=../D/136.html>allocCarSpace</A>())) <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "TrainGeneration_t::addNewObject(): error:"
+        " could not allocate car\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_tg, "TrainGeneration_t::allocateCar(): allocated"
+             " space for new car in new block\n");      
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> carSpace;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#5>[^]</A><A HREF=#147>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

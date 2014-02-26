@@ -1,0 +1,168 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/garbage_collector.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/garbage_collector.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/garbage_collector.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#16>[^]</A><A HREF=#97>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#16>GarbageCollector_t</A>
+<LI><A HREF=#22>GarbageCollector_t</A>
+<LI><A HREF=#29>addNewObject</A>
+<LI><A HREF=#54>addRootObject</A>
+<LI><A HREF=#58>registerMutator</A>
+<LI><A HREF=#64>garbageCollect</A>
+<LI><A HREF=#93>heapDump</A>
+<LI><A HREF=#97>checkIntegrity</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: garbage_collector.cc,v 1.2 2001/05/21 11:42:42 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> &lt;stdlib.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;stdio.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;iostream.h&gt;
+
+<I><FONT COLOR=green>//#include "garbage_collector.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+<I><FONT COLOR=green>/* our global garbage collector object */</FONT></I>
+<A NAME=11>GarbageCollector_t* garbageCollector = <B>new</B> <A HREF=../D/8.html>GarbageCollector_t</A>(1);
+<I><FONT COLOR=green>//unsigned int vmObjectHashValue = 0;</FONT></I>
+
+<I><FONT COLOR=green>/* --- GARBAGE COLLECTOR --- */</FONT></I>
+
+<A NAME=16>GarbageCollector_t::<A HREF=../R/7.html>GarbageCollector_t</A>(<B>int</B> generations) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#22>[&gt;]</A>[^]<A HREF=#97>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=17>  trainGeneration = <B>new</B> <A HREF=../D/115.html>TrainGeneration_t</A>(8);
+  prepareForGC_fkt = 0;
+  newBytesAllocated = 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=22>GarbageCollector_t::~<A HREF=../R/7.html>GarbageCollector_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#16>[&lt;]</A><A HREF=#29>[&gt;]</A><A HREF=#16>[^]</A><A HREF=#97>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>delete</B> trainGeneration;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=29>VMObject_t *GarbageCollector_t::<A HREF=../R/122.html>addNewObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#22>[&lt;]</A><A HREF=#54>[&gt;]</A><A HREF=#16>[^]</A><A HREF=#97>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+
+  DB_OUT(gc_gc, "GarbageCollector_t::addNewObject 1" &lt;&lt; endl);
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>#ifdef DEBUG</FONT></I>
+<I><FONT COLOR=green>  allocated++;</FONT></I>
+<I><FONT COLOR=green>#endif</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+<A NAME=39>  VMObject_t *vmo = trainGeneration-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<FONT COLOR=darkred>#ifndef</FONT> NO_GC
+<A NAME=41>  newBytesAllocated += objDes-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>() + <B>sizeof</B>(VMObject_t);
+  <I><FONT COLOR=green>//would we want to garbage collect now?</FONT></I>
+  <B>if</B>((newBytesAllocated &gt; (BYTES_IN_CAR/2)) &amp;&amp; prepareForGC_fkt) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//ask mutator for permission to gc if mutator has registered</FONT></I>
+    (prepareForGC_fkt)();
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_gc, "GarbageCollector_t::addNewObject 2" &lt;&lt; endl);
+<FONT COLOR=darkred>#endif</FONT>
+  DB_OUTDENT;
+  <B>return</B> vmo;
+
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=54>VMObject_t *GarbageCollector_t::<A HREF=../R/127.html>addRootObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#29>[&lt;]</A><A HREF=#58>[&gt;]</A><A HREF=#16>[^]</A><A HREF=#97>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=55>  <B>return</B> trainGeneration-&gt;<A HREF=../D/133.html>addRootObject</A>(objDes);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=58><B>void</B> GarbageCollector_t::<A HREF=../R/278.html>registerMutator</A>(<B>void</B> (prepareForGC_f) (<B>void</B>)) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#54>[&lt;]</A><A HREF=#64>[&gt;]</A><A HREF=#16>[^]</A><A HREF=#97>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  prepareForGC_fkt = prepareForGC_f;
+  <I><FONT COLOR=green>//just checking...</FONT></I>
+  <I><FONT COLOR=green>//(prepareForGC_fkt)();</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=64><B>void</B> GarbageCollector_t::<A HREF=../R/154.html>garbageCollect</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#58>[&lt;]</A><A HREF=#93>[&gt;]</A><A HREF=#16>[^]</A><A HREF=#97>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  DB_INDENT;</FONT></I>
+<I><FONT COLOR=green>#ifndef NO_GC</FONT></I>
+<I><FONT COLOR=green># ifdef INTEGRITY_CHECK</FONT></I>
+<I><FONT COLOR=green>  checkIntegrity();</FONT></I>
+<I><FONT COLOR=green># endif</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_notify, "Garbage collecting\n");</FONT></I>
+<I><FONT COLOR=green>#  ifdef DEBUG</FONT></I>
+<I><FONT COLOR=green>  //for(int i = 0; i &lt; 100; i++) {</FONT></I>
+<I><FONT COLOR=green>#  endif</FONT></I>
+<I><FONT COLOR=green>    trainGeneration-&gt;garbageCollect();</FONT></I>
+<I><FONT COLOR=green># ifdef INTEGRITY_CHECK</FONT></I>
+<I><FONT COLOR=green>    checkIntegrity();</FONT></I>
+<I><FONT COLOR=green># endif</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green># ifdef DEBUG</FONT></I>
+<I><FONT COLOR=green>    //}</FONT></I>
+<I><FONT COLOR=green># endif</FONT></I>
+<I><FONT COLOR=green>  newBytesAllocated = 0;</FONT></I>
+<I><FONT COLOR=green>#else</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_gc, "GarbageCollector::garbageCollect(): Warning, gc is disabled\n");</FONT></I>
+<I><FONT COLOR=green>#endif</FONT></I>
+<I><FONT COLOR=green>  DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=93><B>void</B> GarbageCollector_t::<A HREF=../R/227.html>heapDump</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#64>[&lt;]</A><A HREF=#97>[&gt;]</A><A HREF=#16>[^]</A><A HREF=#97>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=94>  trainGeneration-&gt;<A HREF=../D/253.html>heapDump</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=97><B>void</B> GarbageCollector_t::<A HREF=../R/136.html>checkIntegrity</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#93>[&lt;]</A>[&gt;]<A HREF=#16>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  DB_INDENT;</FONT></I>
+<I><FONT COLOR=green>  int errors = 0;</FONT></I>
+<I><FONT COLOR=green>  VMObject_t **validObjRefsArray = (VMObject_t**)malloc(CHECK_INTEGRITY_MAX_OBJS * sizeof(VMObject_t*));</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_integrity, "GarbageCollector::checkIntegrity: gathering all valid vmo's\n");</FONT></I>
+<I><FONT COLOR=green>  VMObject_t **lastObjRef = trainGeneration-&gt;gatherObjRefs(validObjRefsArray);</FONT></I>
+<I><FONT COLOR=green>  unsigned int length = (((unsigned int)lastObjRef)-((unsigned int)validObjRefsArray))</FONT></I>
+<I><FONT COLOR=green>    /sizeof(void*);</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_integrity, "GarbageCollector::checkIntegrity: checking references in all"</FONT></I>
+<I><FONT COLOR=green>         " objects\n");</FONT></I>
+<I><FONT COLOR=green>  errors += trainGeneration-&gt;checkObjRefs(validObjRefsArray, length);</FONT></I>
+<I><FONT COLOR=green>  free(validObjRefsArray);</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  if(errors) {</FONT></I>
+<I><FONT COLOR=green>    cerr &lt;&lt; "GarbageCollector_t::checkIntegrity(): found " &lt;&lt; errors &lt;&lt;</FONT></I>
+<I><FONT COLOR=green>      " error(s), bailing out!\n";</FONT></I>
+<I><FONT COLOR=green>    exit(1);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_integrity, "GarbageCollector::checkIntegrity: no errors found!\n");</FONT></I>
+<I><FONT COLOR=green>  DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT>
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#16>[^]</A><A HREF=#97>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

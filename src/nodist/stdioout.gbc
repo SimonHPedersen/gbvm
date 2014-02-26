@@ -1,0 +1,13 @@
+MainPart("'42"
+|
+   PUSHI-char `j'
+   POP-char,_C-->S,_PUSH-string
+   stdio/out
+   while(
+      PUSHI-boolean true
+   |
+      PUSHI-char `j'
+      POP-char,_C-->S,_PUSH-string
+      stdio/out
+   )
+)

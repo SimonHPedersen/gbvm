@@ -1,0 +1,91 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/PatternReference.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/PatternReference.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/PatternReference.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#13>[^]</A><A HREF=#42>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#13>PatternReference_t</A>
+<LI><A HREF=#26>getQualificationOffset</A>
+<LI><A HREF=#30>getValueOffset</A>
+<LI><A HREF=#34>getQualification</A>
+<LI><A HREF=#38>getValue</A>
+<LI><A HREF=#42>setValue</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: PatternReference.cc,v 1.8 2001/05/10 13:25:33 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<B>void</B>* PatternReference_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B> *location)<FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> *PatternReference_t::<B>operator</B> <B>new</B>(size_t size) <FONT COLOR=blue>{</FONT>
+  <B>return</B> malloc(<B>sizeof</B>(PatternReference_t));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=13>PatternReference_t::<A HREF=../S/68.html#163>PatternReference_t</A>(Pattern_t* qualification, 
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#26>[&gt;]</A>[^]<A HREF=#42>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                       Pattern_t* value)
+<FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//doing this-&gt;value = value;</FONT></I>
+  <B>if</B>(value)<FONT COLOR=blue>{</FONT>
+<A NAME=18>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;value), value);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//doing this-&gt;qualification = qualification;</FONT></I>
+  <B>if</B>(qualification)<FONT COLOR=blue>{</FONT>
+<A NAME=22>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;qualification), qualification);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=26><B>unsigned</B> <B>int</B> PatternReference_t::<A HREF=../R/212.html>getQualificationOffset</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#13>[&lt;]</A><A HREF=#30>[&gt;]</A><A HREF=#13>[^]</A><A HREF=#42>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;qualification - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=30><B>unsigned</B> <B>int</B> PatternReference_t::<A HREF=../R/220.html>getValueOffset</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#26>[&lt;]</A><A HREF=#34>[&gt;]</A><A HREF=#13>[^]</A><A HREF=#42>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;value - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=34>Pattern_t* PatternReference_t::getQualification(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#30>[&lt;]</A><A HREF=#38>[&gt;]</A><A HREF=#13>[^]</A><A HREF=#42>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> qualification;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=38>Pattern_t* PatternReference_t::<A HREF=../R/219.html>getValue</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#34>[&lt;]</A><A HREF=#42>[&gt;]</A><A HREF=#13>[^]</A><A HREF=#42>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> value;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=42><B>void</B> PatternReference_t::setValue(Pattern_t* ptn)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#38>[&lt;]</A>[&gt;]<A HREF=#13>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+  <B>if</B>(ptn)<FONT COLOR=blue>{</FONT>
+<A NAME=45>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;value, ptn);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    value = 0;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  setVMReference(<B>this</B>, (<B>void</B>**)&amp;value, ptn);
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#13>[^]</A><A HREF=#42>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

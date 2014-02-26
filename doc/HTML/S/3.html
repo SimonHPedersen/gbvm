@@ -1,0 +1,344 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/TrainGeneration.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/TrainGeneration.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/TrainGeneration.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#15>[^]</A><A HREF=#295>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#15>TrainGeneration_t</A>
+<LI><A HREF=#59>TrainGeneration_t</A>
+<LI><A HREF=#80>addNewObject</A>
+<LI><A HREF=#118>addRootObject</A>
+<LI><A HREF=#124>garbageCollect</A>
+<LI><A HREF=#250>heapDump</A>
+<LI><A HREF=#261>gatherObjRefs</A>
+<LI><A HREF=#274>checkObjRefs</A>
+<LI><A HREF=#290>getCarTrain</A>
+<LI><A HREF=#295>addr2index</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: TrainGeneration.cc,v 1.3 2001/05/21 11:42:41 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Generation.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>#include "ObjectDescriptor.hpp"</FONT></I>
+<I><FONT COLOR=green>#include "garbage_collector.hpp"</FONT></I>
+<I><FONT COLOR=green>#include "Train.hpp"</FONT></I>
+<I><FONT COLOR=green>#include "Car.hpp"</FONT></I>
+<I><FONT COLOR=green>#include "Generation.hpp"</FONT></I>
+<I><FONT COLOR=green>*/</FONT></I>
+
+<A NAME=15>TrainGeneration_t::<A HREF=../S/6.html#17>TrainGeneration_t</A>(<B>int</B> heapSizeInCars):
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#59>[&gt;]</A>[^]<A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  lastMemBlkSize(heapSizeInCars)
+<FONT COLOR=blue>{</FONT>
+  <B>if</B>(heapSizeInCars &lt;= 0) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "TrainGeneration_t(): constructor was given 0 or negative size\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//make sure cars can reach us</FONT></I>
+  Car_t::setTrainGeneration(<B>this</B>);
+
+  <I><FONT COLOR=green>//allocate array for address -&gt; train, car</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  if(!(adr2CarTrainTbl = (CarTrain_t*)malloc(sizeof(CarTrain_t[ADR_2_CT_SIZE])))) {</FONT></I>
+<I><FONT COLOR=green>    cerr &lt;&lt; "TrainGeneration_t(): unable to allocate address -&gt; train, car"</FONT></I>
+<I><FONT COLOR=green>      " decoding table, quitting\n";</FONT></I>
+<I><FONT COLOR=green>    exit(1);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+  <I><FONT COLOR=green>//clear array</FONT></I>
+  memset((<B>void</B> *)adr2CarTrainTbl, 0, <B>sizeof</B>(CarTrain_t[ADR_2_CT_SIZE]));
+
+  <I><FONT COLOR=green>//allocate memory blocks</FONT></I>
+<A NAME=39>  memoryBlocks.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../D/98.html>MemoryBlock_t</A>(heapSizeInCars));
+
+<A NAME=41>  <B>void</B> * carSpace = memoryBlocks.last()-&gt;<A HREF=../D/136.html>allocCarSpace</A>();
+
+  nextTrainNumber = 1;
+  nextCarNumber = 0;
+
+  <I><FONT COLOR=green>//allocate allocation car</FONT></I>
+<A NAME=47>  allocCar = <B>new</B>(carSpace)<A HREF=../D/2.html>Car_t</A>(nextTrainNumber, nextCarNumber++);
+
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  nextTrainNumber = 0; // UINT_MAX-4; //for debug only should start from 0</FONT></I>
+<I><FONT COLOR=green>  trainList = new Train_t(*this, nextTrainNumber++, MAX_NUMBER_OF_CARS);</FONT></I>
+<I><FONT COLOR=green>  lastTrain = trainList;</FONT></I>
+<I><FONT COLOR=green>  rootTrain = new Train_t(*this, UINT_MAX, UINT_MAX);</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  Generation_t::init(heapSize);</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=59>TrainGeneration_t::~<A HREF=../S/6.html#17>TrainGeneration_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#15>[&lt;]</A><A HREF=#80>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//free(adr2CarTrainTbl);</FONT></I>
+
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  DB_INDENT;</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_tg, "~TrainGeneration_t(): farveller 1\n");</FONT></I>
+<I><FONT COLOR=green>  delete rootTrain;</FONT></I>
+<I><FONT COLOR=green>  //delete trains in list</FONT></I>
+<I><FONT COLOR=green>  Train_t *nextTrain = trainList, *train;</FONT></I>
+<I><FONT COLOR=green>  while(nextTrain) {</FONT></I>
+<I><FONT COLOR=green>    train = nextTrain;</FONT></I>
+<I><FONT COLOR=green>    nextTrain = nextTrain-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>    delete train;</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_tg, "~TrainGeneration_t(): farveller end\n");</FONT></I>
+<I><FONT COLOR=green>  //super(size);</FONT></I>
+<I><FONT COLOR=green>  DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=80>VMObject_t *TrainGeneration_t::<A HREF=../R/122.html>addNewObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#59>[&lt;]</A><A HREF=#118>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//  DB_OUT(gc_tg, "TrainGeneration_t::addNewObject()\n");</FONT></I>
+
+<A NAME=84>  VMObject_t *vmo = allocCar-&gt;<A HREF=../D/139.html>allocateVMO</A>(objDes);
+  <B>if</B>(vmo) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> vmo;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//try to add a new car</FONT></I>
+  <B>void</B> *carSpace;
+<A NAME=92>  <B>if</B>(!(carSpace = memoryBlocks.last()-&gt;<A HREF=../D/136.html>allocCarSpace</A>())) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_tg, "TrainGeneration_t::addNewObject(): failed to allocate"
+           " space for new car\n");
+    <I><FONT COLOR=green>//try to add a new memory block</FONT></I>
+    lastMemBlkSize *= BLOCK_SIZE_MULTIPLIER;
+<A NAME=97>    memoryBlocks.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../D/98.html>MemoryBlock_t</A>(lastMemBlkSize));
+<A NAME=98>    carSpace = (Car_t*)memoryBlocks.last()-&gt;<A HREF=../D/136.html>allocCarSpace</A>();
+  <FONT COLOR=blue>}</FONT>
+
+  <B>if</B>(!carSpace) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "TrainGeneration_t::addNewObject(): error:"
+      " could not allocate car\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+<A NAME=107>  allocCar = <B>new</B>(carSpace)<A HREF=../D/2.html>Car_t</A>(nextTrainNumber, nextCarNumber++);
+
+<A NAME=109>  <B>if</B>(!(vmo = allocCar-&gt;<A HREF=../D/139.html>allocateVMO</A>(objDes))) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "TrainGeneration_t::addNewObject(): error: object is too big\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+  DB_OUTDENT;
+  <B>return</B> vmo;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=118>VMObject_t *TrainGeneration_t::<A HREF=../R/127.html>addRootObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#80>[&lt;]</A><A HREF=#124>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//hack, does not handle root objects yet...</FONT></I>
+<A NAME=120>  <B>return</B> <A HREF=../D/128.html>addNewObject</A>(objDes);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//Garbage collection with the hot, new and famous train algorithm</FONT></I>
+<A NAME=124><B>void</B> TrainGeneration_t::<A HREF=../R/154.html>garbageCollect</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#118>[&lt;]</A><A HREF=#250>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_tg, "*** MG: garbage collecting not implemented ***\n");
+  DB_OUTDENT;
+
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  DB_INDENT;</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_tg, "*** MG: garbage collecting ***\n");</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>#ifdef DEBUG</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_tg_heapdump, "MG: dumping heap\n");</FONT></I>
+<I><FONT COLOR=green>  Train_t *tmpTrain = trainList;</FONT></I>
+<I><FONT COLOR=green>  while(tmpTrain) {</FONT></I>
+<I><FONT COLOR=green>    DB_OUT0(gc_tg_heapdump, tmpTrain);</FONT></I>
+<I><FONT COLOR=green>    tmpTrain = tmpTrain-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>#endif</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  //avoid segfault if there are no trains</FONT></I>
+<I><FONT COLOR=green>  if(!trainList) {</FONT></I>
+<I><FONT COLOR=green>    DB_OUT(gc_tg, "TrainGeneration_t::garbageCollect(): tried to garbage collect when there"</FONT></I>
+<I><FONT COLOR=green>           " no trains\n");</FONT></I>
+<I><FONT COLOR=green>    DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>    return;</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  //check first train for outside references</FONT></I>
+<I><FONT COLOR=green>  if(!trainList-&gt;isExternallyReferenced()){</FONT></I>
+<I><FONT COLOR=green>    DB_OUT(gc_tg, "TrainGeneration_t::garbageCollect(): first train not externally referenced\n");</FONT></I>
+<I><FONT COLOR=green>    Train_t* oldFirstTrain = trainList;</FONT></I>
+<I><FONT COLOR=green>    //make train list point to next train in list</FONT></I>
+<I><FONT COLOR=green>    trainList = trainList-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>    delete oldFirstTrain;</FONT></I>
+<I><FONT COLOR=green>    DB_OUT(gc_tg, "TrainGeneration_t::garbageCollect(): removed garbage-train\n");</FONT></I>
+<I><FONT COLOR=green>  } else {</FONT></I>
+<I><FONT COLOR=green>    Car_t* firstCar = trainList-&gt;getFirstCar();</FONT></I>
+<I><FONT COLOR=green>    //check first car for outside references</FONT></I>
+<I><FONT COLOR=green>    if(firstCar-&gt;isReferencedOutsideCar()){</FONT></I>
+<I><FONT COLOR=green>      </FONT></I>
+<I><FONT COLOR=green>      RememberedSetNode_t* carRemSet;</FONT></I>
+<I><FONT COLOR=green>      VMObject_t* vmo;</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>      //iterate cars remembered set - first move only objects that are referenced outside train</FONT></I>
+<I><FONT COLOR=green>      for(carRemSet = firstCar-&gt;getCarsRememberSetPtr();</FONT></I>
+<I><FONT COLOR=green>          carRemSet != NULL;</FONT></I>
+<I><FONT COLOR=green>          carRemSet = carRemSet-&gt;nextRemSetNodePtr){</FONT></I>
+<I><FONT COLOR=green>        vmo = carRemSet-&gt;vmIdObjectPtr;</FONT></I>
+<I><FONT COLOR=green>        //this is a bit bad, as this is also done in moveObject</FONT></I>
+<I><FONT COLOR=green>        if(vmo-&gt;getARefObjOutsideTrain()) {</FONT></I>
+<I><FONT COLOR=green>          vmo-&gt;moveObject();</FONT></I>
+<I><FONT COLOR=green>        }</FONT></I>
+<I><FONT COLOR=green>      }</FONT></I>
+<I><FONT COLOR=green>      //iterate cars remembered set - the rest of the referenced objects will be moved now</FONT></I>
+<I><FONT COLOR=green>      for(carRemSet = firstCar-&gt;getCarsRememberSetPtr();</FONT></I>
+<I><FONT COLOR=green>          carRemSet != NULL;</FONT></I>
+<I><FONT COLOR=green>          carRemSet = carRemSet-&gt;nextRemSetNodePtr){</FONT></I>
+<I><FONT COLOR=green>        vmo = carRemSet-&gt;vmIdObjectPtr;</FONT></I>
+<I><FONT COLOR=green>        vmo-&gt;moveObject();</FONT></I>
+<I><FONT COLOR=green>      }</FONT></I>
+<I><FONT COLOR=green>    }</FONT></I>
+<I><FONT COLOR=green>    //delete car</FONT></I>
+<I><FONT COLOR=green>    trainList-&gt;freeFirstCar();      </FONT></I>
+<I><FONT COLOR=green>    // ***NEW*** CHECK IF THE TRAIN IS NOW EMPTY AND FREE IT IF SO</FONT></I>
+<I><FONT COLOR=green>    if(!trainList-&gt;getFirstCar()) {</FONT></I>
+<I><FONT COLOR=green>      Train_t* oldFirstTrain = trainList;</FONT></I>
+<I><FONT COLOR=green>      trainList = trainList-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>      delete oldFirstTrain;</FONT></I>
+<I><FONT COLOR=green>      DB_OUT(gc_tg, "TrainGeneration_t::garbageCollect(): removed empty garbage-train\n");</FONT></I>
+<I><FONT COLOR=green>    }</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>#ifdef DEBUG</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_tg_heapdump, "MG: after gc, dumping heap\n");</FONT></I>
+<I><FONT COLOR=green>  tmpTrain = trainList;</FONT></I>
+<I><FONT COLOR=green>  while(tmpTrain) {</FONT></I>
+<I><FONT COLOR=green>    DB_OUT0(gc_tg_heapdump, tmpTrain);</FONT></I>
+<I><FONT COLOR=green>    tmpTrain = tmpTrain-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>#endif</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>Train_t *TrainGeneration_t::addTrain() {</FONT></I>
+<I><FONT COLOR=green>  DB_INDENT;</FONT></I>
+<I><FONT COLOR=green>  if((nextTrainNumber + 1) == UINT_MAX) {</FONT></I>
+<I><FONT COLOR=green>    //we should renumber trains now</FONT></I>
+<I><FONT COLOR=green>    DB_OUT(gc_tg, "TrainGeneration_t::addTrain(): ***** WARNING: TRAIN NUMBERS WRAPPING AROUND"</FONT></I>
+<I><FONT COLOR=green>           " ***** this will probably crash!\n");</FONT></I>
+<I><FONT COLOR=green>    renumberTrains();</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  Train_t* newTrain = new Train_t(*this, nextTrainNumber++, MAX_NUMBER_OF_CARS);</FONT></I>
+<I><FONT COLOR=green>  lastTrain-&gt;setNextTrainPtr(newTrain);</FONT></I>
+<I><FONT COLOR=green>  DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>  return lastTrain = newTrain;</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>void TrainGeneration_t::renumberTrains(void) {</FONT></I>
+<I><FONT COLOR=green>  nextTrainNumber = 0;</FONT></I>
+<I><FONT COLOR=green>  for(Train_t *tmpTrain = trainList; tmpTrain; tmpTrain = tmpTrain-&gt;getNextTrainPtr()) {</FONT></I>
+<I><FONT COLOR=green>    tmpTrain-&gt;setTrainNumber(nextTrainNumber++);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>Car_t *TrainGeneration_t::getCarAddress() {</FONT></I>
+<I><FONT COLOR=green>  DB_INDENT;</FONT></I>
+<I><FONT COLOR=green>  Car_t *carSpace = (Car_t*)malloc(sizeof(Car_t));</FONT></I>
+<I><FONT COLOR=green>  if(carSpace) {</FONT></I>
+<I><FONT COLOR=green>    DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>    return carSpace;</FONT></I>
+<I><FONT COLOR=green>  } else {</FONT></I>
+<I><FONT COLOR=green>    DB_OUT(gc_tg, "TrainGeneration_t::getCarAddress(): could not get mem for car.\n");</FONT></I>
+<I><FONT COLOR=green>    DB_OUTDENT;</FONT></I>
+<I><FONT COLOR=green>    return 0;</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  return 0;</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>void TrainGeneration_t::freeCar(Car_t *carPtr) {</FONT></I>
+<I><FONT COLOR=green>  free(carPtr);</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green>*/</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=250><B>void</B> TrainGeneration_t::<A HREF=../R/227.html>heapDump</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#124>[&lt;]</A><A HREF=#261>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_tg_heapdump, "MG: dumping heap\n");</FONT></I>
+<I><FONT COLOR=green>  Train_t *tmpTrain = trainList;</FONT></I>
+<I><FONT COLOR=green>  while(tmpTrain) {</FONT></I>
+<I><FONT COLOR=green>    DB_OUT0(gc_tg_heapdump, tmpTrain);</FONT></I>
+<I><FONT COLOR=green>    tmpTrain = tmpTrain-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=261>VMObject_t **TrainGeneration_t::<A HREF=../R/155.html>gatherObjRefs</A>(VMObject_t **vmoRefArray) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#250>[&lt;]</A><A HREF=#274>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  vmoRefArray = rootTrain-&gt;gatherObjRefs(vmoRefArray);</FONT></I>
+<I><FONT COLOR=green>  Train_t *train = trainList;</FONT></I>
+<I><FONT COLOR=green>  while (train) {</FONT></I>
+<I><FONT COLOR=green>    vmoRefArray = train-&gt;gatherObjRefs(vmoRefArray);</FONT></I>
+<I><FONT COLOR=green>    train = train-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  return vmoRefArray;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=274><B>int</B> TrainGeneration_t::<A HREF=../R/138.html>checkObjRefs</A>(VMObject_t **vmoRefArray, <B>unsigned</B> <B>int</B> length) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#261>[&lt;]</A><A HREF=#290>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  int retval = 0;</FONT></I>
+<I><FONT COLOR=green>  retval += rootTrain-&gt;checkObjRefs(vmoRefArray, length);</FONT></I>
+<I><FONT COLOR=green>  Train_t *train = trainList;</FONT></I>
+<I><FONT COLOR=green>  while (train) {</FONT></I>
+<I><FONT COLOR=green>    retval += train-&gt;checkObjRefs(vmoRefArray, length);</FONT></I>
+<I><FONT COLOR=green>    train = train-&gt;getNextTrainPtr();</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  return retval;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT>
+
+<A NAME=290>CarTrain_t *TrainGeneration_t::<A HREF=../R/166.html>getCarTrain</A>(<B>void</B> *address) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#274>[&lt;]</A><A HREF=#295>[&gt;]</A><A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=291>  <B>return</B> &amp;adr2CarTrainTbl[<A HREF=../S/3.html#295>addr2index</A>(address)];
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=295><B>unsigned</B> <B>int</B> TrainGeneration_t::<A HREF=../S/3.html#291>addr2index</A>(<B>void</B> *address) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#290>[&lt;]</A>[&gt;]<A HREF=#15>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)address)&gt;&gt;CAR_EXP;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#15>[^]</A><A HREF=#295>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

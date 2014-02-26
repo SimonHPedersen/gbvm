@@ -1,0 +1,80 @@
+ORIGIN 'betaenv';
+BODY 'cruncher4body'
+
+-- lib:attributes --
+
+i2str1:
+  (# <<SLOT i2strlib:attributes>>;
+     n: integer; result: @string
+  enter n <<SLOT i2str1:dopart>> exit result
+  #);
+
+list:
+  (# <<SLOT listlib:attributes>>;
+     element:< object;
+     cell: (# elm: ^element; next: ^cell exit this(cell)[] #);
+     scan: (# current: ^element; c: ^cell <<SLOT listscan:dopart>> #);
+     add: (# c: ^cell enter (&c).elm[] <<SLOT listadd:dopart>> #);
+     add3: (# enter (add,add,add) #);
+     makeEmpty: (# <<SLOT makeEmpty:dopart>> #);
+     isEmpty: (# result: @boolean <<SLOT isEmpty:dopart>> exit result #);
+  exit this(list)[]
+  #);
+
+node:
+  (# <<SLOT nodelib:attributes>>;
+     child1,child2,child3: ^node; id: @string; myMark: @boolean;
+     init: (# enter id exit this(node)[] #);
+     childMethod:
+       (# on1:< object; on2:< object; on3:< object;
+          n: ^node; i: @integer
+       enter i do (if i //1 then on1 //2 then on2 //3 then on3 if)
+       #);
+     changeChildN: childMethod
+       (# on1::(# do n->child1[] #);
+          on2::(# do n->child2[] #);
+          on3::(# do n->child3[] #)
+       enter n[] exit n
+       #);
+     getChild: childMethod
+       (# on1::(# do child1->n[] #);
+          on2::(# do child2->n[] #);
+          on3::(# do child3->n[] #)
+       exit n
+       #);
+     setId: (# enter id #);
+     printMe: (# <<SLOT printMe:dopart>> #);
+     mark: (# do true->myMark #);
+     unmark: (# do false->myMark #);
+     isMarked:
+       (# n: ^node; result: @boolean
+       enter getChild->n[] <<SLOT isMarked:dopart>> exit result
+       #);
+     makeChildren: 
+       (#
+       do 'a'->node.init->child1[];
+          'b'->node.init->child2[];
+          'c'->node.init->child3[]
+       exit (child1[],child2[],child3[])
+       #)
+  do (*id->stdio;*)
+     INNER
+  exit this(node)[]
+  #);
+
+dfs: (# n: ^node enter n[] <<SLOT dfs:dopart>> #);
+
+makeTree:
+  (# <<SLOT makeTreeLib:attributes>>;
+     depth: @integer; root: ^node
+  enter depth <<SLOT makeTree:dopart>> exit root[]
+  #)
+
+-- program:merge --
+(#
+   root,n1,n2,n3: ^node
+do
+   3->makeTree->root[];
+   (for i:10 repeat root->dfs; '\n'->stdio for)
+#)
+

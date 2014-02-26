@@ -1,0 +1,102 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/Car.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/Car.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/Car.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#27>[^]</A><A HREF=#64>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#27>allocateVMO</A>
+<LI><A HREF=#50>printOn</A>
+<LI><A HREF=#64>availSpace</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Car.cc,v 1.1 2001/03/16 08:26:13 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Car.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+<I><FONT COLOR=green>//----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Car_t* car) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(car) <FONT COLOR=blue>{</FONT>
+<A NAME=10>    car-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-car ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Car_t&amp; car) <FONT COLOR=blue>{</FONT>
+<A NAME=18>  car.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- member functions -----</FONT></I>
+
+
+
+
+<A NAME=27>VMObject_t *Car_t::<A HREF=../R/132.html>allocateVMO</A>(ObjectDescriptor_t *objDesc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#50>[&gt;]</A>[^]<A HREF=#64>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+
+  <I><FONT COLOR=green>//DB_OUT(gc_car, "Car_t::allocateVMO(): available space: " &lt;&lt; availSpace()</FONT></I>
+  <I><FONT COLOR=green>//     &lt;&lt; endl);</FONT></I>
+
+<A NAME=33>  size_t objSize = objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>() + <B>sizeof</B>(VMObject_t)
+    - <B>sizeof</B>(<B>void</B>*);
+<A NAME=35>  <B>if</B>(objSize &gt; <A HREF=../D/141.html>availSpace</A>()) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>// not enough space</FONT></I>
+    DB_OUT(gc_car, "Car_t::allocateVMO(): out of space\n");
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <B>void</B> *newDataPtr = freePtr;
+  freePtr = (<B>void</B>*)((size_t)freePtr + (size_t)objSize);
+<A NAME=44>  VMObject_t *vmo = <B>new</B>(newDataPtr, objDesc)<A HREF=../D/121.html>VMObject_t</A>();
+  DB_OUTDENT;
+
+  <B>return</B> vmo;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=50><B>void</B> Car_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#27>[&lt;]</A><A HREF=#64>[&gt;]</A><A HREF=#27>[^]</A><A HREF=#64>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+  stream &lt;&lt; "--- Car " <I><FONT COLOR=green>/*&lt;&lt; carNumber*/</FONT></I> &lt;&lt; " at " &lt;&lt; (<B>void</B>*)<B>this</B>;
+  <I><FONT COLOR=green>// &lt;&lt; " with train " &lt;&lt; trainRef.getTrainNumber();</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//void Car_t::setTrainGeneration(TrainGeneration_t *tg) {</FONT></I>
+<I><FONT COLOR=green>//  tg = tg;</FONT></I>
+<I><FONT COLOR=green>//}</FONT></I>
+
+<I><FONT COLOR=green>// ----- private member functions -----</FONT></I>
+
+<A NAME=64>size_t Car_t::<A HREF=../R/133.html>availSpace</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#50>[&lt;]</A>[&gt;]<A HREF=#27>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((size_t)<B>this</B> + BYTES_IN_CAR) - (size_t)freePtr;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//We have to do this in order not to make the compiler/linker mad</FONT></I>
+TrainGeneration_t *Car_t::tg = 0;
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#27>[^]</A><A HREF=#64>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

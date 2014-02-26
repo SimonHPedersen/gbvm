@@ -1,0 +1,155 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/RememberedSet.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/RememberedSet.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/RememberedSet.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#28>[^]</A><A HREF=#86>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#28>RememberedSet_t</A>
+<LI><A HREF=#47>lookup</A>
+<LI><A HREF=#56>insert</A>
+<LI><A HREF=#66>remove</A>
+<LI><A HREF=#70>getIterator</A>
+<LI><A HREF=#74>getEndIterator</A>
+<LI><A HREF=#78>clear</A>
+<LI><A HREF=#82>empty</A>
+<LI><A HREF=#86>dumpRemSet</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: RememberedSet.cc,v 1.13 2001/04/25 17:26:57 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<FONT COLOR=darkred>#ifdef</FONT> STL_REMSET
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>//----- operators ----</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>ostream&amp; operator &lt;&lt; (ostream&amp; stream, RememberedSet_t* rs, void* tmpVMO, size_t length){</FONT></I>
+<I><FONT COLOR=green>  if(rs){</FONT></I>
+<I><FONT COLOR=green>    rs-&gt;printOn(tmpVMO, length, stream);</FONT></I>
+<I><FONT COLOR=green>  } else {</FONT></I>
+<I><FONT COLOR=green>      } else {</FONT></I>
+<I><FONT COLOR=green>    stream &lt;&lt; "*** tried to print a null-car ***\n";</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  return stream;</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>ostream&amp; operator &lt;&lt; (ostream&amp; stream, RememberedSet_t&amp; rs, void* tmpVMP, size_t length){</FONT></I>
+<I><FONT COLOR=green>  rs.printOn(tmpVMO, length, stream);</FONT></I>
+<I><FONT COLOR=green>  return stream;</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green>*/</FONT></I>
+
+<I><FONT COLOR=green>//------ member functions ----</FONT></I>
+
+<A NAME=28>RememberedSet_t::~<A HREF=../R/106.html>RememberedSet_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#47>[&gt;]</A>[^]<A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//cout &lt;&lt; "before delete(remSet) \n";</FONT></I>
+  <I><FONT COLOR=green>//remSet.~hash_set();</FONT></I>
+
+  remSetIt_t start = remSet.begin();
+  remSetIt_t end = remSet.end();
+  
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  while(start != end){</FONT></I>
+<I><FONT COLOR=green>    delete *start++;</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+  
+  destroy(start,end);
+  <I><FONT COLOR=green>//delete(remSet);</FONT></I>
+
+  <I><FONT COLOR=green>//cout &lt;&lt; "after delete(remSet) \n";</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=47><B>void</B>** RememberedSet_t::<A HREF=../R/238.html>lookup</A>(<B>void</B>** v1)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#28>[&lt;]</A><A HREF=#56>[&gt;]</A><A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  remSetIt_t it = remSet.find(v1);
+  <B>if</B>(it == remSet.end())<FONT COLOR=blue>{</FONT>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>return</B> *it;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=56><B>void</B> RememberedSet_t::<A HREF=../R/231.html>insert</A>(<B>void</B>** v1)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#47>[&lt;]</A><A HREF=#66>[&gt;]</A><A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_remset, "RememberedSet::insert(): inserting " &lt;&lt; (<B>void</B>*)v1
+         &lt;&lt; " in remembered set at: " &lt;&lt; flush &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; "\n" &lt;&lt; flush);
+<A NAME=60>  remSet.<A HREF=../D/260.html>insert</A>(v1);
+  DB_OUT(gc_remset, "RememberedSet::insert(): inserting " &lt;&lt; (<B>void</B>*)v1
+         &lt;&lt;" - done\n");
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=66><B>void</B> RememberedSet_t::<A HREF=../R/279.html>remove</A>(<B>void</B>** v1)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#56>[&lt;]</A><A HREF=#70>[&gt;]</A><A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  remSet.erase(v1);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=70>remSetIt_t RememberedSet_t::<A HREF=../R/183.html>getIterator</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#66>[&lt;]</A><A HREF=#74>[&gt;]</A><A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> remSet.begin();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=74>remSetIt_t RememberedSet_t::<A HREF=../R/172.html>getEndIterator</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#70>[&lt;]</A><A HREF=#78>[&gt;]</A><A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> remSet.end();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=78><B>void</B> RememberedSet_t::<A HREF=../R/139.html>clear</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#74>[&lt;]</A><A HREF=#82>[&gt;]</A><A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=79>  remSet.<A HREF=../D/148.html>clear</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=82>bool RememberedSet_t::<A HREF=../R/149.html>empty</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#78>[&lt;]</A><A HREF=#86>[&gt;]</A><A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=83>  <B>return</B> remSet.<A HREF=../D/160.html>empty</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=86><B>void</B> RememberedSet_t::<A HREF=../R/148.html>dumpRemSet</A>(<B>void</B>* tmpVMO, size_t length, ostream&amp; stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#82>[&lt;]</A>[&gt;]<A HREF=#28>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  size_t tracedLength = 0;
+  <B>while</B>(tracedLength &lt; length) <FONT COLOR=blue>{</FONT>
+    bool haveWrittenHead = false;
+<A NAME=91>    <B>for</B>(remSetIt_t i = <A HREF=../D/203.html>getIterator</A>(); i != <A HREF=../D/191.html>getEndIterator</A>(); i++)<FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//cout &lt;&lt; "has remset item: " &lt;&lt; *i &lt;&lt; " pointing to: " &lt;&lt; **i &lt;&lt; endl;</FONT></I>
+      <B>if</B>(**i == VOIDP_FROM_VMO(tmpVMO))<FONT COLOR=blue>{</FONT>
+        <B>if</B>(!haveWrittenHead) <FONT COLOR=blue>{</FONT>
+          DB_INS_INDT(stream);
+<A NAME=96>          stream &lt;&lt; "Remembered set for vmobject" &lt;&lt; ((VMObject_t*)tmpVMO)-&gt;<A HREF=../S/13.html#440>getID</A>()  
+          &lt;&lt; " at " &lt;&lt; tmpVMO &lt;&lt; " with car at " 
+          &lt;&lt; (<B>void</B>*)Car_t::getCar(((<B>void</B>*)tmpVMO)) &lt;&lt; endl;
+          haveWrittenHead = true;
+        <FONT COLOR=blue>}</FONT>
+        DB_INS_INDT(stream); stream &lt;&lt; " - " &lt;&lt; *i &lt;&lt; endl;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    tracedLength += ((VMObject_t*)tmpVMO)-&gt;getFullVMOLength();  
+    tmpVMO = NEXT_VMO(((VMObject_t*)tmpVMO));
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//STL_REMSET</FONT></I>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#28>[^]</A><A HREF=#86>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

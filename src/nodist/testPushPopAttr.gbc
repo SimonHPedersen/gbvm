@@ -1,0 +1,58 @@
+MainPart("`42424242"
+   "mybool/0": (
+      PUSH-ptn {<-1,"boolean/1"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+   "mychar/1": (
+      PUSH-ptn {<-1,"char/2"}
+      NEW,_ptn->obj
+      INSTALL-obj 1
+   )
+   "myint/2": (
+      PUSH-ptn {<-1,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 2
+   )
+   "myreal/3": (
+      PUSH-ptn {<-1,"real/4"}
+      NEW,_ptn->obj
+      INSTALL-obj 3
+   )
+   "mystring/4": (
+      PUSH-ptn {<-1,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 4
+   )
+   "pattern/5": (
+      PUSH-ptn_"object"
+      INSTALL-ptn 5
+   )
+   "object/6": (
+      PUSH-ptn {<-1,"object/0"}
+      NEW,_ptn->obj
+      INSTALL-obj 6
+   )
+|
+   PUSHI-boolean true
+   POP-boolean {"mybool/0"}
+   PUSH-boolean {"mybool/0"}
+   PUSHI-char `a'
+   POP-char {"mychar/1"}
+   PUSH-char {"mychar/1"}
+   PUSHI-integer 42
+   POP-integer {"myint/2"}
+   PUSH-integer {"myint/2"}
+   PUSHI-real 42.1
+   POP-real {"myreal/3"}
+   PUSH-real {"myreal/3"}
+   PUSHI-string "hallohallo"
+   POP-string {"mystring/4"}
+   PUSH-string {"mystring/4"}
+   PUSH-ptn {"pattern/5"}
+   PUSH-obj {"object/6"}
+   PUSH-tmpobj {"object/6"}
+   PUSH-str-len {"mystring/4"}
+   PUSHI_NONE(obj)
+   PUSHI_NONE(ptn)
+)

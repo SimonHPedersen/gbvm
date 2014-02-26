@@ -1,0 +1,320 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/IntroductorySpace.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/IntroductorySpace.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/IntroductorySpace.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#24>[^]</A><A HREF=#82>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#24>IntroductorySpace_t</A>
+<LI><A HREF=#44>IntroductorySpace_t</A>
+<LI><A HREF=#55>allocVMO</A>
+<LI><A HREF=#82>moveObjects</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: IntroductorySpace.cc,v 1.37 2001/06/08 10:26:23 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+
+<I><FONT COLOR=green>//----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, IntroductorySpace_t* is) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(is) <FONT COLOR=blue>{</FONT>
+<A NAME=10>    is-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-introductoryspace ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, IntroductorySpace_t&amp; is) <FONT COLOR=blue>{</FONT>
+<A NAME=18>  is.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//------ member functions -------</FONT></I>
+
+<A NAME=24>IntroductorySpace_t::IntroductorySpace_t() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#44>[&gt;]</A>[^]<A HREF=#82>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//DB_OUT(gc_introSp, "IntroductorySpace(" &lt;&lt; bytes &lt;&lt; ")\n");</FONT></I>
+  cout &lt;&lt; "IntroductorySpace(" &lt;&lt; BYTES_IN_INTROSP &lt;&lt; ")\n";
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(BYTES_IN_INTROSP &lt;= 0) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "IntroductorySpace_t(): Error: was given zero or negative bytes\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+  <B>if</B>(!(introSpacePtr = (<B>void</B>**)memalign(BYTES_IN_INTROSP, BYTES_IN_INTROSP))) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "IntroductorySpace_t(): Error: unable to allocate memory for"
+      " introductorys\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  cout &lt;&lt; "Introductory space at: " &lt;&lt; (<B>void</B>*)introSpacePtr &lt;&lt; endl;
+<A NAME=39>  remSet = <B>new</B> <A HREF=../S/28.html#28>RememberedSet_t</A>();
+  freePtr = introSpacePtr;
+  <I><FONT COLOR=green>//  introSpaceSize = bytes;</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=44>IntroductorySpace_t::~IntroductorySpace_t() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#24>[&lt;]</A><A HREF=#55>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#82>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  free(introSpacePtr);
+  <B>delete</B>(remSet);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>bool IntroductorySpace_t::member(void *address) {</FONT></I>
+<I><FONT COLOR=green>  return (introSpacePtr == (void*)((unsigned int)address &amp; INTROSP_MASK));</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green>*/</FONT></I>
+
+<A NAME=55>VMObject_t * IntroductorySpace_t::allocVMO(ObjectDescriptor_t *objDesc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#44>[&lt;]</A><A HREF=#82>[&gt;]</A><A HREF=#24>[^]</A><A HREF=#82>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(!objDesc) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "IntroductorySpace_t::allocVMO(): objdesc was null\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+
+  size_t freeSpace = (size_t)introSpacePtr + BYTES_IN_INTROSP
+    - (size_t)freePtr;
+  size_t reqSpace = <B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)
+<A NAME=67>    + objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+  <B>if</B>(freeSpace &lt; reqSpace) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_introSp, "IntroductorySpace_t::allocVMO(): cannot allocate"
+           " this object in introductoryspace, " &lt;&lt; "free space: " &lt;&lt;
+           freeSpace &lt;&lt; ", required space: " &lt;&lt; reqSpace &lt;&lt; endl);
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+  <B>void</B> *objLoc = freePtr;
+  freePtr = (<B>void</B>*)((size_t)freePtr + reqSpace);
+<A NAME=77>  VMObject_t *vmo = <B>new</B>(objLoc, objDesc)<A HREF=../D/121.html>VMObject_t</A>();
+  DB_OUTDENT;
+  <B>return</B> vmo;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=82><B>void</B> IntroductorySpace_t::<A HREF=../R/249.html>moveObjects</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#55>[&lt;]</A>[&gt;]<A HREF=#24>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<A NAME=84>  Car_t *destCar, *fromCar  = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+<A NAME=85>  CarTrain_t fromCarTrain = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(fromCar);
+  <B>unsigned</B> <B>int</B> fromTrainNum = fromCarTrain.getTrain();
+<FONT COLOR=darkred>#ifdef</FONT> FIRST_TRAIN_REFED_TO_2ND_TRAIN
+<A NAME=88>  Car_t *secTrLCar = ttable.<A HREF=../D/204.html>getLastCar</A>(fromTrainNum + 1);
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//FIRST_TRAIN_REFED_TO_2ND_TRAIN</FONT></I>
+
+<A NAME=91>  <B>for</B>(remSetIt_t i = remSet-&gt;<A HREF=../D/203.html>getIterator</A>(), endIt = remSet-&gt;<A HREF=../D/191.html>getEndIterator</A>(); i != endIt; ++i) <FONT COLOR=blue>{</FONT>
+<A NAME=92>    <B>if</B>(<A HREF=../D/276.html>member</A>(**i)) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//the reference should still point to us</FONT></I>
+      <I><FONT COLOR=green>// *i  is the value, that is the address of the reference</FONT></I>
+      <I><FONT COLOR=green>//     (pointer to the slot which contains the pointer to the object to move)</FONT></I>
+      <I><FONT COLOR=green>// **i is the reference (pointer to the object to move)</FONT></I>
+
+      destCar = Car_t::getCar(*i); <I><FONT COLOR=green>//object should be moved to where it's referenced from</FONT></I>
+<A NAME=98>      <B>if</B>(trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(destCar).getTrain() == fromTrainNum) <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_introSp, "IntroductorySpace::moveObjects(): caught attempt to move new objects into first train\n");
+<FONT COLOR=darkred>#ifdef</FONT> FIRST_TRAIN_REFED_TO_2ND_TRAIN
+        destCar = secTrLCar;
+<FONT COLOR=darkred>#else</FONT>  <I><FONT COLOR=green>//FIRST_TRAIN_REFED_TO_2ND_TRAIN</FONT></I>
+        destCar = ttable.getLastTrainLastCar();
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//FIRST_TRAIN_REFED_TO_2ND_TRAIN</FONT></I>
+      <FONT COLOR=blue>}</FONT>
+      
+<A NAME=107>      <B>void</B> * newLoc = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(**i); <I><FONT COLOR=green>//this handles forwardPtrs and dirtycars</FONT></I>
+      
+      <I><FONT COLOR=green>//note: the first parameter here should have been the reference to the object, but</FONT></I>
+      <I><FONT COLOR=green>//in this version of the gc, we don't use the source pointer...</FONT></I>
+      setVMReferenceGC(*i , *i, newLoc);
+      <I><FONT COLOR=green>//also handles remembered set. We HAVE to do this, since we don't know if it is a forward</FONT></I>
+      <I><FONT COLOR=green>// pointer and the object thus have been moved to an older car in which case the remembered</FONT></I>
+      <I><FONT COLOR=green>//set has to be updated</FONT></I>
+      
+<FONT COLOR=darkred>#ifdef</FONT> UNDEFINED
+      <I><FONT COLOR=green>//------------ alternative version, perhaps quicker ---------------</FONT></I>
+      <I><FONT COLOR=green>//does not yet handle first train problem</FONT></I>
+      
+      <B>void</B>* fwdPtr = VMO_FROM_VOIDP(**i)-&gt;getForwardPtr();
+      <B>if</B>(fwdPtr) <FONT COLOR=blue>{</FONT>
+        setVMReferenceGC(*i, *i, fwdPtr);
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        destCar = Car_t::getCar(*i); <I><FONT COLOR=green>//object should be moved to where it's referenced from</FONT></I>
+<A NAME=125>        <B>void</B> * newLoc = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(**i); <I><FONT COLOR=green>//this handles forwardPtrs and dirtycars</FONT></I>
+        **i = newLoc;
+      <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//UNDEFINED</FONT></I>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+    
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> IntroductorySpace_t::reset(<B>void</B>) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>for</B>(VMObject_t *vmo = (VMObject_t*)introSpacePtr;
+      vmo &lt; freePtr;
+      vmo = NEXT_VMO(vmo)) <FONT COLOR=blue>{</FONT>
+    <B>if</B>(vmo-&gt;isForward()) <FONT COLOR=blue>{</FONT>
+<A NAME=142>      DB_OUT(gc_gc, "IntroductorySapce::reset() * deleted object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; " *\n");
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+  freePtr = introSpacePtr;
+  <I><FONT COLOR=green>/* VMObjects should clear their space themselves - no need to do that twice</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>    //clear space, assuming BYTES_IN_INTROSP % sizeof(void*) == 0</FONT></I>
+<I><FONT COLOR=green>    void * endSpacePtr = (void*)((size_t)freePtr + BYTES_IN_INTROSP);</FONT></I>
+<I><FONT COLOR=green>    for(void **clearPtr = (void**)freePtr; clearPtr &lt; endSpacePtr;</FONT></I>
+<I><FONT COLOR=green>        clearPtr = (void**)((size_t)clearPtr + sizeof(void*))) {</FONT></I>
+<I><FONT COLOR=green>      *clearPtr = 0;</FONT></I>
+<I><FONT COLOR=green>    }</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+<A NAME=159>  remSet-&gt;<A HREF=../D/148.html>clear</A>();
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=162>  <B>if</B>(!(remSet-&gt;<A HREF=../D/160.html>empty</A>())) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "IntroductorySpace_t::reset(): remembered set was not clered\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=170><B>void</B> IntroductorySpace_t::<A HREF=../D/309.html>printOn</A>(ostream&amp; stream)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+  stream &lt;&lt; "--- IntroductorySpace at " &lt;&lt; (<B>void</B>*)introSpacePtr;
+<A NAME=174>  <A HREF=../S/35.html#157>dumpBlock</A>(introSpacePtr, (size_t)((size_t)freePtr - (size_t)introSpacePtr), stream);
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(DB_ENABLED(gc_remset_intro_dump)) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_remset_intro_dump, "Introductory Space RememberedSet: " &lt;&lt; endl); 
+<A NAME=178>    remSet-&gt;<A HREF=../S/28.html#86>dumpRemSet</A>(introSpacePtr, (size_t)freePtr - (size_t)introSpacePtr, stream);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT
+<A NAME=186><B>void</B> IntroductorySpace_t::<A HREF=../D/156.html>doLiveStat</A>(size_t *live, size_t *dead, size_t *unused) <FONT COLOR=blue>{</FONT>
+  size_t liveObjects = 0, deadObjects = 0, liveBytes = 0, deadBytes = 0;
+
+  <B>for</B>(VMObject_t *vmoIndex = (VMObject_t*)introSpacePtr;
+      vmoIndex &lt; freePtr; vmoIndex = NEXT_VMO(vmoIndex)) <FONT COLOR=blue>{</FONT>
+<A NAME=191>    ObjectDescriptor_t *objDesc = vmoIndex-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+    <B>if</B>(vmoIndex-&gt;isForward()) <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//a live object</FONT></I>
+      vmoIndex-&gt;setForwardBit(false);
+      ++liveObjects;
+<A NAME=196>      liveBytes += objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//a dead object</FONT></I>
+      ++deadObjects;
+<A NAME=200>      deadBytes += objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT_VERB
+  cout &lt;&lt; "Livestat for: introductory-space" &lt;&lt; endl
+       &lt;&lt; "  Live/dead objects: " &lt;&lt; liveObjects &lt;&lt; "/" &lt;&lt; deadObjects &lt;&lt; endl
+       &lt;&lt; "  Live/dead bytes  : " &lt;&lt; liveBytes &lt;&lt; "/" &lt;&lt; deadBytes &lt;&lt; endl
+       &lt;&lt; "   -in vmo bytes   : " &lt;&lt; liveBytes + liveObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*))
+       &lt;&lt; "/" &lt;&lt; deadBytes + deadObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)) &lt;&lt; endl;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT_VERB</FONT></I>
+
+  size_t liveBytesH = liveBytes + liveObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)); <I><FONT COLOR=green>//includes headers</FONT></I>
+  size_t deadBytesH = deadBytes + deadObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)); <I><FONT COLOR=green>//includes headers</FONT></I>
+  *live   += liveBytesH;
+  *dead   += deadBytesH;
+  *unused += BYTES_IN_INTROSP - (liveBytesH + deadBytesH);
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+
+bool IntroductorySpace_t::hasRememberReference(<B>void</B>** refAdr) <FONT COLOR=blue>{</FONT>
+<A NAME=224>  <B>return</B> remSet-&gt;<A HREF=../D/269.html>lookup</A>(refAdr);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=227><B>void</B> IntroductorySpace_t::<A HREF=../D/172.html>gatherObjRefs</A>(VMOHash_t *vmoRefs) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  VMObject_t *vmo = (VMObject_t*)introSpacePtr;
+  <B>while</B>(vmo &lt; freePtr) <FONT COLOR=blue>{</FONT>
+<A NAME=231>    vmoRefs-&gt;<A HREF=../D/260.html>insert</A>(vmo);
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=237><B>int</B> IntroductorySpace_t::<A HREF=../D/147.html>checkObjRefs</A>(VMOHash_t *vmoRefs) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  <B>int</B> retval = 0;
+  VMObject_t *vmo = (VMObject_t*)introSpacePtr;
+  ObjectDescriptor_t *objDesc;
+
+  <I><FONT COLOR=green>//check all objects in car</FONT></I>
+  <B>while</B>(vmo &lt; freePtr) <FONT COLOR=blue>{</FONT>
+<A NAME=245>    <B>if</B>(!(objDesc = vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>())) <FONT COLOR=blue>{</FONT>
+<A NAME=246>      cerr &lt;&lt; "IntroductorySpace_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; 
+        ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " without ObjDesc!" &lt;&lt; endl;
+      cerr &lt;&lt; "Train was: " <I><FONT COLOR=green>/*&lt;&lt; trainRef.getTrainNumber()*/</FONT></I> &lt;&lt; " and car was: "
+           &lt;&lt; <I><FONT COLOR=green>/*carNumber &lt;&lt;*/</FONT></I> endl;
+      retval++;
+      DB_OUTDENT;
+      <B>return</B> retval;
+    <FONT COLOR=blue>}</FONT>
+    <B>if</B>(<B>void</B> * forward = vmo-&gt;getForwardPtr()) <FONT COLOR=blue>{</FONT>
+<A NAME=255>      cerr &lt;&lt; "IntroductorySpace::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; 
+        ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " with forward pointer set to:" &lt;&lt;
+        forward &lt;&lt; endl;
+      retval++;
+    <FONT COLOR=blue>}</FONT>
+<A NAME=260>    <B>unsigned</B> <B>int</B> numberOfRefs = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+    <I><FONT COLOR=green>//check each reference</FONT></I>
+    <B>for</B>(<B>unsigned</B> <B>int</B> refInVMO = 0; refInVMO &lt; numberOfRefs; refInVMO++) <FONT COLOR=blue>{</FONT>
+<A NAME=263>      <B>if</B>(objDesc-&gt;<A HREF=../S/22.html#122>hasReferenceAt</A>(refInVMO) &amp;&amp; vmo-&gt;data[refInVMO]) <FONT COLOR=blue>{</FONT>
+        VMObject_t *vmoRef = VMO_FROM_VOIDP(vmo-&gt;data[refInVMO]);
+        <I><FONT COLOR=green>//check if reference is in list</FONT></I>
+<A NAME=266>        <B>if</B>(!(vmoRefs-&gt;<A HREF=../D/269.html>lookup</A>(vmoRef))) <FONT COLOR=blue>{</FONT>
+<A NAME=267>          cerr &lt;&lt; "IntroductorySpace_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt;
+            ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " with illegal object pointer" &lt;&lt; endl;
+<A NAME=269>          cerr &lt;&lt; "Object descriptor: " &lt;&lt; endl &lt;&lt; vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>() &lt;&lt; endl;
+          <I><FONT COLOR=green>//      cerr &lt;&lt; "Train was: " <I><FONT COLOR=green>/*&lt;&lt; trainRef.getTrainNumber()*/</FONT></I> &lt;&lt; " and car was: "</FONT></I>
+          <I><FONT COLOR=green>//           &lt;&lt; <I><FONT COLOR=green>/*carNumber &lt;&lt;*/</FONT></I> endl;</FONT></I>
+          cerr &lt;&lt; "Bad reference was number: " &lt;&lt; refInVMO &lt;&lt; " with value: "
+               &lt;&lt; (<B>void</B>*)(vmo-&gt;data[refInVMO]) &lt;&lt; endl;
+          retval++;
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> retval;
+<FONT COLOR=blue>}</FONT>
+
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#24>[^]</A><A HREF=#82>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

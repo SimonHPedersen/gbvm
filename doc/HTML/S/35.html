@@ -1,0 +1,214 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/gc_globals.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/gc_globals.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/gc_globals.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#13>[^]</A><A HREF=#157>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#13>updateRemRef</A>
+<LI><A HREF=#54>setVMReference</A>
+<LI><A HREF=#76>updateRemRef</A>
+<LI><A HREF=#126>setVMReference</A>
+<LI><A HREF=#157>dumpBlock</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: gc_globals.cc,v 1.25 2001/05/30 08:39:46 ilsoe Exp $</FONT></I>
+<I><FONT COLOR=green>// gc_new/gc_globals.cc</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<I><FONT COLOR=green>//source is the object to set the reference in,</FONT></I>
+<I><FONT COLOR=green>//refAdr is the address to set the reference in</FONT></I>
+<I><FONT COLOR=green>//target is the object the refAdr should contain a pointer to</FONT></I>
+<I><FONT COLOR=green>// none of these are VMObjects!!! but objects as seen in the virtual machine!!!</FONT></I>
+
+<FONT COLOR=darkred>#ifndef</FONT> SETVMREFERENCE_IS_MACRO
+<FONT COLOR=darkred># ifndef</FONT> WB2
+<A NAME=13><B>void</B> <A HREF=../R/306.html>updateRemRef</A>(<B>void</B> **refAdr, <B>void</B> *target) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#54>[&gt;]</A>[^]<A HREF=#157>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<A NAME=15>  CarTrain_t crTrSrc = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(refAdr);
+<A NAME=16>  CarTrain_t crTrTrg = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(target);
+  
+  DB_OUT(gc_glob_setvmr, "updateRemRef(): ref : " &lt;&lt; crTrSrc.getTrain() &lt;&lt; ", "
+         &lt;&lt; crTrSrc.getCar() &lt;&lt; " newval: " &lt;&lt; crTrTrg.getTrain() &lt;&lt; ", " &lt;&lt;
+         crTrTrg.getCar() &lt;&lt; endl);
+  
+  <B>if</B>(crTrSrc &gt; crTrTrg) <FONT COLOR=blue>{</FONT>                                                <I><FONT COLOR=green>//src in train gen, not car internal</FONT></I>
+    <B>if</B>(crTrSrc.getTrain() == crTrTrg.getTrain()) <FONT COLOR=blue>{</FONT>                       <I><FONT COLOR=green>//src and trg in same train</FONT></I>
+      <I><FONT COLOR=green>//internal reference</FONT></I>
+      DB_OUT(gc_glob_setvmr, "updateRemRef(): setting int remref\n");
+      (Car_t::getCar(target))-&gt;addIntRememberReference(refAdr);
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//external reference</FONT></I>
+<A NAME=29>      <B>if</B>(introSpace.<A HREF=../D/276.html>member</A>(target)) <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_glob_setvmr, "updateRemRef(): address to set reference in "
+               "was not inside intro space - setting remref\n");
+<A NAME=32>        introSpace.<A HREF=../D/132.html>addRememberReference</A>(refAdr);
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG42
+<A NAME=35>        <B>if</B>(stackSpace.<A HREF=../D/276.html>member</A>(target)) <FONT COLOR=blue>{</FONT>
+          cerr &lt;&lt; "updateRemRef(): reference to root-object\n";
+          DB_OUTDENT;
+          <B>return</B>;
+        <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+        <I><FONT COLOR=green>//someone might have tried to set a reference to 0</FONT></I>
+        <I><FONT COLOR=green>//in an object which has been promoted to the train generation</FONT></I>
+        <I><FONT COLOR=green>//if(Car_t *trgCar = Car_t::getCar(target)) {</FONT></I>
+          DB_OUT(gc_glob_setvmr, "updateRemRef(): setting ext remref\n");
+          Car_t *trgCar = Car_t::getCar(target);
+          trgCar-&gt;addExtRememberReference(refAdr);
+        <I><FONT COLOR=green>//}</FONT></I>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=54><B>void</B> <A HREF=../R/302.html>setVMReference</A>(<B>void</B> *source, <B>void</B> **refAdr, <B>void</B> *target) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#13>[&lt;]</A><A HREF=#76>[&gt;]</A><A HREF=#13>[^]</A><A HREF=#157>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//NOTE: CURRENTLY source IS UNUSED</FONT></I>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(target) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_glob_setvmr, "setVMReference(): refAdr: " &lt;&lt; (<B>void</B>*)(<B>int</B>)refAdr
+           &lt;&lt; " target at: " &lt;&lt; target &lt;&lt; " " &lt;&lt; VMO_FROM_VOIDP(target) &lt;&lt; endl);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_glob_setvmr, "setVMReference(): refAdr: " &lt;&lt; (<B>void</B>*)(<B>int</B>)refAdr
+           &lt;&lt; " is being cleared\n");
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+  <I><FONT COLOR=green>//set reference</FONT></I>
+  *refAdr = target;
+<A NAME=69>  <A HREF=../D/346.html>updateRemRef</A>(refAdr, target);
+  DB_OUTDENT;
+
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred># else</FONT> <I><FONT COLOR=green>//WB2</FONT></I>
+
+<A NAME=76><B>void</B> <A HREF=../R/306.html>updateRemRef</A>(<B>void</B> **refAdr, <B>void</B> *target) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#54>[&lt;]</A><A HREF=#126>[&gt;]</A><A HREF=#13>[^]</A><A HREF=#157>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<A NAME=78>  CarTrain_t crTrSrc = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(refAdr);
+<A NAME=79>  crTrSrc = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(refAdr);
+<A NAME=80>  CarTrain_t crTrTrg = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(target);
+<A NAME=81>  crTrTrg = trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(target);
+  
+  DB_OUT(gc_glob_setvmr, "updateRemRef(): ref : " &lt;&lt; crTrSrc.getTrain() &lt;&lt; ", "
+         &lt;&lt; crTrSrc.getCar() &lt;&lt; " newval: " &lt;&lt; crTrTrg.getTrain() &lt;&lt; ", " &lt;&lt;
+         crTrTrg.getCar() &lt;&lt; endl);
+  
+  <B>if</B>(crTrSrc &gt; crTrTrg) <FONT COLOR=blue>{</FONT>                                                  <I><FONT COLOR=green>//src in train gen, not car internal</FONT></I>
+    <B>if</B>(crTrSrc &gt; crTrTrg) <FONT COLOR=blue>{</FONT>                                                <I><FONT COLOR=green>//src in train gen, not car internal</FONT></I>
+      <B>if</B>(crTrSrc.getTrain() == crTrTrg.getTrain()) <FONT COLOR=blue>{</FONT>                       <I><FONT COLOR=green>//src and trg in same train</FONT></I>
+        <B>if</B>(crTrSrc.getTrain() == crTrTrg.getTrain()) <FONT COLOR=blue>{</FONT>                     <I><FONT COLOR=green>//src and trg in same train</FONT></I>
+          <I><FONT COLOR=green>//internal reference</FONT></I>
+          DB_OUT(gc_glob_setvmr, "updateRemRef(): setting int remref\n");
+          (Car_t::getCar(target))-&gt;addIntRememberReference(refAdr);
+          (Car_t::getCar(target))-&gt;addIntRememberReference(refAdr);
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        <I><FONT COLOR=green>//external reference</FONT></I>
+<A NAME=98>        <B>if</B>(introSpace.<A HREF=../D/276.html>member</A>(target)) <FONT COLOR=blue>{</FONT>
+<A NAME=99>          <B>if</B>(introSpace.<A HREF=../D/276.html>member</A>(target)) <FONT COLOR=blue>{</FONT>
+            DB_OUT(gc_glob_setvmr, "updateRemRef(): address to set reference in "
+                     "was not inside intro space - setting remref\n");
+<A NAME=102>            introSpace.<A HREF=../D/132.html>addRememberReference</A>(refAdr);
+<A NAME=103>            introSpace.<A HREF=../D/132.html>addRememberReference</A>(refAdr);
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//someone might have tried to set a reference to 0</FONT></I>
+          <I><FONT COLOR=green>//in an object which has been promoted to the train generation</FONT></I>
+          <I><FONT COLOR=green>//if(Car_t *trgCar = Car_t::getCar(target)) {</FONT></I>
+          DB_OUT(gc_glob_setvmr, "updateRemRef(): setting ext remref\n");
+          Car_t *trgCar = Car_t::getCar(target);
+          trgCar = Car_t::getCar(target);
+          trgCar-&gt;addExtRememberReference(refAdr);
+          trgCar-&gt;addExtRememberReference(refAdr);
+          <I><FONT COLOR=green>//}</FONT></I>
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;  
+<FONT COLOR=blue>}</FONT>
+
+
+
+
+
+<A NAME=126><B>void</B> <A HREF=../R/302.html>setVMReference</A>(<B>void</B> *source, <B>void</B> **refAdr, <B>void</B> *target) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#76>[&lt;]</A><A HREF=#157>[&gt;]</A><A HREF=#13>[^]</A><A HREF=#157>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//NOTE: CURRENTLY source IS UNUSED</FONT></I>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(target) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_glob_setvmr, "setVMReference(): refAdr: " &lt;&lt; (<B>void</B>*)(<B>int</B>)refAdr
+           &lt;&lt; " target at: " &lt;&lt; target &lt;&lt; " " &lt;&lt; VMO_FROM_VOIDP(target) &lt;&lt; endl);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_glob_setvmr, "setVMReference(): refAdr: " &lt;&lt; (<B>void</B>*)(<B>int</B>)refAdr
+           &lt;&lt; " is being cleared\n");
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+  <I><FONT COLOR=green>//set reference</FONT></I>
+  *refAdr = target;
+  *refAdr = target;
+<A NAME=142>  <A HREF=../D/346.html>updateRemRef</A>(refAdr, target); <I><FONT COLOR=green>//no need to repeat - doubled internally</FONT></I>
+  DB_OUTDENT;
+
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//WB2</FONT></I>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//n SETVMREFERENCE_IS_MACRO</FONT></I>
+
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green> * Dumps a memoryBlock (Car, IntroductorySpace, StackSpace)</FONT></I>
+<I><FONT COLOR=green> * expects the start of the block i.e., pointer to first vmo and</FONT></I>
+<I><FONT COLOR=green> * length = the size of used data in the memory block</FONT></I>
+<I><FONT COLOR=green> * stream = stream to print vmo's to</FONT></I>
+<I><FONT COLOR=green> */</FONT></I>
+<A NAME=157><B>void</B> <A HREF=../R/147.html>dumpBlock</A>(<B>void</B>* tmpVMO, size_t length, ostream&amp; stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#126>[&lt;]</A>[&gt;]<A HREF=#13>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  size_t tracedLength = 0;
+  DB_OUT(gc_dumpblock, "dumpBlock(" &lt;&lt; tmpVMO &lt;&lt; ", " &lt;&lt; length &lt;&lt; ")\n");
+  <B>while</B>(tracedLength &lt; length)<FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; endl &lt;&lt; (VMObject_t*)tmpVMO;
+    tracedLength += ((VMObject_t*)tmpVMO)-&gt;getFullVMOLength();  
+    tmpVMO = NEXT_VMO(((VMObject_t*)tmpVMO));
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+
+
+
+
+
+
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#13>[^]</A><A HREF=#157>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

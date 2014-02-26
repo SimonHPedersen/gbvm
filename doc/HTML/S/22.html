@@ -1,0 +1,212 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_common/ObjectDescriptor.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_common/ObjectDescriptor.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_common/ObjectDescriptor.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#22>[^]</A><A HREF=#139>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#22>ObjectDescriptor_t</A>
+<LI><A HREF=#62>ObjectDescriptor_t</A>
+<LI><A HREF=#78>getObjLengthBytes</A>
+<LI><A HREF=#82>getObjLengthRefs</A>
+<LI><A HREF=#86>getReferenceMask</A>
+<LI><A HREF=#90>setReferenceAt</A>
+<LI><A HREF=#106>clearReferenceAt</A>
+<LI><A HREF=#122>hasReferenceAt</A>
+<LI><A HREF=#134>print</A>
+<LI><A HREF=#139>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: ObjectDescriptor.cc,v 1.16 2001/04/10 12:01:22 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "ObjectDescriptor.hpp"
+
+<I><FONT COLOR=green>//----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, ObjectDescriptor_t* objD) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(objD) <FONT COLOR=blue>{</FONT>
+<A NAME=9>    objD-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-object descriptor ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, ObjectDescriptor_t&amp; objD) <FONT COLOR=blue>{</FONT>
+<A NAME=17>  objD.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=22>ObjectDescriptor_t::<A HREF=../R/98.html>ObjectDescriptor_t</A>(<B>unsigned</B> <B>int</B> length, <B>unsigned</B> <B>int</B> maskValue)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#62>[&gt;]</A>[^]<A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//make sure our objects keeps the allignment...</FONT></I>
+  objLength = (length % <B>sizeof</B>(<B>void</B>*))
+    ? (length &amp; (~(<B>sizeof</B>(<B>void</B>*)-1))) + <B>sizeof</B>(<B>void</B>*)
+    : length;
+
+  <B>unsigned</B> <B>int</B> totalRefs  = <I><FONT COLOR=green>/*1 +*/</FONT></I> objLength / <B>sizeof</B>(<B>void</B>*);
+  <B>unsigned</B> <B>int</B> intsInMask = 1 + (totalRefs/ (<B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8));
+  <B>unsigned</B> <B>int</B> bytesInMask = intsInMask * <B>sizeof</B>(<B>unsigned</B> <B>int</B>);
+  
+
+  <I><FONT COLOR=green>//allocate memory for referenceMask</FONT></I>
+  DB_OUT(gc_objd_const, "ObjectDescriptor_t::ObjectDescriptor_t(" &lt;&lt; length &lt;&lt; "): allocating "
+         &lt;&lt; bytesInMask &lt;&lt; " bytes (" &lt;&lt; intsInMask &lt;&lt; " ints) for " &lt;&lt; totalRefs
+         &lt;&lt; " references\n");
+  <B>if</B>(!(referenceMask = (<B>unsigned</B> <B>int</B>*)malloc(bytesInMask))) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "ObjectDescriptor_t::ObjectDescriptor_t: unable to allocate mem\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//clear referenceMask[]</FONT></I>
+  <B>if</B>(maskValue)<FONT COLOR=blue>{</FONT>
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; intsInMask - 1; i++) <FONT COLOR=blue>{</FONT>
+      referenceMask[i] = maskValue;
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//fixing last int bit by bit</FONT></I>
+    <I><FONT COLOR=green>//unsigned int totalRefs = 1 + objLength / sizeof(void*); ???????????????</FONT></I>
+    <I><FONT COLOR=green>//bits left to set in last int in mask</FONT></I>
+    <B>unsigned</B> <B>int</B> bitsLeft = totalRefs - (intsInMask - 1) * <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+    referenceMask[intsInMask - 1] = UINT_MAX &lt;&lt; (<B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8 - bitsLeft) &amp; maskValue;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; intsInMask; i++) <FONT COLOR=blue>{</FONT>
+      referenceMask[i] = maskValue;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=62>ObjectDescriptor_t::~<A HREF=../R/98.html>ObjectDescriptor_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#22>[&lt;]</A><A HREF=#78>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  free(referenceMask);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- methods -----</FONT></I>
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>unsigned int ObjectDescriptor_t::getHeaderObjectLength() {</FONT></I>
+<I><FONT COLOR=green>  return headerObjLengt;</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>unsigned int ObjectDescriptor_t::getFullObjectLength() {</FONT></I>
+<I><FONT COLOR=green>  return headerObjLength + objLength;</FONT></I>
+<I><FONT COLOR=green>}</FONT></I>
+<I><FONT COLOR=green>*/</FONT></I>
+
+<A NAME=78><B>unsigned</B> <B>int</B> ObjectDescriptor_t::<A HREF=../R/196.html>getObjLengthBytes</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#62>[&lt;]</A><A HREF=#82>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> objLength;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=82><B>unsigned</B> <B>int</B> ObjectDescriptor_t::<A HREF=../R/197.html>getObjLengthRefs</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#78>[&lt;]</A><A HREF=#86>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> objLength/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=86><B>unsigned</B> <B>int</B>* ObjectDescriptor_t::<A HREF=../R/213.html>getReferenceMask</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#82>[&lt;]</A><A HREF=#90>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> referenceMask;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=90><B>int</B> ObjectDescriptor_t::<A HREF=../R/300.html>setReferenceAt</A>(<B>unsigned</B> <B>int</B> number) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#86>[&lt;]</A><A HREF=#106>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>unsigned</B> <B>int</B> totalRefs = 1 + objLength / <B>sizeof</B>(<B>void</B>*);
+
+  <B>if</B>(number &gt; totalRefs) <FONT COLOR=blue>{</FONT>
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+
+  <B>unsigned</B> <B>int</B> index = number/(<B>sizeof</B>(<B>int</B>)*8);
+  <B>unsigned</B> <B>int</B> mask  = 1 &lt;&lt; (number%(<B>sizeof</B>(<B>int</B>)*8));
+
+  <B>return</B> referenceMask[index] |= mask;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=106><B>int</B> ObjectDescriptor_t::clearReferenceAt(<B>unsigned</B> <B>int</B> number) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#90>[&lt;]</A><A HREF=#122>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>unsigned</B> <B>int</B> totalRefs = 1 + objLength / <B>sizeof</B>(<B>void</B>*);
+
+  <B>if</B>(number &gt; totalRefs) <FONT COLOR=blue>{</FONT>
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+
+  <B>unsigned</B> <B>int</B> index = number/(<B>sizeof</B>(<B>int</B>)*8);
+  <B>unsigned</B> <B>int</B> mask  = ~(1 &lt;&lt; (number%(<B>sizeof</B>(<B>int</B>)*8)));
+
+  referenceMask[index] &amp;= mask;
+  <B>return</B> 1;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=122><B>int</B> ObjectDescriptor_t::<A HREF=../R/226.html>hasReferenceAt</A>(<B>unsigned</B> <B>int</B> number) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#106>[&lt;]</A><A HREF=#134>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>unsigned</B> <B>int</B> totalRefs = 1 + objLength / <B>sizeof</B>(<B>void</B>*);
+  <B>if</B>(number &gt; totalRefs) <FONT COLOR=blue>{</FONT>
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+  <B>unsigned</B> <B>int</B> index = number/(<B>sizeof</B>(<B>int</B>)*8);
+  <B>unsigned</B> <B>int</B> mask  = 1 &lt;&lt; (number%(<B>sizeof</B>(<B>int</B>)*8));
+
+  <B>return</B> referenceMask[index] &amp; mask;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> UNDEFINED
+<A NAME=134><B>void</B> ObjectDescriptor_t::<A HREF=../R/273.html>print</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#122>[&lt;]</A><A HREF=#139>[&gt;]</A><A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=135>  <A HREF=../D/309.html>printOn</A>(cout);
+<FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//UNDEFINED</FONT></I>
+
+<A NAME=139><B>void</B> ObjectDescriptor_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#134>[&lt;]</A>[&gt;]<A HREF=#22>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  DB_INDENT;
+  <B>unsigned</B> <B>int</B> totalRefs  = <I><FONT COLOR=green>/*1 +*/</FONT></I> objLength / <B>sizeof</B>(<B>void</B>*);
+  <B>unsigned</B> <B>int</B> intsInMask = 1 + (totalRefs/ (<B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8));
+
+  <B>if</B>(DB_ENABLED(gc_objd)) <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "Object Descriptor at " &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; " with length: "
+           &lt;&lt; objLength &lt;&lt; ":";
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; intsInMask; i++) <FONT COLOR=blue>{</FONT>
+      <B>if</B>(!(i%8)) <FONT COLOR=blue>{</FONT>
+        <B>if</B>(i) <FONT COLOR=blue>{</FONT>
+          stream &lt;&lt; ",\n";
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+          stream &lt;&lt; endl;
+        <FONT COLOR=blue>}</FONT>
+        DB_INS_INDT(stream);
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        DB_OUT0(gc_objd, ", ");
+      <FONT COLOR=blue>}</FONT>
+      stream &lt;&lt; (<B>void</B>*)referenceMask[i];
+    <FONT COLOR=blue>}</FONT>
+    stream &lt;&lt; endl;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#22>[^]</A><A HREF=#139>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

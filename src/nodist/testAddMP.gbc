@@ -1,0 +1,27 @@
+MainPart("`480"
+   "p/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `298 origin {}
+      INSTALL-ptn 0
+   )
+   "q/1": (
+      PUSH-ptn {"p/0"}
+      ADD-mainpart `298 origin {}
+      INSTALL-ptn 1
+   )
+|
+   PUSH-ptn {"q/1"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+)
+MainPart("`298"
+   "z/0": (
+      PUSH-ptn_"object"
+      INSTALL-ptn 0
+    )
+|
+PUSHI-string "hej"
+stdio/out
+)
+

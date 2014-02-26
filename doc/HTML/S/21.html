@@ -1,0 +1,248 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc/young_generation.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc/young_generation.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc/young_generation.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#12>[^]</A><A HREF=#63>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#12>YoungGeneration_t</A>
+<LI><A HREF=#45>YoungGeneration_t</A>
+<LI><A HREF=#50>changeRememberReference</A>
+<LI><A HREF=#56>updateRememberSetReferences</A>
+<LI><A HREF=#63>garbageCollect</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: young_generation.cc,v 1.7 2000/10/18 13:01:47 ilsoe Exp $</FONT></I>
+<FONT COLOR=darkred>#include</FONT> &lt;stdlib.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;stdio.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;iostream.h&gt;
+
+<FONT COLOR=darkred>#include</FONT> "garbage_collector.hpp"
+
+
+<I><FONT COLOR=green>/* YOUNG GENERATION */</FONT></I>
+
+
+<A NAME=12>YoungGeneration_t::YoungGeneration_t(<B>int</B> size) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#45>[&gt;]</A>[^]<A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=13>  Generation_t::<A HREF=../D/256.html>init</A>(size);
+  cout &lt;&lt; "yg(int)\n";
+  currentStartHeapPointer = heapPointer;
+  currentEndHeapPointer = (<B>void</B>*)((<B>int</B>)heapPointer + heapSize/2);
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  //Generation(size);</FONT></I>
+<I><FONT COLOR=green>  VMObject_t* objs[10];</FONT></I>
+<I><FONT COLOR=green>  char nameString[10];</FONT></I>
+<I><FONT COLOR=green>  for(int i = 0; i &lt; 10; i++) {</FONT></I>
+<I><FONT COLOR=green>    sprintf(nameString, "object %i", i);</FONT></I>
+<I><FONT COLOR=green>    objs[i] = new(&amp;freePointer) VMObject_t(0, i, nameString);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  VMObject_t* refs[4] = {new(&amp;freePointer) VMObject_t(0,0,"leaf1"),new(&amp;freePointer) VMObject_t(0,1,"leaf2"),0,0};</FONT></I>
+<I><FONT COLOR=green>  VMObject_t* vmo3 = new(&amp;rootSpacePointer) VMObject_t(refs,2,"root");</FONT></I>
+<I><FONT COLOR=green>  vmo3-&gt;setReference(2, objs[1]);</FONT></I>
+<I><FONT COLOR=green>  objs[0]-&gt;setReference(0, objs[4]);</FONT></I>
+<I><FONT COLOR=green>  objs[1]-&gt;setReference(0, vmo3);</FONT></I>
+<I><FONT COLOR=green>  objs[1]-&gt;setReference(1, objs[2]);</FONT></I>
+<I><FONT COLOR=green>  objs[2]-&gt;setReference(0, objs[3]);</FONT></I>
+<I><FONT COLOR=green>  objs[3]-&gt;setReference(0, objs[1]);</FONT></I>
+<I><FONT COLOR=green>  objs[3]-&gt;setReference(1, objs[3]);</FONT></I>
+<I><FONT COLOR=green>  objs[4]-&gt;setReference(0, objs[5]);</FONT></I>
+<I><FONT COLOR=green>  objs[5]-&gt;setReference(0, objs[0]);</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  rootObject = vmo3;</FONT></I>
+<I><FONT COLOR=green>  cout &lt;&lt; "Memory subsystem: dumping heap" &lt;&lt; endl;</FONT></I>
+<I><FONT COLOR=green>  for(int i = 0; i&lt;size ; i++)</FONT></I>
+<I><FONT COLOR=green>    printf("%c",*(char*)((int)heapPointer + i));</FONT></I>
+<I><FONT COLOR=green>  cout &lt;&lt; endl;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45>YoungGeneration_t::~YoungGeneration_t() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#12>[&lt;]</A><A HREF=#50>[&gt;]</A><A HREF=#12>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "~yg\n";
+  <I><FONT COLOR=green>//Generation(size);</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=50><B>void</B> YoungGeneration_t::<A HREF=../R/135.html>changeRememberReference</A>(VMObject_t *obj,
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#56>[&gt;]</A><A HREF=#12>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                VMObject_t *oldRef,
+                                                VMObject_t *newRef) <FONT COLOR=blue>{</FONT>
+<A NAME=53>  rememberedSetPtr-&gt;<A HREF=../D/144.html>changeRememberReference</A>(obj, oldRef, newRef);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=56><B>void</B> YoungGeneration_t::<A HREF=../S/21.html#58>updateRememberSetReferences</A>(VMObject_t *obj,
+<I><FONT COLOR=green>/* <A HREF=#50>[&lt;]</A><A HREF=#63>[&gt;]</A><A HREF=#12>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                    VMObject_t *newLocation) <FONT COLOR=blue>{</FONT>
+<A NAME=58>  rememberedSetPtr-&gt;<A HREF=../S/21.html#56>updateRememberSetReferences</A>(obj, newLocation);
+<FONT COLOR=blue>}</FONT>
+
+
+
+<A NAME=63><B>void</B> YoungGeneration_t::<A HREF=../R/154.html>garbageCollect</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#56>[&lt;]</A>[&gt;]<A HREF=#12>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  VMObject_t* ref;
+  cout &lt;&lt; "***YG: garbage collecting***\n";
+  freePointer = (currentStartHeapPointer == heapPointer) ? currentEndHeapPointer : heapPointer;
+  scanPointer = freePointer;
+
+  <I><FONT COLOR=green>//handling root object</FONT></I>
+<A NAME=70>  ObjectDescriptor_t* objectDescriptor = rootObject-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+<A NAME=71>  <B>int</B>* refMask = objectDescriptor-&gt;<A HREF=../S/22.html#86>getReferenceMask</A>();
+  <I><FONT COLOR=green>//ifrefs...</FONT></I>
+  <B>int</B> intsInMask = (((objectDescriptor-&gt;getObjLength())/<B>sizeof</B>(<B>void</B>*))/<B>sizeof</B>(<B>int</B>)*8)+1;
+
+  cout &lt;&lt; "Garbage collecting root object\n";
+
+  <B>for</B>(<B>int</B> i = 0; i &lt;= intsInMask; i++)<FONT COLOR=blue>{</FONT>
+    <B>int</B> mask = refMask[i];
+    <I><FONT COLOR=green>//no reason to check for references if no bits are set</FONT></I>
+    <B>if</B>(mask) <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//check each bit in turn</FONT></I>
+      <B>for</B>(<B>unsigned</B> <B>int</B> j = 0; j &lt; <B>sizeof</B>(<B>int</B>)*8 ; j++)<FONT COLOR=blue>{</FONT>
+        <B>if</B>((1&lt;&lt;j) &amp; mask)<FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//we've got a reference</FONT></I>
+          ref = (VMObject_t*)rootObject-&gt;data[(i * <B>sizeof</B>(<B>int</B>) * 8 + j)];
+          <I><FONT COLOR=green>//reference must be defined ie not null and placed in from space</FONT></I>
+          <B>if</B>(ref)<FONT COLOR=blue>{</FONT>
+            <B>if</B>(ref &gt;= currentStartHeapPointer &amp;&amp; ref &lt; currentEndHeapPointer)<FONT COLOR=blue>{</FONT>
+              <I><FONT COLOR=green>//reference in generation</FONT></I>
+              ref = ref-&gt;moveToSpace(&amp;freePointer); <I><FONT COLOR=green>//move object and update reference to it</FONT></I>
+              cout &lt;&lt; "Freepointer after move: " &lt;&lt; (<B>int</B>)freePointer &lt;&lt; endl;
+            <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+              <I><FONT COLOR=green>//reference to other generation</FONT></I>
+              cout &lt;&lt; "Garbage Collection SubSystem: reference at "&lt;&lt; (<B>int</B>)(<B>void</B>*)&amp;ref
+                   &lt;&lt; " to other generation with reference to " &lt;&lt; (<B>int</B>)(<B>void</B>*)ref
+                   &lt;&lt; " or from from space to to space ???" &lt;&lt; endl;
+            <FONT COLOR=blue>}</FONT>
+          <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//cout &lt;&lt; "reference " &lt;&lt; i &lt;&lt; "null " &lt;&lt; endl;</FONT></I>
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+  printf(" scan = %i freepointer = %i\n",(<B>int</B>)scanPointer,(<B>int</B>)freePointer);
+
+  <I><FONT COLOR=green>//handle mature remember-references</FONT></I>
+  <I><FONT COLOR=green>// 1. move objects to to-space</FONT></I>
+  <I><FONT COLOR=green>// 2. update remember-references and copy them to to-spaces remember-set</FONT></I>
+  RememberedSetNode_t* remSetNode;
+  RememberedObjectNode_t* remObjNode;
+  VMObject_t *vmo, *movedTo, *remRef;
+<A NAME=114>  RememberedSet_t* newRememberedSet = <B>new</B> <A HREF=../S/28.html#28>RememberedSet_t</A>();
+
+  <I><FONT COLOR=green>//iterate this generations rememberedSet</FONT></I>
+  <B>for</B>(remSetNode = rememberedSetPtr-&gt;getRememberRoot(); 
+      remSetNode != NULL; 
+      remSetNode = remSetNode-&gt;remSetNodePtr)<FONT COLOR=blue>{</FONT> 
+    <I><FONT COLOR=green>//remember the object which remembered set we are about to iterate</FONT></I>
+    vmo = &amp;(remSetNode-&gt;vmIdObjectPtr);
+    remObjNode = remSetNode-&gt;remObjNodePtr;
+
+    <I><FONT COLOR=green>//copy object if first remember-reference is from other generation</FONT></I>
+    remRef = &amp;(remObjNode-&gt;vmRemObjectPtr);
+    <B>if</B>(remRef &lt; currentStartHeapPointer || remRef &gt;= currentEndHeapPointer)<FONT COLOR=blue>{</FONT>
+      movedTo = vmo-&gt;moveToSpace(&amp;freePointer);
+
+      <I><FONT COLOR=green>//update reference in object pointing to the current object (vmo)</FONT></I>
+<A NAME=130>      remRef-&gt;<A HREF=../S/13.html#125>changeReference</A>(vmo,movedTo);
+
+      <I><FONT COLOR=green>//copy remember reference to new rememberset</FONT></I>
+<A NAME=133>      newRememberedSet-&gt;<A HREF=../D/132.html>addRememberReference</A>(movedTo, remRef);
+          
+      <I><FONT COLOR=green>//iterate the objects remembered set to update them and copy them</FONT></I>
+      <B>for</B>(remObjNode = remObjNode-&gt;remObjNodePtr; 
+          remObjNode != NULL; 
+          remObjNode = remObjNode-&gt;remObjNodePtr)
+        <FONT COLOR=blue>{</FONT>
+          remRef = &amp;(remObjNode-&gt;vmRemObjectPtr);
+        
+          <I><FONT COLOR=green>//remember reference </FONT></I>
+          <B>if</B>(remRef &lt; currentStartHeapPointer || remRef &gt;= currentEndHeapPointer)<FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//update reference</FONT></I>
+<A NAME=145>            remRef-&gt;<A HREF=../S/13.html#125>changeReference</A>(vmo,movedTo);
+            <I><FONT COLOR=green>//copy remember reference to new rememberset</FONT></I>
+<A NAME=147>            newRememberedSet-&gt;<A HREF=../D/132.html>addRememberReference</A>(movedTo,remRef);
+          <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+            <B>break</B>;
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+
+
+  <I><FONT COLOR=green>//scan to-space while scan &lt; next</FONT></I>
+  <B>while</B>(scanPointer &lt; freePointer)<FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "Garbage collecting " &lt;&lt; (<B>int</B>)scanPointer &lt;&lt; endl;
+    
+    <I><FONT COLOR=green>//scan object for references</FONT></I>
+    VMObject_t* scanObjPtr = (VMObject_t*)scanPointer;
+<A NAME=163>    ObjectDescriptor_t *objectDescriptor = scanObjPtr-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+<A NAME=164>    <B>int</B>* refMask = objectDescriptor-&gt;<A HREF=../S/22.html#86>getReferenceMask</A>();
+    <B>unsigned</B> <B>int</B> intsInMask = (((objectDescriptor-&gt;getObjLength())/<B>sizeof</B>(<B>void</B>*))/<B>sizeof</B>(<B>int</B>)*8)+1;
+    
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt;= intsInMask; i++)<FONT COLOR=blue>{</FONT>
+      <B>int</B> mask = refMask[i];
+      <B>for</B>(<B>unsigned</B> <B>int</B> j = 0; j &lt; <B>sizeof</B>(<B>int</B>)*8 ; j++)<FONT COLOR=blue>{</FONT>
+        <B>if</B>((1&lt;&lt;j) &amp; mask)<FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//we've got a reference</FONT></I>
+          ref = (VMObject_t*)scanObjPtr-&gt;data[i * <B>sizeof</B>(<B>int</B>) * 8 + j];
+
+          <I><FONT COLOR=green>// + sizeof(VMObject_t) - sizeof(void*) + (i * sizeof(int) * 8 + j) * (void*);</FONT></I>
+
+          <I><FONT COLOR=green>//reference must be defined and placed in from space</FONT></I>
+          <B>if</B>(ref)<FONT COLOR=blue>{</FONT>
+            <B>if</B>(ref &gt;= currentStartHeapPointer &amp;&amp; ref &lt; currentEndHeapPointer)<FONT COLOR=blue>{</FONT>
+              ref = ref-&gt;moveToSpace(&amp;freePointer); <I><FONT COLOR=green>//move object and update reference to it</FONT></I>
+            <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+              <I><FONT COLOR=green>//reference to other space</FONT></I>
+              <I><FONT COLOR=green>//their remember-reference has been updated</FONT></I>
+            <FONT COLOR=blue>}</FONT>
+          <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//cout &lt;&lt; "reference " &lt;&lt; i &lt;&lt; " null " &lt;&lt; endl;</FONT></I>
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+
+    cout &lt;&lt; "Done garbage collecting " &lt;&lt; (<B>int</B>)scanPointer &lt;&lt; endl;
+<A NAME=192>    scanPointer = (<B>void</B>*)((<B>unsigned</B> <B>int</B>)scanPointer + <B>sizeof</B>(VMObject_t) + ref-&gt;<A HREF=../S/13.html#79>getExtendedSize</A>());    
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//REMEMBER to scan other generations - update references and move referenced objects in from space</FONT></I>
+  
+  rememberedSetPtr = newRememberedSet;
+
+  <I><FONT COLOR=green>//swap spaces and handle heap pointers </FONT></I>
+  <B>if</B>(currentStartHeapPointer == heapPointer)<FONT COLOR=blue>{</FONT>
+    currentStartHeapPointer = (<B>void</B>*)((<B>int</B>)heapPointer + heapSize/2);
+    currentEndHeapPointer = (<B>void</B>*)((<B>int</B>)heapPointer + heapSize);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    currentStartHeapPointer = heapPointer;
+    currentEndHeapPointer = (<B>void</B>*)((<B>int</B>)heapPointer + heapSize/2);
+  <FONT COLOR=blue>}</FONT>    
+  
+<FONT COLOR=blue>}</FONT>
+
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#12>[^]</A><A HREF=#63>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

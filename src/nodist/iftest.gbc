@@ -1,0 +1,25 @@
+MainPart("'42"
+|
+   simpleIf(
+      PUSHI-boolean true
+   |then
+      PUSHI-char `t'
+      POP-char,_C-->S,_PUSH-string
+      stdio/out
+   |else
+      PUSHI-char `e'
+      POP-char,_C-->S,_PUSH-string
+      stdio/out      
+   )
+   simpleIf(
+      PUSHI-boolean false
+   |then
+      PUSHI-char `t'
+      POP-char,_C-->S,_PUSH-string
+      stdio/out
+   |else
+      PUSHI-char `e'
+      POP-char,_C-->S,_PUSH-string
+      stdio/out      
+   )
+)

@@ -1,0 +1,13 @@
+MainPart("'250"
+   "p/0": (
+      PUSH-ptn_"object"
+      INSTALL-ptn
+   )
+|
+   PUSH-ptn_"object"
+   PUSH-ptn_"object"
+   NEW,_ptn->tmp
+   NEW,_ptn->tmp
+   CALL {^'250}
+)
+

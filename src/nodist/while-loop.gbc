@@ -1,0 +1,189 @@
+
+MainPart("betaenv.gb:1192"
+   "newline/3": (
+      PUSH-ptn_"object"
+      ADD-mainpart `betaenv.gb:70 origin {}
+      INSTALL-ptn
+   )
+   "puttext/6": (
+      PUSH-ptn_"object"
+      ADD-mainpart `betaenv.gb:132 origin {}
+      INSTALL-ptn
+   )
+   "putline/5": (
+      PUSH-ptn {"puttext/6"}
+      ADD-mainpart `betaenv.gb:202 origin {}
+      INSTALL-ptn
+   )
+   "putint/4": (
+      PUSH-ptn_"object"
+      ADD-mainpart `betaenv.gb:776 origin {}
+      INSTALL-ptn
+   )
+   "max/1": (
+      PUSH-ptn_"object"
+      ADD-mainpart `betaenv.gb:946 origin {}
+      INSTALL-ptn
+   )
+   "min/2": (
+      PUSH-ptn_"object"
+      ADD-mainpart `betaenv.gb:1116 origin {}
+      INSTALL-ptn
+   )
+   "theProgram/7": (
+      PUSH-ptn_"object"
+      ADD-mainpart `while-loop.gb:56 origin {}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+|
+   CALL {"theProgram/7"}
+   RESETFRAME
+)
+MainPart("betaenv.gb:70"
+|
+   PUSHI-string "^J"
+   stdio/out
+   RESETFRAME
+)
+MainPart("betaenv.gb:132"
+|
+   INNER 48
+)
+MainPart("betaenv.gb:202"
+|
+   PUSHI-string "^J"
+   stdio/out
+   RESETFRAME
+)
+MainPart("betaenv.gb:776"
+   "n/3": (
+      PUSH-ptn {<-2,"integer/4"}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+   "i/2": (
+      PUSH-ptn {<-2,"integer/4"}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+   "c/1": (
+      PUSH-ptn {<-2,"char/3"}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+   "w/4": (
+      PUSH-ptn {<-2,"char/3"}
+      PUSHI-integer 12
+      INSTALL-rep
+   )
+|
+   simpleIf(
+      PUSH-integer {"n/3"}
+      PUSHI-integer 0
+      RELOP(_<_)_integer
+      RESETFRAME
+   |then
+      PUSHI-string "-"
+      stdio/out
+      RESETFRAME
+      PUSH-integer {"n/3"}
+      NEG(integer)
+      POP-integer {"n/3"}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   label(""L/0"" 
+      simpleIf(
+         PUSH-integer {<-0+1,"n/3"}
+         PUSHI-integer 0
+         RELOP(_=_)_integer
+         RESETFRAME
+      |then
+         simpleIf(
+            PUSH-integer {<-0+1,"i/2"}
+            PUSHI-integer 0
+            RELOP(_=_)_integer
+            RESETFRAME
+         |then
+            PUSHI-string "0"
+            stdio/out
+            RESETFRAME
+         |else
+            namedFor("j"
+               PUSH-integer {<-1+1,"i/2"}
+               RESETFRAME
+            |
+               PUSH-inx-tmpobj {<-1+1,["w/4"]}, index i-j+1 1
+               PUSH-char {tmp(1)}
+               POP-char,_C-->I,_PUSH-integer
+               PUSHI-string "0"
+               POP-string1,_S1-->I,_PUSH-integer
+               ADDOP(_+_)_integer
+               POP-integer,_I-->C,_PUSH-char
+               POP-char {<-1+1,"c/1"}
+               PUSH-char {<-1+1,"c/1"}
+               POP-char,_C-->S,_PUSH-string
+               stdio/out
+               RESETFRAME
+            )
+            RESETFRAME
+         )
+         RESETFRAME
+      |else
+         PUSH-inx-tmpobj {<-0+1,["w/4"]}, index i+1->i 1
+         PUSH-integer {<-0+1,"n/3"}
+         PUSHI-integer 10
+         MULOP(_mod_)_integer
+         POP-integer,_I-->C,_PUSH-char
+         POP-char {tmp(1)}
+         RESETFRAME
+         PUSH-integer {<-0+1,"n/3"}
+         PUSHI-integer 10
+         MULOP(_div_)_integer
+         POP-integer {<-0+1,"n/3"}
+         RESETFRAME
+         RESTART 0
+      )
+      RESETFRAME
+   )
+)
+MainPart("betaenv.gb:946"
+   "i/1": (
+      PUSH-ptn {<-2,"integer/4"}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+   "j/2": (
+      PUSH-ptn {<-2,"integer/4"}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+|
+)
+MainPart("betaenv.gb:1116"
+   "i/1": (
+      PUSH-ptn {<-2,"integer/4"}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+   "j/2": (
+      PUSH-ptn {<-2,"integer/4"}
+      NEW,_ptn->obj
+      INSTALL-obj
+   )
+|
+)
+MainPart("while-loop.gb:56"
+|
+   simpleFor(
+      PUSHI-integer 10000
+      RESETFRAME
+   |
+      PUSHI-string "***** Hello World *****"
+      stdio/out
+      RESETFRAME
+   )
+   RESETFRAME
+)

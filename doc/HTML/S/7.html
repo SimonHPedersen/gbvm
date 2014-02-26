@@ -1,0 +1,61 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/gc_globals.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/gc_globals.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/gc_globals.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#14>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#14>setVMReference</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: gc_globals.cc,v 1.1 2001/03/16 08:26:18 ilsoe Exp $</FONT></I>
+<I><FONT COLOR=green>// gc_new/gc_globals.cc</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+<I><FONT COLOR=green>//NOTE: THIS FUNCTION DOES NOT GO THROUGH WRITE BARRIER YET!!!</FONT></I>
+
+<I><FONT COLOR=green>//source is the object to set the reference in,</FONT></I>
+<I><FONT COLOR=green>//refAdr is the address to set the reference in</FONT></I>
+<I><FONT COLOR=green>//target is the object the refAdr should contain a pointer to</FONT></I>
+<I><FONT COLOR=green>// none of these are VMObjects!!! but objects as seen in the virtual machine!!!</FONT></I>
+
+<FONT COLOR=darkred>#ifndef</FONT> SETVMREFERENCE_IS_MACRO
+<A NAME=14><B>void</B> <A HREF=../R/302.html>setVMReference</A>(<B>void</B> *source, <B>void</B> **refAdr, <B>void</B> *target) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  *refAdr = target;
+
+  <I><FONT COLOR=green>/* old version</FONT></I>
+<I><FONT COLOR=green>  VMObject_t *src = VMO_FROM_VOIDP(source);</FONT></I>
+<I><FONT COLOR=green>  DB_OUT(gc_glob_setvmr, "setVMReference(): source at " &lt;&lt; source &lt;&lt; " vmobject at: "</FONT></I>
+<I><FONT COLOR=green>         &lt;&lt; (void*)src &lt;&lt; " refAdr: " &lt;&lt; refAdr &lt;&lt; endl);</FONT></I>
+<I><FONT COLOR=green>  //check if we have to remove old remember reference pointing to src from *refAdr's remset</FONT></I>
+<I><FONT COLOR=green>  if(*refAdr) {</FONT></I>
+<I><FONT COLOR=green>    VMObject_t *oldRef = VMO_FROM_VOIDP(*refAdr);</FONT></I>
+<I><FONT COLOR=green>    oldRef-&gt;clearRememberReference(src);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  //add reference to this object</FONT></I>
+<I><FONT COLOR=green>  src-&gt;setReference(refAdr, target);</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#14>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

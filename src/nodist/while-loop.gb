@@ -1,0 +1,14 @@
+(* FILE beer.gb *)
+
+ORIGIN 'betaenv'
+-- program: merge: gbeta --
+
+(#   
+do 
+  (for 10000 repeat
+        '***** Hello World *****'->stdio;
+  for)
+
+#)
+   
+

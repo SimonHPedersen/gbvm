@@ -1,0 +1,81 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/VMObject.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/VMObject.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/VMObject.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#42>[^]</A><A HREF=#45>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#42>VMObject_t</A>
+<LI><A HREF=#45>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: VMObject.cc,v 1.1 2001/03/16 08:26:16 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "VMObject.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+<I><FONT COLOR=green>// ----- initialization -----</FONT></I>
+
+<B>unsigned</B> <B>int</B> VMObject_t::nextID = 0;
+
+<I><FONT COLOR=green>// ----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, VMObject_t* vmo) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(vmo) <FONT COLOR=blue>{</FONT>
+<A NAME=14>    vmo-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-vmo ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, VMObject_t&amp; vmo) <FONT COLOR=blue>{</FONT>
+<A NAME=22>  vmo.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B>* VMObject_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B> *freePointer,
+                               ObjectDescriptor_t *objDescriptor) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  <B>if</B>(!objDescriptor) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_vmo, "VMObject_t::operator new: *** object descriptor is null! ***\n");
+  <FONT COLOR=blue>}</FONT>
+  ((VMObject_t*)freePointer)-&gt;objDesc = objDescriptor;
+  DB_OUT(gc_vmo, "Memory allocation subsystem: allocated VMObject_t at size: 0x" &lt;&lt;
+<A NAME=34>         hex &lt;&lt; ((size_t)size - <B>sizeof</B>(<B>void</B>*) + objDescriptor-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>())
+         &lt;&lt; " begin: 0x" &lt;&lt; (<B>int</B>)freePointer &lt;&lt; dec &lt;&lt; endl);
+  DB_OUTDENT;
+  <B>return</B> freePointer;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- member functions -----</FONT></I>
+
+<A NAME=42>VMObject_t::<A HREF=../R/116.html>VMObject_t</A>(<B>void</B>): id(nextID++) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#45>[&gt;]</A>[^]<A HREF=#45>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45><B>void</B> VMObject_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#42>[&lt;]</A>[&gt;]<A HREF=#42>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+  stream &lt;&lt; "- VMObject " &lt;&lt; id &lt;&lt; "printOn not really implemented yet\n";
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#42>[^]</A><A HREF=#45>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

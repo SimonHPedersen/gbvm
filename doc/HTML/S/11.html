@@ -1,0 +1,720 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc/Car.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc/Car.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc/Car.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#38>[^]</A><A HREF=#604>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#38>Car_t</A>
+<LI><A HREF=#63>Car_t</A>
+<LI><A HREF=#91>getTrainRef</A>
+<LI><A HREF=#95>getCarNumber</A>
+<LI><A HREF=#99>setNextCarPtr</A>
+<LI><A HREF=#103>getNextCarPtr</A>
+<LI><A HREF=#107>addNewObject</A>
+<LI><A HREF=#151>addObject</A>
+<LI><A HREF=#241>isReferencedOutsideCar</A>
+<LI><A HREF=#258>isReferencedOutsideTrain</A>
+<LI><A HREF=#342>addRememberReference</A>
+<LI><A HREF=#358>addRememberReference</A>
+<LI><A HREF=#393>clearRememberReference</A>
+<LI><A HREF=#422>changeRememberReference</A>
+<LI><A HREF=#509>getCarsRememberSetPtr</A>
+<LI><A HREF=#513>getObjectsRememberSetPtr</A>
+<LI><A HREF=#528>newRememberedSetItem</A>
+<LI><A HREF=#549>printOn</A>
+<LI><A HREF=#590>gatherObjRefs</A>
+<LI><A HREF=#604>checkObjRefs</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Car.cc,v 1.30 2001/05/21 11:42:42 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "VMObject.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "Car.hpp"
+
+
+<I><FONT COLOR=green>//----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Car_t* car) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(car) <FONT COLOR=blue>{</FONT>
+<A NAME=11>    car-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-car ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Car_t&amp; car) <FONT COLOR=blue>{</FONT>
+<A NAME=19>  car.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B>* Car_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B>* address) <FONT COLOR=blue>{</FONT>
+  <B>return</B> address;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> Car_t::<B>operator</B> <B>delete</B>(<B>void</B>* objref) <FONT COLOR=blue>{</FONT>
+<A NAME=28>  ((Car_t*)objref)-&gt;matureGenerationRef.<A HREF=../D/169.html>freeCar</A>((Car_t*)objref);
+  DB_INDENT;
+  DB_OUT(gc_car_delete, "Car_t::operator delete: called\n");
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>//----- constructors/destructors -----</FONT></I>
+
+
+<A NAME=38>Car_t::<A HREF=../R/1.html>Car_t</A>(MatureGeneration_t &amp;matureGen, Train_t &amp;train, <B>unsigned</B> <B>int</B> number):
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#63>[&gt;]</A>[^]<A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  matureGenerationRef(matureGen),
+  trainRef(train)
+<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  <B>if</B>(!(<B>void</B>*)&amp;trainRef)<FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "Car made with train-pointer NULL" &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//this-&gt;matureGenerationRef   = matureGen;</FONT></I>
+  <B>this</B>-&gt;carNumber             = number;
+  <I><FONT COLOR=green>//this-&gt;trainRef              = train;</FONT></I>
+
+  nextCarInTrainPtr           = 0;
+  overflowCar                 = 0;
+  vmObjectList                = 0;
+  <I><FONT COLOR=green>//  lastObject                  = 0;</FONT></I>
+  rememberedSetPtr            = 0;
+  freeDataObjectPtr           = (<B>void</B>*)&amp;data[0];
+  freeDataRemPtr              = (<B>void</B>*)&amp;data[BYTES_IN_CAR];
+<A NAME=58>  DB_OUT(gc_car ,"Car build at: " &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; " with train: " &lt;&lt; train.<A HREF=../S/12.html#163>getTrainNumber</A>()
+         &lt;&lt; " at " &lt;&lt; (<B>void</B>*)&amp;train &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=63>Car_t::~<A HREF=../R/1.html>Car_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#38>[&lt;]</A><A HREF=#91>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_car ,"~Car_t(): car " &lt;&lt; <B>this</B> &lt;&lt; "with car number: " &lt;&lt; carNumber &lt;&lt; " is being freed\n");
+  <B>if</B>(!vmObjectList)<FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car ,"~Car_t(): object list was empty\n");
+  <FONT COLOR=blue>}</FONT>
+
+<A NAME=70>  <B>for</B>(VMObject_t *listPtr = vmObjectList; listPtr; listPtr = listPtr-&gt;<A HREF=../S/13.html#75>getNextObjectInCar</A>()) <FONT COLOR=blue>{</FONT>
+<A NAME=71>    <B>if</B>(!(listPtr-&gt;<A HREF=../S/13.html#360>getForward</A>())) <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//this is a garbage object!</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+      collected++;
+<FONT COLOR=darkred>#endif</FONT> DEBUG
+      DB_OUT(gc_car_collect ,"~Car_t(): *garbage collected object: " 
+<A NAME=77>             &lt;&lt; listPtr-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; " * allocated: " &lt;&lt; allocated 
+             &lt;&lt; " collected: " &lt;&lt; collected &lt;&lt; " objects in system: " 
+             &lt;&lt; allocated-collected &lt;&lt; endl);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(overflowCar) <FONT COLOR=blue>{</FONT>
+    <B>delete</B> overflowCar;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_car ,"~Car_t(): car " &lt;&lt; carNumber &lt;&lt; " has been freed\n");
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//----- methods -----</FONT></I>
+
+<A NAME=91>Train_t &amp; Car_t::<A HREF=../R/218.html>getTrainRef</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#63>[&lt;]</A><A HREF=#95>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> trainRef;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=95><B>unsigned</B> <B>int</B> Car_t::<A HREF=../R/164.html>getCarNumber</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#91>[&lt;]</A><A HREF=#99>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> carNumber;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=99><B>void</B> Car_t::<A HREF=../S/12.html#220>setNextCarPtr</A>(Car_t *nextCar) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#95>[&lt;]</A><A HREF=#103>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  nextCarInTrainPtr = nextCar;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=103>Car_t * Car_t::<A HREF=../R/192.html>getNextCarPtr</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#99>[&lt;]</A><A HREF=#107>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> nextCarInTrainPtr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=107>VMObject_t * Car_t::<A HREF=../R/122.html>addNewObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#103>[&lt;]</A><A HREF=#151>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  size_t freeSize   = (size_t)freeDataRemPtr - (size_t)freeDataObjectPtr;
+  <I><FONT COLOR=green>//  DB_OUT(gc_car ,"Car_t::addNewObject(): freeRem: " &lt;&lt; freeDataRemPtr &lt;&lt; " freeData: "</FONT></I>
+  <I><FONT COLOR=green>//     &lt;&lt; freeDataObjectPtr &lt;&lt; " freeSize: " &lt;&lt; freeSize &lt;&lt; endl;</FONT></I>
+<A NAME=112>  size_t objectSize = <B>sizeof</B>(VMObject_t) + objDes-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>() - <B>sizeof</B>(<B>void</B>*);
+  <I><FONT COLOR=green>//  DB_OUT(gc_car ,"Car_t::addNewObject(): objSize: " &lt;&lt; objectSize &lt;&lt; endl;</FONT></I>
+
+  <B>if</B>(freeSize &gt;= objectSize + NEW_CAR_FREE_THRESHOLD) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//ok make room for object</FONT></I>
+<A NAME=117>    VMObject_t *newObject = <B>new</B>(freeDataObjectPtr, objDes) <A HREF=../D/121.html>VMObject_t</A>();
+    <B>if</B>(newObject) <FONT COLOR=blue>{</FONT>
+      freeDataObjectPtr = (<B>void</B>*)((size_t)freeDataObjectPtr + objectSize);
+
+      <I><FONT COLOR=green>//insert new object first in list</FONT></I>
+<A NAME=122>      newObject-&gt;<A HREF=../S/13.html#71>setNextObjectInCar</A>(vmObjectList);
+      vmObjectList = newObject;
+
+<A NAME=125>      newObject-&gt;<A HREF=../S/13.html#345>setCarPtr</A>(<B>this</B>);
+
+
+      <I><FONT COLOR=green>//add remembered set node in the new object</FONT></I>
+      RememberedSetNode_t *newRemSetNode =
+<A NAME=130>        (RememberedSetNode_t*)<A HREF=../S/11.html#528>newRememberedSetItem</A>(<B>sizeof</B>(RememberedSetNode_t));
+      newRemSetNode-&gt;firstRemObjNodePtr = 0;
+      newRemSetNode-&gt;lastRemObjNodePtr  = 0;
+      newRemSetNode-&gt;vmIdObjectPtr      = newObject;
+      newRemSetNode-&gt;nextRemSetNodePtr  = rememberedSetPtr;
+      rememberedSetPtr                  = newRemSetNode;
+
+      DB_OUTDENT;
+      <B>return</B> newObject;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_car ,"Car_t::addNewObject(): Could not add new object (fatal internal error)\n");
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//no more space in car</FONT></I>
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=151>VMObject_t* Car_t::<A HREF=../R/125.html>addObject</A>(VMObject_t *vmo, RememberedSetNode_t *remSetNodePtr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#107>[&lt;]</A><A HREF=#241>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//is there room for object in car, and do we want more objects in it?</FONT></I>
+  size_t freeSize   = (size_t)freeDataRemPtr - (size_t)freeDataObjectPtr;
+  size_t objectSize = (<B>sizeof</B>(VMObject_t)
+<A NAME=156>                       + vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>()-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>()
+                       - <B>sizeof</B>(<B>void</B>*));
+
+  <B>if</B>(freeSize &gt;= objectSize + NEW_CAR_FREE_THRESHOLD) <FONT COLOR=blue>{</FONT>
+    memcpy((<B>void</B>*)freeDataObjectPtr, (<B>void</B>*)vmo, objectSize);
+    VMObject_t *newObject = (VMObject_t*)freeDataObjectPtr;
+<A NAME=162>    vmo-&gt;<A HREF=../S/13.html#356>setForward</A>(newObject);
+    freeDataObjectPtr = (<B>void</B>*) ((size_t)freeDataObjectPtr + objectSize);
+
+    <I><FONT COLOR=green>//insert new object first in list</FONT></I>
+<A NAME=166>    newObject-&gt;<A HREF=../S/13.html#71>setNextObjectInCar</A>(vmObjectList);
+    vmObjectList = newObject;
+
+<A NAME=169>    newObject-&gt;<A HREF=../S/13.html#345>setCarPtr</A>(<B>this</B>);
+    
+    <I><FONT COLOR=green>//add remembered set node in the new object</FONT></I>
+    RememberedSetNode_t *newRemSetNode =
+<A NAME=173>      (RememberedSetNode_t*)<A HREF=../S/11.html#528>newRememberedSetItem</A>(<B>sizeof</B>(RememberedSetNode_t));
+    newRemSetNode-&gt;firstRemObjNodePtr = 0;
+    newRemSetNode-&gt;lastRemObjNodePtr  = 0;
+    newRemSetNode-&gt;vmIdObjectPtr      = newObject;
+    newRemSetNode-&gt;nextRemSetNodePtr  = rememberedSetPtr;
+    rememberedSetPtr                  = newRemSetNode;
+
+    <I><FONT COLOR=green>//update remembered set? update remembered set's references in that case too</FONT></I>
+    <B>if</B>(remSetNodePtr &amp;&amp; (remSetNodePtr-&gt;vmIdObjectPtr == vmo)) <FONT COLOR=blue>{</FONT>
+<A NAME=182>      <B>unsigned</B> <B>int</B> thisTrainNum = trainRef.<A HREF=../S/12.html#163>getTrainNumber</A>(), refTrainNum, refCarNum;
+      VMObject_t *refObj;
+      Car_t *refCar;
+      Train_t *refTrain;
+
+      <I><FONT COLOR=green>//iterate remembered set</FONT></I>
+      <B>for</B>(RememberedObjectNode_t *ron = remSetNodePtr-&gt;firstRemObjNodePtr;
+          ron;
+          ron = ron-&gt;nextRemObjNodePtr)
+        <FONT COLOR=blue>{</FONT>
+          <B>if</B>(!(refObj = ron-&gt;vmRemObjectPtr)) <FONT COLOR=blue>{</FONT>
+            DB_OUT(gc_car ,"Car_t::addObject(): error 1\n"); exit(1);
+          <FONT COLOR=blue>}</FONT>
+<A NAME=195>          <B>if</B>(!(refCar = refObj-&gt;<A HREF=../S/13.html#352>getCarPtr</A>())) <FONT COLOR=blue>{</FONT>
+            DB_OUT(gc_car ,"Car_t::addObject(): error 2\n"); exit(1);
+          <FONT COLOR=blue>}</FONT>
+<A NAME=198>          refCarNum = refCar-&gt;<A HREF=../S/11.html#95>getCarNumber</A>();
+<A NAME=199>          <B>if</B>(!(refTrain = &amp;(refCar-&gt;<A HREF=../S/11.html#91>getTrainRef</A>()))) <FONT COLOR=blue>{</FONT>
+            DB_OUT(gc_car ,"Car_t::addObject(): error 3\n"); exit(1);
+          <FONT COLOR=blue>}</FONT>
+<A NAME=202>          refTrainNum = refTrain-&gt;<A HREF=../S/12.html#163>getTrainNumber</A>();
+          <B>if</B>(thisTrainNum &lt; refTrainNum 
+             || (thisTrainNum == refTrainNum &amp;&amp; carNumber &lt;= refCarNum)) <FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//copy the reference -we only want to keep the references after ourself</FONT></I>
+<A NAME=206>            <A HREF=../D/132.html>addRememberReference</A>(thisTrainNum, refObj, rememberedSetPtr, (RememberedObjectNode_t*)
+<A NAME=207>                                 <A HREF=../S/11.html#528>newRememberedSetItem</A>(<B>sizeof</B>(RememberedObjectNode_t)));
+          <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+            DB_OUT(gc_car ,"Car_t::addObject(): forgetting remember reference from train "
+<A NAME=210>                   &lt;&lt; (<B>void</B>*)refTrainNum &lt;&lt; " object " &lt;&lt; refObj-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; " (which is OK)\n");
+          <FONT COLOR=blue>}</FONT>     
+          <I><FONT COLOR=green>//update the reference(s) in refCar's remembered set to point to the new location</FONT></I>
+          DB_OUT(gc_car ,"Car_t::addObject(): trying to change reference\n");
+<A NAME=214>          refObj-&gt;<A HREF=../S/13.html#125>changeReference</A>(VOIDP_FROM_VMO(vmo), VOIDP_FROM_VMO(newObject));
+          <I><FONT COLOR=green>// NOT!!! refCar-&gt;changeRememberReference(refObj, vmo, newObject);</FONT></I>
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <B>if</B>(remSetNodePtr) <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_car ,"Car_t::addObject(): remembered set referencing a different object\n");
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_car ,"Car_t::addObject(): remembered set empty\n");
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//update the references' remembered set.</FONT></I>
+<A NAME=225>    newObject-&gt;<A HREF=../S/13.html#174>updateReferencesRememberSet</A>(vmo);
+    DB_OUT(gc_car ,"Car_t::addObject(): returning shining new object location: " &lt;&lt; (<B>void</B>*)newObject
+<A NAME=227>         &lt;&lt; " for object: " &lt;&lt; newObject-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; endl);
+<A NAME=228>    DB_OUT(gc_car ,"Car_t::addObject() ** object " &lt;&lt; newObject-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; " added to car " 
+<A NAME=229>         &lt;&lt; newObject-&gt;<A HREF=../S/13.html#352>getCarPtr</A>()-&gt;<A HREF=../S/11.html#95>getCarNumber</A>() &lt;&lt; " in train " 
+<A NAME=230>         &lt;&lt; newObject-&gt;<A HREF=../S/13.html#352>getCarPtr</A>()-&gt;<A HREF=../S/11.html#91>getTrainRef</A>().<A HREF=../S/12.html#163>getTrainNumber</A>() &lt;&lt; " **\n");
+    DB_OUTDENT;
+    <B>return</B> newObject;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//no more space in car</FONT></I>
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//is the car referenced from outside itself?</FONT></I>
+<A NAME=241>VMObject_t* Car_t::<A HREF=../S/20.html#83>isReferencedOutsideCar</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#151>[&lt;]</A><A HREF=#258>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  RememberedObjectNode_t *ron;
+
+  <B>for</B>(RememberedSetNode_t *rsn = rememberedSetPtr; rsn; rsn = rsn-&gt;nextRemSetNodePtr) <FONT COLOR=blue>{</FONT>
+    <B>for</B>(ron = rsn-&gt;firstRemObjNodePtr; ron; ron = ron-&gt;nextRemObjNodePtr) <FONT COLOR=blue>{</FONT>
+<A NAME=247>      <B>if</B>(ron-&gt;vmRemObjectPtr-&gt;<A HREF=../S/13.html#352>getCarPtr</A>() != <B>this</B>) <FONT COLOR=blue>{</FONT>
+        DB_OUTDENT;
+        <B>return</B> ron-&gt;vmRemObjectPtr; 
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//is the car referenced from outside itself?</FONT></I>
+<A NAME=258>VMObject_t* Car_t::<A HREF=../S/12.html#98>isReferencedOutsideTrain</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#241>[&lt;]</A><A HREF=#342>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  RememberedObjectNode_t *ron;
+  VMObject_t *remObj;
+<A NAME=262>  <B>unsigned</B> <B>int</B> thisTrainNum  = trainRef.<A HREF=../S/12.html#163>getTrainNumber</A>();
+  <B>unsigned</B> <B>int</B> refTrainNum   = 0;
+  <B>unsigned</B> <B>int</B> extReferenced = 0;
+  <I><FONT COLOR=green>//iterate all RemberedSetNodes and check if the first remsetobjnode in each for external train</FONT></I>
+  <B>for</B>(RememberedSetNode_t *rsn = rememberedSetPtr; rsn; rsn = rsn-&gt;nextRemSetNodePtr) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): ron " &lt;&lt; rsn-&gt;firstRemObjNodePtr &lt;&lt; endl);
+
+    <I><FONT COLOR=green>//check this object's remembered set</FONT></I>
+    <B>for</B>(ron = rsn-&gt;firstRemObjNodePtr;
+        (ron
+<A NAME=272>         &amp;&amp; ((refTrainNum = (remObj = ron-&gt;vmRemObjectPtr)-&gt;<A HREF=../S/13.html#352>getCarPtr</A>()-&gt;<A HREF=../S/11.html#91>getTrainRef</A>().<A HREF=../S/12.html#163>getTrainNumber</A>())
+             != thisTrainNum)
+         );
+        ron = ron-&gt;nextRemObjNodePtr)
+      <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): ref from outside train (number "
+             &lt;&lt; refTrainNum &lt;&lt; ")\n");
+
+        <B>if</B>(refTrainNum != UINT_MAX) <FONT COLOR=blue>{</FONT>
+          DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): ref is not from root set, returning\n");
+          DB_OUTDENT;
+          <B>return</B> remObj;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+          extReferenced = 1;
+          DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): ref is from root set, remembered but continuing\n");
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+
+    <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>    if((ron = rsn-&gt;firstRemObjNodePtr) &amp;&amp;</FONT></I>
+<I><FONT COLOR=green>       ((refTrainNum = (remObj = ron-&gt;vmRemObjectPtr)-&gt;getCarPtr()-&gt;getTrainRef().getTrainNumber())</FONT></I>
+<I><FONT COLOR=green>        != thisTrainNum)) {</FONT></I>
+<I><FONT COLOR=green>      //if there is an outside-train-reference in an objects remembered set, then there will</FONT></I>
+<I><FONT COLOR=green>      //be one of these first in the list since it is sorted with external train refs first.</FONT></I>
+<I><FONT COLOR=green>      //That is: we only need to check the first rem-ref for each object.</FONT></I>
+<I><FONT COLOR=green>      //NOTE: I'M NOT SURE WHETHER THIS COMPARING REFERENCES IN THE ABOVE LINE WORKS!</FONT></I>
+<I><FONT COLOR=green>      DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): ref from outside train (number "</FONT></I>
+<I><FONT COLOR=green>           &lt;&lt; refTrainNum &lt;&lt; ")\n";</FONT></I>
+<I><FONT COLOR=green>      if(refTrainNum != UINT_MAX) {</FONT></I>
+<I><FONT COLOR=green>        return remObj;</FONT></I>
+<I><FONT COLOR=green>      } else {</FONT></I>
+<I><FONT COLOR=green>        extReferenced = 1;</FONT></I>
+<I><FONT COLOR=green>        //this should search in the rest of the objects remembered set until a reference not from</FONT></I>
+<I><FONT COLOR=green>        //root set is found - lets rewrite it instead       </FONT></I>
+<I><FONT COLOR=green>      }</FONT></I>
+<I><FONT COLOR=green>    } else {</FONT></I>
+<I><FONT COLOR=green>      if(ron &amp;&amp; remObj) {</FONT></I>
+<I><FONT COLOR=green>      DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): (no) this trainnr: " &lt;&lt; thisTrainNum</FONT></I>
+<I><FONT COLOR=green>           &lt;&lt; " remset trainnr: " &lt;&lt; remObj-&gt;getCarPtr()-&gt;getTrainRef().getTrainNumber() &lt;&lt; endl;</FONT></I>
+<I><FONT COLOR=green>      } else {</FONT></I>
+<I><FONT COLOR=green>        DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): ???\n";</FONT></I>
+<I><FONT COLOR=green>      }</FONT></I>
+<I><FONT COLOR=green>    }</FONT></I>
+<I><FONT COLOR=green>    */</FONT></I>
+
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(extReferenced) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): referenced from root set, returning 1\n");
+    DB_OUTDENT;
+    <B>return</B> (VMObject_t*)(<B>void</B>*)1;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain(): no ref from outside, returning 0\n");
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  //go through all objects in the car</FONT></I>
+<I><FONT COLOR=green>  for(int i = 0; i &lt; freeIndex; i++) {</FONT></I>
+<I><FONT COLOR=green>    //check if the object has a reference outside the car</FONT></I>
+<I><FONT COLOR=green>    VMObject_t* vmo = 0;</FONT></I>
+<I><FONT COLOR=green>    if((vmo = vmObject[i].getARefObjOutsideTrain())) {</FONT></I>
+<I><FONT COLOR=green>      DB_OUT(gc_car ,"Car_t::isReferencedOutsideTrain returning object: " &lt;&lt; vmo &lt;&lt; "\n";</FONT></I>
+<I><FONT COLOR=green>      return vmo;</FONT></I>
+<I><FONT COLOR=green>    }</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  //no valid references were found</FONT></I>
+<I><FONT COLOR=green>  return 0;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=342><B>int</B> Car_t::<A HREF=../R/126.html>addRememberReference</A>(VMObject_t *obj, VMObject_t *remPtr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#258>[&lt;]</A><A HREF=#358>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_car ,"Car_t::addRememberReference1(): Car number: " &lt;&lt; carNumber 
+         &lt;&lt; "called trainRef" &lt;&lt; (<B>void</B>*)&amp;trainRef &lt;&lt; "typid(this): " 
+         &lt;&lt; typeid(<B>this</B>).name() &lt;&lt; endl);
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=348>  garbageCollector-&gt;<A HREF=../D/253.html>heapDump</A>();
+<FONT COLOR=darkred>#endif</FONT>
+<A NAME=350>  <A HREF=../D/132.html>addRememberReference</A>(trainRef.<A HREF=../S/12.html#163>getTrainNumber</A>(), remPtr, <A HREF=../S/11.html#513>getObjectsRememberSetPtr</A>(obj),
+<A NAME=351>                       (RememberedObjectNode_t*)<A HREF=../S/11.html#528>newRememberedSetItem</A>(<B>sizeof</B>(RememberedObjectNode_t)));
+
+  <I><FONT COLOR=green>//DB_OUT(gc_car ,"Car_t::addRememberReference(VMObject_t *obj, VMObject_t *remPtr): NOT YET IMPLEMENTED\n";</FONT></I>
+  DB_OUTDENT;
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=358><B>void</B> Car_t::<A HREF=../R/126.html>addRememberReference</A>(<B>unsigned</B> <B>int</B> thisTrainNum, VMObject_t *remPtr,
+<I><FONT COLOR=green>/* <A HREF=#342>[&lt;]</A><A HREF=#393>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                 RememberedSetNode_t *rsn, <I><FONT COLOR=green>//remember set for </FONT></I>
+                                 RememberedObjectNode_t *node2Insert) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  DB_OUT(gc_car ,"Car_t::addRememberReference2(): called\n");
+  node2Insert-&gt;vmRemObjectPtr = remPtr;
+
+  <I><FONT COLOR=green>//is there object in remset?</FONT></I>
+  <B>if</B>(rsn-&gt;firstRemObjNodePtr) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car ,"Car_t::addRememberReference2(): object in remset\n");
+    <I><FONT COLOR=green>//insert first or last?</FONT></I>
+    <I><FONT COLOR=green>//SEGMENTATION FAULT IN THIS LINE WHEN RUNNING GBVM M. testinput.gbc</FONT></I>
+<A NAME=370>    <B>if</B>(thisTrainNum == remPtr-&gt;<A HREF=../S/13.html#352>getCarPtr</A>()-&gt;<A HREF=../S/11.html#91>getTrainRef</A>().<A HREF=../S/12.html#163>getTrainNumber</A>())<FONT COLOR=blue>{</FONT>
+
+       <I><FONT COLOR=green>// rsn-&gt;firstRemObjNodePtr-&gt;vmRemObjectPtr-&gt;getCarPtr()-&gt;getTrainRef().getTrainNumber()) {</FONT></I>
+      DB_OUT(gc_car ,"Car_t::addRememberReference2(): insert last\n");
+      <I><FONT COLOR=green>//insert last</FONT></I>
+      rsn-&gt;lastRemObjNodePtr-&gt;nextRemObjNodePtr = node2Insert;
+      rsn-&gt;lastRemObjNodePtr = node2Insert;
+      node2Insert-&gt;nextRemObjNodePtr = 0;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_car ,"Car_t::addRememberReference2(): insert first\n");
+      <I><FONT COLOR=green>//insert first</FONT></I>
+      node2Insert-&gt;nextRemObjNodePtr = rsn-&gt;firstRemObjNodePtr;
+      rsn-&gt;firstRemObjNodePtr = node2Insert;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//first insertion</FONT></I>
+    DB_OUT(gc_car ,"Car_t::addRememberReference2(): first insertion\n");
+    node2Insert-&gt;nextRemObjNodePtr = 0;
+    rsn-&gt;firstRemObjNodePtr = rsn-&gt;lastRemObjNodePtr = node2Insert;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=393><B>void</B> Car_t::<A HREF=../R/140.html>clearRememberReference</A>(VMObject_t *obj, VMObject_t *remRef) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#358>[&lt;]</A><A HREF=#422>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<A NAME=395>  RememberedSetNode_t *rsn = <A HREF=../S/11.html#513>getObjectsRememberSetPtr</A>(obj);
+  <B>if</B>(!rsn) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B>;
+  <FONT COLOR=blue>}</FONT>
+  
+  RememberedObjectNode_t *ronPrev = 0, *ron;
+  <B>for</B>(ron = rsn-&gt;firstRemObjNodePtr; ron; ronPrev = ron, ron = ron-&gt;nextRemObjNodePtr) <FONT COLOR=blue>{</FONT>
+    <B>if</B>(ron-&gt;vmRemObjectPtr == remRef) <FONT COLOR=blue>{</FONT>
+      <B>if</B>(ronPrev) <FONT COLOR=blue>{</FONT>
+        ronPrev-&gt;nextRemObjNodePtr = ron-&gt;nextRemObjNodePtr;
+        DB_OUT(gc_car ,"Car_t::clearRememberReference(): removed remset node\n");
+        DB_OUTDENT;
+        <B>return</B>;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        rsn-&gt;firstRemObjNodePtr = ron-&gt;nextRemObjNodePtr;
+        DB_OUT(gc_car ,"Car_t::clearRememberReference(): removed first remset node\n");
+        DB_OUTDENT;
+        <B>return</B>;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_car ,"Car_t::clearRememberReference(): could not find remset node to remove\n\n");
+  DB_OUTDENT;
+  <B>return</B>;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=422><B>void</B> Car_t::<A HREF=../R/135.html>changeRememberReference</A>(VMObject_t* vmo, VMObject_t* oldPtr, VMObject_t* newPtr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#393>[&lt;]</A><A HREF=#509>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//get vmo's remembered set</FONT></I>
+  RememberedSetNode_t *rsn;
+
+<A NAME=427>  rsn = <A HREF=../S/11.html#513>getObjectsRememberSetPtr</A>(vmo);
+  <B>if</B>(!rsn) <FONT COLOR=blue>{</FONT>
+<A NAME=429>    cerr &lt;&lt; "Car_t::changeRememberReference(): rsn was 0 for vmobject: " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() 
+         &lt;&lt; " (at " &lt;&lt; vmo &lt;&lt; "), quitting\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+  <B>if</B>(rsn-&gt;vmIdObjectPtr == vmo) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//found it! Now we should determine if this reference is external to train or not</FONT></I>
+<A NAME=436>    <B>int</B> externalRef = (&amp;trainRef != &amp;(newPtr-&gt;<A HREF=../S/13.html#352>getCarPtr</A>()-&gt;<A HREF=../S/11.html#91>getTrainRef</A>()));
+
+    <I><FONT COLOR=green>//DB_OUT(gc_car ,"Car_t::changeRememberReference(): External ref? " &lt;&lt; externalRef &lt;&lt; endl;</FONT></I>
+
+    <I><FONT COLOR=green>//find ALL occurrences of oldPtr, change them to newPtr, and relocate them in the list</FONT></I>
+    <I><FONT COLOR=green>//depending on whether they are external or not</FONT></I>
+    <B>int</B> foundAny = 0;
+    RememberedObjectNode_t *ronPrev = 0, *ron;
+    <B>for</B>(ron = rsn-&gt;firstRemObjNodePtr;  ron; ronPrev = ron, ron = ron-&gt;nextRemObjNodePtr) <FONT COLOR=blue>{</FONT>
+      <B>if</B>(ron-&gt;vmRemObjectPtr == oldPtr) <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_car ,"Car_t::changeRememberReference(): changing remember reference\n");
+        foundAny = 1;
+        ron-&gt;vmRemObjectPtr = newPtr;
+        <I><FONT COLOR=green>//move remnode according to externalRef</FONT></I>
+        <B>if</B>(externalRef) <FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//move to front of rem-set for vmo</FONT></I>
+          DB_OUT(gc_car ,"Car_t::changeRememberReference(): ext ref\n");
+          <B>if</B>(ronPrev) <FONT COLOR=blue>{</FONT>
+            DB_OUT(gc_car ,"Car_t::changeRememberReference(): prev ref\n");
+            ronPrev-&gt;nextRemObjNodePtr = ron-&gt;nextRemObjNodePtr;
+            ron-&gt;nextRemObjNodePtr     = rsn-&gt;firstRemObjNodePtr;
+            rsn-&gt;firstRemObjNodePtr    = ron;
+            <B>if</B>(rsn-&gt;lastRemObjNodePtr == ron) <FONT COLOR=blue>{</FONT>
+              rsn-&gt;lastRemObjNodePtr   = ronPrev;
+            <FONT COLOR=blue>}</FONT>
+            <I><FONT COLOR=green>//make sure the loop continues the right place if ron has been moved to front,</FONT></I>
+            <I><FONT COLOR=green>//otherwise the loop would start all over...</FONT></I>
+            ron = ronPrev;
+          <FONT COLOR=blue>}</FONT> <I><FONT COLOR=green>//no ronPrev? then we must have been the first in the list -we do not need to move then!</FONT></I>
+        <FONT COLOR=blue>}</FONT> <I><FONT COLOR=green>// else do not move node</FONT></I>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    <B>if</B>(!foundAny) <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_car ,"Car_t::changeRememberReference(): inserting reference\n");
+      <I><FONT COLOR=green>//insert reference now!</FONT></I>
+      <I><FONT COLOR=green>//DB_OUT(gc_car ,"didnt find any reference!";</FONT></I>
+<A NAME=472>      ron = (RememberedObjectNode_t*)<A HREF=../S/11.html#528>newRememberedSetItem</A>(<B>sizeof</B>(RememberedObjectNode_t));
+      ron-&gt;vmRemObjectPtr = newPtr;
+      <I><FONT COLOR=green>//insert new node according to externalRef</FONT></I>
+      <B>if</B>(externalRef)<FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_car ,"Car_t::changeRememberReference(): inserting reference in front\n");
+        <I><FONT COLOR=green>//insert in front</FONT></I>
+        ron-&gt;nextRemObjNodePtr = rsn-&gt;firstRemObjNodePtr;
+        rsn-&gt;firstRemObjNodePtr = ron;
+        <B>if</B>(!(rsn-&gt;lastRemObjNodePtr)) <FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//ok, we're the last too</FONT></I>
+          rsn-&gt;lastRemObjNodePtr = ron;
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_car ,"Car_t::changeRememberReference(): inserting reference last \n");
+        <I><FONT COLOR=green>//insert last</FONT></I>
+        ron-&gt;nextRemObjNodePtr = 0;
+        <B>if</B>(!(rsn-&gt;firstRemObjNodePtr)) <FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//is this the first remember object? then both the first and last ptr must be updated</FONT></I>
+          rsn-&gt;firstRemObjNodePtr = rsn-&gt;lastRemObjNodePtr = ron;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//there are objects in list</FONT></I>
+          <I><FONT COLOR=green>//the last should point to the new objnode, and the last-node pointer sould point to</FONT></I>
+          <I><FONT COLOR=green>//new objnode</FONT></I>
+          rsn-&gt;lastRemObjNodePtr-&gt;nextRemObjNodePtr = ron;
+          rsn-&gt;lastRemObjNodePtr = ron;
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//Could not find this object in remembered set - strange, probably an error</FONT></I>
+    <I><FONT COLOR=green>//DB_OUT(gc_car ,"Car_t::changeRememberReference(): strange error (probably) you should be worried! Perhaps"</FONT></I>
+    <I><FONT COLOR=green>//      " there is an object without remembered set?\n";</FONT></I>
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//DB_OUT(gc_car ,"Car_t::changeRememberReference(): returning\n";</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=509>RememberedSetNode_t* Car_t::<A HREF=../R/167.html>getCarsRememberSetPtr</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#422>[&lt;]</A><A HREF=#513>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> rememberedSetPtr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=513>RememberedSetNode_t* Car_t::<A HREF=../R/202.html>getObjectsRememberSetPtr</A>(VMObject_t *vmo) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#509>[&lt;]</A><A HREF=#528>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  RememberedSetNode_t *rsn;
+  DB_OUT(gc_car, "Car_t::getObjectRememberSetPtr(): 1");
+  <B>for</B>(rsn = rememberedSetPtr; rsn &amp;&amp; (rsn-&gt;vmIdObjectPtr != vmo); rsn = rsn-&gt;nextRemSetNodePtr);
+  <B>if</B>(rsn) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_car ,"Car_t::getObjectsRememberSetPtr(): returning rsn for object: "
+<A NAME=520>         &lt;&lt; rsn-&gt;vmIdObjectPtr-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; " at " &lt;&lt; (<B>void</B>*)rsn-&gt;vmIdObjectPtr &lt;&lt; endl);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_car, "Car_t::getObjectRememberSetPtr(): returning rsn: " &lt;&lt; rsn);
+  DB_OUTDENT;
+  <B>return</B> rsn;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=528><B>void</B>* Car_t::<A HREF=../R/251.html>newRememberedSetItem</A>(size_t objectSize) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#513>[&lt;]</A><A HREF=#549>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>if</B>(!overflowCar) <FONT COLOR=blue>{</FONT>
+    size_t freeSize = (size_t)freeDataRemPtr - (size_t)freeDataObjectPtr;
+    <B>if</B>(freeSize &gt;= objectSize) <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//there is space enough here</FONT></I>
+      freeDataRemPtr = (<B>void</B>*) ((size_t)freeDataRemPtr - (size_t)objectSize);
+      DB_OUTDENT;
+      <B>return</B> (RememberedSetNode_t*)freeDataRemPtr;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//allocate an overflowCar now!</FONT></I>
+      DB_OUT(gc_car ,"Car_t::newRememberedSetNode(): *allocating overflow car*\n");
+<A NAME=540>      overflowCar = <B>new</B>(matureGenerationRef.<A HREF=../S/20.html#151>getCarAddress</A>())
+<A NAME=541>        <A HREF=../D/2.html>Car_t</A>(matureGenerationRef, trainRef, 0);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//if we reached this place we have to use an overflow car.</FONT></I>
+  DB_OUTDENT;
+<A NAME=546>  <B>return</B> overflowCar-&gt;<A HREF=../S/11.html#528>newRememberedSetItem</A>(objectSize);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=549><B>void</B> Car_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#528>[&lt;]</A><A HREF=#590>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+<A NAME=552>  stream &lt;&lt; "--- Car " &lt;&lt; carNumber &lt;&lt; " at " &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; " with train " &lt;&lt; trainRef.<A HREF=../S/12.html#163>getTrainNumber</A>();
+  VMObject_t *currentVMO = vmObjectList;
+  <B>while</B>(currentVMO) <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; endl &lt;&lt; currentVMO;
+<A NAME=556>    currentVMO = currentVMO-&gt;<A HREF=../S/13.html#75>getNextObjectInCar</A>();
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <I><FONT COLOR=green>//print remembered set</FONT></I>
+  DB_INDENT;
+  <B>for</B>(RememberedSetNode_t *rsn = rememberedSetPtr; rsn; rsn = rsn-&gt;nextRemSetNodePtr) <FONT COLOR=blue>{</FONT>
+    <B>if</B>(rsn-&gt;vmIdObjectPtr) <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_remset_dump, endl);
+<A NAME=564>      DB_OUT(gc_remset_dump, "Remembered set for object " &lt;&lt; rsn-&gt;vmIdObjectPtr-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ":");
+      DB_INDENT;
+      <B>for</B>(RememberedObjectNode_t *ron = rsn-&gt;firstRemObjNodePtr; ron; ron = ron = ron-&gt;nextRemObjNodePtr) <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_remset_dump, endl);
+<A NAME=568>        DB_OUT(gc_remset_dump, "-&gt; " &lt;&lt; ron-&gt;vmRemObjectPtr-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ", " &lt;&lt;
+               (<B>void</B>*)ron-&gt;vmRemObjectPtr);
+      <FONT COLOR=blue>}</FONT>
+      <I><FONT COLOR=green>//      DB_OUT(gc_remset_dump, endl);</FONT></I>
+      DB_OUTDENT;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=darkred>#endif</FONT>
+  <I><FONT COLOR=green>//print overflow car</FONT></I>
+  <B>if</B>(overflowCar) <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; endl;
+    DB_INS_INDT(stream);
+    stream &lt;&lt; " -- overflow car -&gt;\n";
+    stream &lt;&lt; overflowCar;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+
+
+<A NAME=590>VMObject_t **Car_t::<A HREF=../R/155.html>gatherObjRefs</A>(VMObject_t **vmoRefArray) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#549>[&lt;]</A><A HREF=#604>[&gt;]</A><A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  VMObject_t *vmo = (VMObject_t*)&amp;data[0];
+  <B>while</B>(vmo &lt; freeDataObjectPtr) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//DB_OUT(gc_integrity, "VMObject at: " &lt;&lt; (void*)vmo &lt;&lt; endl);</FONT></I>
+    *vmoRefArray = vmo; <I><FONT COLOR=green>/* + sizeof(VMObject_t) - sizeof(void*); //ref to internal object...*/</FONT></I>
+    vmoRefArray++;
+    <I><FONT COLOR=green>//get next object</FONT></I>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> vmoRefArray;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=604><B>int</B> Car_t::<A HREF=../R/138.html>checkObjRefs</A>(VMObject_t **vmoRefArray, <B>unsigned</B> <B>int</B> length) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#590>[&lt;]</A>[&gt;]<A HREF=#38>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>int</B> retval = 0;
+  VMObject_t *vmo = (VMObject_t*)&amp;data[0];
+  ObjectDescriptor_t *objDesc;
+
+  <I><FONT COLOR=green>//check all objects in car</FONT></I>
+  <B>while</B>(vmo &lt; freeDataObjectPtr) <FONT COLOR=blue>{</FONT>
+<A NAME=612>    <B>if</B>(!(objDesc = vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>())) <FONT COLOR=blue>{</FONT>
+<A NAME=613>      cerr &lt;&lt; "Car_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; 
+        ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " without ObjDesc!" &lt;&lt; endl;
+<A NAME=615>      cerr &lt;&lt; "Train was: " &lt;&lt; trainRef.<A HREF=../S/12.html#163>getTrainNumber</A>() &lt;&lt; " and car was: "
+           &lt;&lt; carNumber &lt;&lt; endl;
+      retval++;
+      DB_OUTDENT;
+      <B>return</B> retval;
+    <FONT COLOR=blue>}</FONT>
+<A NAME=621>    <B>unsigned</B> <B>int</B> numberOfRefs = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+    <I><FONT COLOR=green>//check each reference</FONT></I>
+    <B>for</B>(<B>unsigned</B> <B>int</B> refInVMO = 0; refInVMO &lt; numberOfRefs; refInVMO++) <FONT COLOR=blue>{</FONT>
+<A NAME=624>      <B>if</B>(objDesc-&gt;<A HREF=../S/22.html#122>hasReferenceAt</A>(refInVMO) &amp;&amp; vmo-&gt;data[refInVMO]) <FONT COLOR=blue>{</FONT>
+        VMObject_t *vmoRef = VMO_FROM_VOIDP(vmo-&gt;data[refInVMO]);
+        <I><FONT COLOR=green>//check if reference is in list</FONT></I>
+        <B>int</B> found = 0;
+        <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; length &amp;&amp; !found; i++) <FONT COLOR=blue>{</FONT>
+          <B>if</B>(vmoRef == vmoRefArray[i]) <FONT COLOR=blue>{</FONT>
+            found = 1;
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+        <B>if</B>(!found) <FONT COLOR=blue>{</FONT>
+<A NAME=634>          cerr &lt;&lt; "Car_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt;
+            ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " with illegal object pointer" &lt;&lt; endl;
+<A NAME=636>          cerr &lt;&lt; "Object descriptor: " &lt;&lt; endl &lt;&lt; vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>() &lt;&lt; endl;
+<A NAME=637>          cerr &lt;&lt; "Train was: " &lt;&lt; trainRef.<A HREF=../S/12.html#163>getTrainNumber</A>() &lt;&lt; " and car was: "
+               &lt;&lt; carNumber &lt;&lt; endl;
+          cerr &lt;&lt; "Bad reference was number: " &lt;&lt; refInVMO &lt;&lt; " with value: "
+               &lt;&lt; (<B>void</B>*)(vmo-&gt;data[refInVMO]) &lt;&lt; endl;
+          cerr &lt;&lt; "Object with illegal pointer has typeid: "
+               &lt;&lt; typeid(VOIDP_FROM_VMO(vmo)).name() &lt;&lt; endl;
+          retval++;
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> retval;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#38>[^]</A><A HREF=#604>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

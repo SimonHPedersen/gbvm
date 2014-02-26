@@ -1,0 +1,132 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/VMOHash.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/VMOHash.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/VMOHash.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#21>[^]</A><A HREF=#76>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#21>VMOHash_t</A>
+<LI><A HREF=#39>getFirst</A>
+<LI><A HREF=#43>lookup</A>
+<LI><A HREF=#52>insert</A>
+<LI><A HREF=#56>remove</A>
+<LI><A HREF=#60>getIterator</A>
+<LI><A HREF=#64>getEndIterator</A>
+<LI><A HREF=#68>clear</A>
+<LI><A HREF=#72>empty</A>
+<LI><A HREF=#76>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: VMOHash.cc,v 1.1 2001/04/03 16:11:09 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<I><FONT COLOR=green>//----- operators ----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, VMOHash_t* vmoset)<FONT COLOR=blue>{</FONT>
+  <B>if</B>(vmoset)<FONT COLOR=blue>{</FONT>
+<A NAME=9>    vmoset-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-vmohash-set ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, VMOHash_t&amp; vmoset)<FONT COLOR=blue>{</FONT>
+<A NAME=17>  vmoset.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=21>VMOHash_t::~<A HREF=../S/34.html#364>VMOHash_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#39>[&gt;]</A>[^]<A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//cout &lt;&lt; "before delete(vmohash) \n";</FONT></I>
+  <I><FONT COLOR=green>//vmohash.~hash_set();</FONT></I>
+
+  VMOHashIt_t start = vmohash.begin();
+  VMOHashIt_t end = vmohash.end();
+  
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  while(start != end){</FONT></I>
+<I><FONT COLOR=green>    delete *start++;</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+  
+  destroy(start,end);
+  <I><FONT COLOR=green>//delete(vmohash);</FONT></I>
+
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=39>VMObject_t* VMOHash_t::<A HREF=../R/174.html>getFirst</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#21>[&lt;]</A><A HREF=#43>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> *(vmohash.begin());
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=43>VMObject_t* VMOHash_t::<A HREF=../R/238.html>lookup</A>(VMObject_t* c1)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#39>[&lt;]</A><A HREF=#52>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  VMOHashIt_t it = vmohash.find(c1);
+  <B>if</B>(it == vmohash.end())<FONT COLOR=blue>{</FONT>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>return</B> *it;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=52><B>void</B> VMOHash_t::<A HREF=../R/231.html>insert</A>(VMObject_t* c1)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#43>[&lt;]</A><A HREF=#56>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=53>  vmohash.<A HREF=../D/260.html>insert</A>(c1);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=56><B>void</B> VMOHash_t::<A HREF=../R/279.html>remove</A>(VMObject_t* c1)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#52>[&lt;]</A><A HREF=#60>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  vmohash.erase(c1);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=60>VMOHashIt_t VMOHash_t::<A HREF=../R/183.html>getIterator</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#56>[&lt;]</A><A HREF=#64>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> vmohash.begin();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=64>VMOHashIt_t VMOHash_t::<A HREF=../R/172.html>getEndIterator</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#60>[&lt;]</A><A HREF=#68>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> vmohash.end();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=68><B>void</B> VMOHash_t::<A HREF=../R/139.html>clear</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#64>[&lt;]</A><A HREF=#72>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=69>  vmohash.<A HREF=../D/148.html>clear</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=72>bool VMOHash_t::<A HREF=../R/149.html>empty</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#68>[&lt;]</A><A HREF=#76>[&gt;]</A><A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=73>  <B>return</B> vmohash.<A HREF=../D/160.html>empty</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=76><B>void</B> VMOHash_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#72>[&lt;]</A>[&gt;]<A HREF=#21>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=77>  <B>if</B>(<A HREF=../D/160.html>empty</A>())<FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "VMOreferences: empty";
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "VMOreferences: " &lt;&lt; endl;
+<A NAME=81>    <B>for</B>(VMOHashIt_t i = <A HREF=../D/203.html>getIterator</A>(); i != <A HREF=../D/191.html>getEndIterator</A>(); i++)<FONT COLOR=blue>{</FONT>
+      stream &lt;&lt; ", " &lt;&lt; (<B>void</B>*)(VMObject_t*)*i;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#21>[^]</A><A HREF=#76>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,109 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/main_debug1.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/main_debug1.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/main_debug1.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>main</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: main_debug1.cc,v 1.2 2001/04/09 08:49:58 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> &lt;iostream.h&gt;
+
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+<A NAME=7><B>int</B> main(<B>int</B> argc, <B>char</B> **argv) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+  DB_ENABLE(gc_memblk);
+  DB_ENABLE(gc_car);
+  DB_ENABLE(gc_vmo);
+  DB_ENABLE(gc_tg);
+
+  <I><FONT COLOR=green>//create a dummy object descriptor</FONT></I>
+<A NAME=15>  ObjectDescriptor_t *od = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(BYTES_IN_CAR/6, 0);
+
+  Lst&lt;MemoryBlock_t&gt; mbl;
+<A NAME=18>  mbl.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../D/98.html>MemoryBlock_t</A>(8));
+<A NAME=19>  mbl.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../D/98.html>MemoryBlock_t</A>(16));
+<A NAME=20>  <B>void</B> *carSpace = mbl.first()-&gt;<A HREF=../D/136.html>allocCarSpace</A>();
+  <B>if</B>(!carSpace) <FONT COLOR=blue>{</FONT>
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  cout &lt;&lt; "new car space allocated at: " &lt;&lt; (<B>void</B>*)carSpace &lt;&lt; endl;
+<A NAME=25>  Car_t *car = <B>new</B>(carSpace)<A HREF=../D/2.html>Car_t</A>();
+<A NAME=26>  car-&gt;<A HREF=../D/139.html>allocateVMO</A>(od);
+<A NAME=27>  mbl.first()-&gt;next()-&gt;<A HREF=../D/169.html>freeCar</A>(car); <I><FONT COLOR=green>//this should fail</FONT></I>
+<A NAME=28>  mbl.first()-&gt;<A HREF=../D/169.html>freeCar</A>(car);
+
+<A NAME=30>  carSpace = mbl.first()-&gt;next()-&gt;<A HREF=../D/136.html>allocCarSpace</A>();
+<A NAME=31>  car = <B>new</B>(carSpace)<A HREF=../D/2.html>Car_t</A>();
+<A NAME=32>  mbl.first()-&gt;next()-&gt;<A HREF=../D/169.html>freeCar</A>(car); <I><FONT COLOR=green>//last memblock should be suggested freed</FONT></I>
+  
+  <I><FONT COLOR=green>//fill up first mem block, free one car try to allocate a car again</FONT></I>
+<A NAME=35>  carSpace = mbl.first()-&gt;<A HREF=../D/136.html>allocCarSpace</A>();
+<A NAME=36>  car = <B>new</B>(carSpace)<A HREF=../D/2.html>Car_t</A>();
+  
+  <B>for</B>(<B>int</B> i = 0; i &lt; 8; i++) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//the last allocation (7) should fail</FONT></I>
+<A NAME=39>    <B>if</B>((carSpace = mbl.first()-&gt;<A HREF=../D/136.html>allocCarSpace</A>())) <FONT COLOR=blue>{</FONT>
+      cout &lt;&lt; i &lt;&lt; " success allocating space for car, address:" &lt;&lt; carSpace &lt;&lt; "\n";
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cout &lt;&lt; i &lt;&lt; " failure\n";
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  cout &lt;&lt; "(NOTE: 7 should fail)\n";
+
+  <I><FONT COLOR=green>//should work</FONT></I>
+<A NAME=48>  mbl.first()-&gt;<A HREF=../D/169.html>freeCar</A>(car);
+
+  <I><FONT COLOR=green>//should also work</FONT></I>
+<A NAME=51>  <B>if</B>((carSpace = mbl.first()-&gt;<A HREF=../D/136.html>allocCarSpace</A>())) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; " success allocating space for car, address:" &lt;&lt; carSpace &lt;&lt; "\n";
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; " failure\n";
+  <FONT COLOR=blue>}</FONT>
+
+  cout &lt;&lt; "\nnow testing Train generation\n\n";
+
+  TrainGeneration_t tg(2);
+
+  cout &lt;&lt; "main debug: 1\n";
+
+<A NAME=63>  tg.<A HREF=../D/128.html>addNewObject</A>(od);
+  cout &lt;&lt; "main debug: 1\n";
+<A NAME=65>  tg.<A HREF=../D/133.html>addRootObject</A>(od);
+
+  cout &lt;&lt; "main debug: 1\n";
+
+  VMObject_t *vmo;
+  CarTrain_t *ct;
+
+  <B>for</B>(<B>int</B> i = 0; i &lt; 1000; i++) <FONT COLOR=blue>{</FONT>
+<A NAME=73>    vmo = tg.<A HREF=../D/128.html>addNewObject</A>(od);
+<A NAME=74>    ct = tg.<A HREF=../S/3.html#290>getCarTrain</A>(vmo);
+    cout &lt;&lt;"     VMO: train = " &lt;&lt; ct-&gt;getTrain() &lt;&lt; " car = " &lt;&lt; ct-&gt;getCar()
+         &lt;&lt; endl;
+  <FONT COLOR=blue>}</FONT>
+
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#7>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

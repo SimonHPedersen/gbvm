@@ -1,0 +1,2031 @@
+IntroductorySpace(4096)
+Introductory space at: 0x80c6000
+StackSpace(): allocated stackspace at: 0x80c7008
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+OK
+Hello world!.
+Reference : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+cdefghijklmnopqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+123456789.
+RelOp     : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+abcdefghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+rstuvwxyz0123456789.
+BoolOp 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+   : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+jklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+rstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+z0123456789.
+Ari
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+thOp   : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+jkTEST OK.
+ArithOp   : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+defghijkTEST OK.
+ArithOp   :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+ abcdefghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0 secs, worst is: 0
+TEST OK.
+Multiply  : abcde
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.000666667 secs, worst is: 0.01
+fghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000625 secs, worst is: 0.01
+TEST OK.
+Multiply  : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000588235 secs, worst is: 0.01
+fghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000555556 secs, worst is: 0.01
+stuvwxyz012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000526316 secs, worst is: 0.01
+6TEST OK.
+Divide    : abcd
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.001 secs, worst is: 0.01
+efghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000952381 secs, worst is: 0.01
+rstuvwxyz0123TES
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000909091 secs, worst is: 0.01
+T OK.
+Divide    : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000869565 secs, worst is: 0.01
+ghijklmnopqrst
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000833333 secs, worst is: 0.01
+uvwTEST OK.
+Divide    : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0008 secs, worst is: 0.01
+cdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000769231 secs, worst is: 0.01
+qrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000740741 secs, worst is: 0.01
+3456TEST OK.
+Control   : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000714286 secs, worst is: 0.01
+fghijklmnopqrstuvwxyz0TEST OK.
+Cont
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000689655 secs, worst is: 0.01
+rol   : abcdefghijklmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000666667 secs, worst is: 0.01
+xyz0123456789.
+Case      : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000645161 secs, worst is: 0.01
+fghijklmnopqrstuvwxyz0123456789.
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000625 secs, worst is: 0.01
+
+Block     : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000606061 secs, worst is: 0.01
+hijklmnopqrs0123456789.
+Virtual  
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000588235 secs, worst is: 0.01
+ : abcdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000571429 secs, worst is: 0.01
+qrstuvwxyzTEST OK.
+Virtual   :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000555556 secs, worst is: 0.01
+ abcdefijklmnopqrstuvwxyz0123456
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000540541 secs, worst is: 0.01
+789.
+Virtual   : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000526316 secs, worst is: 0.01
+fghijklmnopqrs
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.000769231 secs, worst is: 0.01
+tuvwxyz0123456789
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.001 secs, worst is: 0.01
+.
+Virtual   : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00097561 secs, worst is: 0.01
+klmnopqrTEST OK.
+VarPtn    
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000952381 secs, worst is: 0.01
+: abcdefghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000930233 secs, worst is: 0.01
+opqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000909091 secs, worst is: 0.01
+23459.
+This      : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000888889 secs, worst is: 0.01
+defghijklmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000869565 secs, worst is: 0.01
+z0123456789.
+Real      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000851064 secs, worst is: 0.01
+abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000833333 secs, worst is: 0.01
+klmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000816327 secs, worst is: 0.01
+z012.
+Real      : a
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0008 secs, worst is: 0.01
+bcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000784314 secs, worst is: 0.01
+mnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000769231 secs, worst is: 0.01
+xyz01234567
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000754717 secs, worst is: 0.01
+89.
+Real      : abc
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.000925926 secs, worst is: 0.01
+def_h
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000909091 secs, worst is: 0.01
+kTEST OK.
+DoPart    : abc
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00107143 secs, worst is: 0.01
+defghijklmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00105263 secs, worst is: 0.01
+vwxyz012456789.
+MainPart  : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00103448 secs, worst is: 0.01
+abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00101695 secs, worst is: 0.01
+mnopqrstuvwxyz0123456789Hello world!.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.001 secs, worst is: 0.01
+Reference : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000983606 secs, worst is: 0.01
+pqrstuvwxyz012345678
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000967742 secs, worst is: 0.01
+9.
+RelOp     : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000952381 secs, worst is: 0.01
+klmnopqrstuvwx
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0009375 secs, worst is: 0.01
+yz0123456789.
+BoolOp    : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.000923077 secs, worst is: 0.01
+defghijklmn
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00106061 secs, worst is: 0.01
+opqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00104478 secs, worst is: 0.01
+tuvwxyz0123
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00117647 secs, worst is: 0.01
+456789.
+ArithOp   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00115942 secs, worst is: 0.01
+abcdefghijkTEST OK.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00114286 secs, worst is: 0.01
+ArithOp   : abcdefghijk
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00126761 secs, worst is: 0.01
+TEST OK.
+ArithOp   : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00125 secs, worst is: 0.01
+fghijklmnTEST OK.
+Mult
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00123288 secs, worst is: 0.01
+iply  : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00121622 secs, worst is: 0.01
+klmnopqrsTEST OK.
+Mult
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0012 secs, worst is: 0.01
+iply  : abcdefghij
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00131579 secs, worst is: 0.01
+klmnopqrstuvwx
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0012987 secs, worst is: 0.01
+yz0123456TEST OK.
+Di
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00128205 secs, worst is: 0.01
+vide    : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00126582 secs, worst is: 0.01
+klmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00125 secs, worst is: 0.01
+xyz0123TEST OK.
+Divide 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00135802 secs, worst is: 0.01
+   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134146 secs, worst is: 0.01
+lmnopqrstuvwTEST O
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0013253 secs, worst is: 0.01
+K.
+Divide    : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00130952 secs, worst is: 0.01
+hijklmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00129412 secs, worst is: 0.01
+vwxyz0123456TEST
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00139535 secs, worst is: 0.01
+ OK.
+Control   : abcdefghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00137931 secs, worst is: 0.01
+tuvwxyz0TEST OK.
+Control   : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136364 secs, worst is: 0.01
+cdefghijklmnopqrstuvwxyz0123456789.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134831 secs, worst is: 0.01
+Case      : abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133333 secs, worst is: 0.01
+mnopqrstuvwxyz0123456789.
+Block     :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00131868 secs, worst is: 0.01
+ abcdefghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00130435 secs, worst is: 0.01
+0123456789.
+Virtual   : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00129032 secs, worst is: 0.01
+defghijklmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0012766 secs, worst is: 0.01
+zTEST OK.
+Virtual   : abcdefi
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00136842 secs, worst is: 0.01
+jklmnopqrstuvwxyz0123456789.
+Virtual 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135417 secs, worst is: 0.01
+  : abcdefghij
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0014433 secs, worst is: 0.01
+klmnopqrstuv
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00153061 secs, worst is: 0.01
+wxyz0123456789.
+Virtual   :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151515 secs, worst is: 0.01
+ abcdefghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015 secs, worst is: 0.01
+rTEST OK.
+VarPtn    : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148515 secs, worst is: 0.01
+cdefghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147059 secs, worst is: 0.01
+tuvwxyz023459.
+Thi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145631 secs, worst is: 0.01
+s      : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144231 secs, worst is: 0.01
+pqrstuvwxyz0123456789.
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142857 secs, worst is: 0.01
+
+Real      : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141509 secs, worst is: 0.01
+defghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00140187 secs, worst is: 0.01
+rstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00138889 secs, worst is: 0.01
+.
+Real      : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00137615 secs, worst is: 0.01
+fghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136364 secs, worst is: 0.01
+qrstuvwxyz01
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135135 secs, worst is: 0.01
+23456789.
+Real    
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133929 secs, worst is: 0.01
+  : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132743 secs, worst is: 0.01
+_hkTEST OK.
+DoP
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00131579 secs, worst is: 0.01
+art    : abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00130435 secs, worst is: 0.01
+nopqrstuvwxyz012
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00137931 secs, worst is: 0.01
+456789.
+MainPart  : ab
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00145299 secs, worst is: 0.01
+cdefghijklmnopqrstuvw
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00152542 secs, worst is: 0.01
+xyz0123456789Hello world!.
+Reference : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015126 secs, worst is: 0.01
+abcdefghijklmnopqrst
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015 secs, worst is: 0.01
+uvwxyz0123456789.
+RelOp   
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0014876 secs, worst is: 0.01
+  : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147541 secs, worst is: 0.01
+pqrstuvwxyz0123456789.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00146341 secs, worst is: 0.01
+BoolOp    : abcdefg
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00153226 secs, worst is: 0.01
+hijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152 secs, worst is: 0.01
+qrstuv
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0015873 secs, worst is: 0.01
+wxyz012345678
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015748 secs, worst is: 0.01
+9.
+ArithOp   : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015625 secs, worst is: 0.01
+ghijkTEST OK.
+ArithOp   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155039 secs, worst is: 0.01
+abcdefghijkTEST OK.
+Arit
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153846 secs, worst is: 0.01
+hOp   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152672 secs, worst is: 0.01
+lmnTEST OK.
+Multiply  : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151515 secs, worst is: 0.01
+cdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150376 secs, worst is: 0.01
+qrsTEST OK.
+Multiply  : ab
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00156716 secs, worst is: 0.01
+cdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155556 secs, worst is: 0.01
+qrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154412 secs, worst is: 0.01
+3456TEST OK.
+Divide    : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153285 secs, worst is: 0.01
+cdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152174 secs, worst is: 0.01
+pqrstuvwxyz01
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00158273 secs, worst is: 0.01
+23TEST OK.
+Divide    : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157143 secs, worst is: 0.01
+efghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156028 secs, worst is: 0.01
+rstuvwTEST OK.
+Divide    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015493 secs, worst is: 0.01
+abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153846 secs, worst is: 0.01
+nopqrstuvwxyz0
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00159722 secs, worst is: 0.01
+123456TEST OK.
+Control   :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158621 secs, worst is: 0.01
+ abcdefghijklmnopqrstuvwxyz0TEST OK
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157534 secs, worst is: 0.01
+.
+Control   : abcdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156463 secs, worst is: 0.01
+qrstuvwxyz0123456789.
+Case      : 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00162162 secs, worst is: 0.01
+abcdefghijklmnopqrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161074 secs, worst is: 0.01
+3456789.
+Block     : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0016 secs, worst is: 0.01
+abcdefghijklmnopqrs0123456789.
+Vi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015894 secs, worst is: 0.01
+rtual   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157895 secs, worst is: 0.01
+lmnopqrstuvwxyzTEST OK.
+Virt
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156863 secs, worst is: 0.01
+ual   : abcdefijklmnopqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155844 secs, worst is: 0.01
+0123456789.
+Virtual   : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154839 secs, worst is: 0.01
+defghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153846 secs, worst is: 0.01
+opqrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152866 secs, worst is: 0.01
+3456789.
+Virtual   : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151899 secs, worst is: 0.01
+hijklmnopqrTEST OK.
+Var
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150943 secs, worst is: 0.01
+Ptn    : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015 secs, worst is: 0.01
+ijklmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149068 secs, worst is: 0.01
+z023459.
+This      : 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00154321 secs, worst is: 0.01
+abcdefghijklmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153374 secs, worst is: 0.01
+xyz0123456789.
+Real      : 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00158537 secs, worst is: 0.01
+abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157576 secs, worst is: 0.01
+ijklmnopqrstuv
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156626 secs, worst is: 0.01
+wxyz012.
+Real      :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155689 secs, worst is: 0.01
+ abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154762 secs, worst is: 0.01
+klmnopqrstu
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00159763 secs, worst is: 0.01
+vwxyz012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158824 secs, worst is: 0.01
+6789.
+Real      : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157895 secs, worst is: 0.01
+cdef_h
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156977 secs, worst is: 0.01
+kTEST OK.
+DoPart    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156069 secs, worst is: 0.01
+abcdefghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155172 secs, worst is: 0.01
+stuvwxyz012456789.
+MainPar
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154286 secs, worst is: 0.01
+t  : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153409 secs, worst is: 0.01
+klmnopqrstuvwxyz0123456
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152542 secs, worst is: 0.01
+789Hello world!.
+Reference : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151685 secs, worst is: 0.01
+ijklmnopqrstuvwxyz012345
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00156425 secs, worst is: 0.01
+6789.
+RelOp     : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155556 secs, worst is: 0.01
+ghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154696 secs, worst is: 0.01
+tuvwxyz0123456789.
+BoolOp    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153846 secs, worst is: 0.01
+abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153005 secs, worst is: 0.01
+mnopqr
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00157609 secs, worst is: 0.01
+stuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156757 secs, worst is: 0.01
+123456789.
+ArithOp   :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155914 secs, worst is: 0.01
+ abcdefghijkTE
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015508 secs, worst is: 0.01
+ST OK.
+ArithOp   : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154255 secs, worst is: 0.01
+ghijkTEST OK.
+ArithOp   : ab
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0015873 secs, worst is: 0.01
+cdefghijklmnTEST OK.
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157895 secs, worst is: 0.01
+
+Multiply  : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157068 secs, worst is: 0.01
+ijklmnopqrsTEST OK
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015625 secs, worst is: 0.01
+.
+Multiply  : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015544 secs, worst is: 0.01
+ijklmnopqrstu
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00159794 secs, worst is: 0.01
+vwxyz0123456TEST O
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158974 secs, worst is: 0.01
+K.
+Divide    : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158163 secs, worst is: 0.01
+hijklmnopqrst
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015736 secs, worst is: 0.01
+uvwxyz0123TEST OK.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156566 secs, worst is: 0.01
+Divide    : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155779 secs, worst is: 0.01
+jklmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155 secs, worst is: 0.01
+TEST OK.
+Divide    : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154229 secs, worst is: 0.01
+fghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153465 secs, worst is: 0.01
+stuvwxyz012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152709 secs, worst is: 0.01
+6TEST OK.
+Control   : abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151961 secs, worst is: 0.01
+nopqrstuvwxyz0TEST OK.
+Control   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151219 secs, worst is: 0.01
+abcdefghijklmnopqrstuvwxyz012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150485 secs, worst is: 0.01
+6789.
+Case      : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149758 secs, worst is: 0.01
+jklmnopqrstuvwxyz0123456789.
+Block
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149038 secs, worst is: 0.01
+     : abcdefghijklmno
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0015311 secs, worst is: 0.01
+pqrs0123456789.
+Virtual   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152381 secs, worst is: 0.01
+abcdefghijklmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151659 secs, worst is: 0.01
+vwxyzTEST OK.
+Virtual   : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150943 secs, worst is: 0.01
+cdefijklmnopqrstuvwxyz0123456789.
+Vir
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150235 secs, worst is: 0.01
+tual   : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149533 secs, worst is: 0.01
+klmnopqrstuv
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148837 secs, worst is: 0.01
+wxyz0123456789.
+Virtua
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148148 secs, worst is: 0.01
+l   : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147465 secs, worst is: 0.01
+pqrTEST OK.
+VarPtn    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00146789 secs, worst is: 0.01
+abcdefghijklmnopq
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00150685 secs, worst is: 0.01
+rstuvwxyz023459
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015 secs, worst is: 0.01
+.
+This      : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149321 secs, worst is: 0.01
+klmnopqrstuvwxyz0123
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148649 secs, worst is: 0.01
+456789.
+Real      : a
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00152466 secs, worst is: 0.01
+bcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151786 secs, worst is: 0.01
+mnopqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151111 secs, worst is: 0.01
+12.
+Real      : abcd
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00154867 secs, worst is: 0.01
+efghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154185 secs, worst is: 0.01
+pqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153509 secs, worst is: 0.01
+0123456789.
+Re
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152838 secs, worst is: 0.01
+al      : abcde
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00156522 secs, worst is: 0.01
+f_hkTEST OK
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155844 secs, worst is: 0.01
+.
+DoPart    : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155172 secs, worst is: 0.01
+lmnopqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154506 secs, worst is: 0.01
+12456789.
+MainPart  : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153846 secs, worst is: 0.01
+abcdefghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153191 secs, worst is: 0.01
+tuvwxyz0123456789Hello world!.
+Referenc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152542 secs, worst is: 0.01
+e : abcdefghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151899 secs, worst is: 0.01
+stuvwxyz0123456789.
+Re
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015126 secs, worst is: 0.01
+lOp     : abcdefghijklm
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00154812 secs, worst is: 0.01
+nopqrstuvwxyz0123456
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154167 secs, worst is: 0.01
+789.
+BoolOp    : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153527 secs, worst is: 0.01
+ghijklmnop
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00157025 secs, worst is: 0.01
+qrst
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156379 secs, worst is: 0.01
+uvwxyz0123456
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155738 secs, worst is: 0.01
+789.
+ArithOp   : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155102 secs, worst is: 0.01
+efghijkTEST OK.
+ArithOp 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154472 secs, worst is: 0.01
+  : abcdefghijkTEST OK.
+
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00157895 secs, worst is: 0.01
+ArithOp   : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157258 secs, worst is: 0.01
+jklmnTEST OK.
+Multiply  : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156627 secs, worst is: 0.01
+abcdefghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156 secs, worst is: 0.01
+opqrsTEST OK.
+Multiply  : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155378 secs, worst is: 0.01
+abcdefghijklmn
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0015873 secs, worst is: 0.01
+opqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158103 secs, worst is: 0.01
+123456TEST OK.
+Divide    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015748 secs, worst is: 0.01
+abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156863 secs, worst is: 0.01
+nopqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015625 secs, worst is: 0.01
+0123TEST OK.
+Divide    : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155642 secs, worst is: 0.01
+cdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155039 secs, worst is: 0.01
+pqrstuvwTEST OK.
+Divide
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015444 secs, worst is: 0.01
+    : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153846 secs, worst is: 0.01
+lmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153257 secs, worst is: 0.01
+z0123456TEST OK.
+Contr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152672 secs, worst is: 0.01
+ol   : abcdefghijklmnopqrstuvwxyz0T
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152091 secs, worst is: 0.01
+EST OK.
+Control   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151515 secs, worst is: 0.01
+lmnopqrstuvwxyz0123456789.
+Case     
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150943 secs, worst is: 0.01
+ : abcdefghijklmnopqrstuvwx
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150376 secs, worst is: 0.01
+yz0123456789.
+Block     : 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00153558 secs, worst is: 0.01
+abcdefghijklmnopqrs0123456789
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152985 secs, worst is: 0.01
+.
+Virtual   : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152416 secs, worst is: 0.01
+ijklmnopqrstuvwxyzTEST OK.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151852 secs, worst is: 0.01
+Virtual   : abcdefijklmnopqrst
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00154982 secs, worst is: 0.01
+uvwxyz0123456789.
+Virtual   : 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00158088 secs, worst is: 0.01
+abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157509 secs, worst is: 0.01
+lmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156934 secs, worst is: 0.01
+z0123456789.
+Virtual   : abcd
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0016 secs, worst is: 0.01
+efghijklmnopqrTEST OK.
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015942 secs, worst is: 0.01
+
+VarPtn    : abcde
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00162455 secs, worst is: 0.01
+fghijklmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0016187 secs, worst is: 0.01
+xyz023459.
+This      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0016129 secs, worst is: 0.01
+abcdefghijklmnopqrstuv
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160714 secs, worst is: 0.01
+wxyz0123456789.
+Real    
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160142 secs, worst is: 0.01
+  : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159574 secs, worst is: 0.01
+ghijklmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159011 secs, worst is: 0.01
+vwxyz012.
+Real   
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00161972 secs, worst is: 0.01
+   : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161403 secs, worst is: 0.01
+jklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160839 secs, worst is: 0.01
+tuvwxyz01234
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160279 secs, worst is: 0.01
+56789.
+Real      : 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00163194 secs, worst is: 0.01
+abcdef_
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0016263 secs, worst is: 0.01
+hkTEST OK.
+DoPart    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00162069 secs, worst is: 0.01
+abcdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161512 secs, worst is: 0.01
+qrstuvwxyz012456789.
+Mai
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160959 secs, worst is: 0.01
+nPart  : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0016041 secs, worst is: 0.01
+jklmnopqrstuvwxyz0123
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159864 secs, worst is: 0.01
+456789Hello world!.
+Reference : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159322 secs, worst is: 0.01
+ghijklmnopqrstuvwxyz01
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158784 secs, worst is: 0.01
+23456789.
+RelOp     : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158249 secs, worst is: 0.01
+defghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157718 secs, worst is: 0.01
+stuvwxyz0123456789.
+BoolOp    :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157191 secs, worst is: 0.01
+ abcdefghijk
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0016 secs, worst is: 0.01
+lmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159468 secs, worst is: 0.01
+stuvwxyz
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00162252 secs, worst is: 0.01
+0123456789.
+ArithOp
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161716 secs, worst is: 0.01
+   : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161184 secs, worst is: 0.01
+kTEST OK.
+ArithOp   : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160656 secs, worst is: 0.01
+efghijkTEST OK.
+ArithOp   : a
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160131 secs, worst is: 0.01
+bcdefghijklmnTEST
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159609 secs, worst is: 0.01
+ OK.
+Multiply  : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159091 secs, worst is: 0.01
+ghijklmnopqrsTES
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158576 secs, worst is: 0.01
+T OK.
+Multiply  : abcdef
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0016129 secs, worst is: 0.01
+ghijklmnopqrst
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160772 secs, worst is: 0.01
+uvwxyz0123456TE
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160256 secs, worst is: 0.01
+ST OK.
+Divide    : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159744 secs, worst is: 0.01
+ghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159236 secs, worst is: 0.01
+tuvwxyz0123TEST OK
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00161905 secs, worst is: 0.01
+.
+Divide    : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161392 secs, worst is: 0.01
+ijklmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160883 secs, worst is: 0.01
+vwTEST OK.
+Divide    : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160377 secs, worst is: 0.01
+efghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159875 secs, worst is: 0.01
+rstuvwxyz01234
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.001625 secs, worst is: 0.01
+56TEST OK.
+Control   : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161994 secs, worst is: 0.01
+jklmnopqrstuvwxyz0TEST OK.
+Control 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161491 secs, worst is: 0.01
+  : abcdefghijklmnopqrstuvwxyz01
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160991 secs, worst is: 0.01
+23456789.
+Case      : abcdefg
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0016358 secs, worst is: 0.01
+hijklmnopqrstuvwxyz0123456789.
+B
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00163077 secs, worst is: 0.01
+lock     : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00162577 secs, worst is: 0.01
+lmnopqrs0123456789.
+Virtual   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00162079 secs, worst is: 0.01
+abcdefghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161585 secs, worst is: 0.01
+stuvwxyzTEST OK.
+Virtual   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00161094 secs, worst is: 0.01
+abcdefijklmnopqrstuvwxyz0123456789.
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160606 secs, worst is: 0.01
+
+Virtual   : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160121 secs, worst is: 0.01
+ghijklmnopqrst
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159639 secs, worst is: 0.01
+uvwxyz0123456789.
+V
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159159 secs, worst is: 0.01
+irtual   : abcdefghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158683 secs, worst is: 0.01
+opqrTEST OK.
+VarPtn    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158209 secs, worst is: 0.01
+abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157738 secs, worst is: 0.01
+pqrstuvwxyz0234
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00160237 secs, worst is: 0.01
+59.
+This      : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159763 secs, worst is: 0.01
+ghijklmnopqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159292 secs, worst is: 0.01
+0123456789.
+Real      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158824 secs, worst is: 0.01
+abcdefghijk
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0016129 secs, worst is: 0.01
+lmnopqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00160819 secs, worst is: 0.01
+12.
+Real      : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0016035 secs, worst is: 0.01
+cdefghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00159884 secs, worst is: 0.01
+opqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015942 secs, worst is: 0.01
+z0123456789.
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015896 secs, worst is: 0.01
+
+Real      : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158501 secs, worst is: 0.01
+ef_hkTES
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00158046 secs, worst is: 0.01
+T OK.
+DoPart    : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157593 secs, worst is: 0.01
+hijklmnopqrstuvwx
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00157143 secs, worst is: 0.01
+yz012456789.
+MainPart  : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00156695 secs, worst is: 0.01
+abcdefghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015625 secs, worst is: 0.01
+rstuvwxyz0123456789Hello world!.
+Refer
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155807 secs, worst is: 0.01
+ence : abcdefghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00155367 secs, worst is: 0.01
+rstuvwxyz0123456789.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015493 secs, worst is: 0.01
+RelOp     : abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154494 secs, worst is: 0.01
+mnopqrstuvwxyz0123
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00154062 secs, worst is: 0.01
+456789.
+BoolOp    : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153631 secs, worst is: 0.01
+fghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153203 secs, worst is: 0.01
+qrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152778 secs, worst is: 0.01
+tuvwxyz012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152355 secs, worst is: 0.01
+6789.
+ArithOp   : abc
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00154696 secs, worst is: 0.01
+defghijkTEST OK.
+Arith
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0015427 secs, worst is: 0.01
+Op   : abcdefghijkTEST O
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153846 secs, worst is: 0.01
+K.
+ArithOp   : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153425 secs, worst is: 0.01
+ijklmnTEST OK.
+Multiply  :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00153005 secs, worst is: 0.01
+ abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152589 secs, worst is: 0.01
+nopqrsTEST OK.
+Multiply  
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00152174 secs, worst is: 0.01
+: abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151761 secs, worst is: 0.01
+mnopqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00151351 secs, worst is: 0.01
+0123456TEST OK.
+Divide  
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150943 secs, worst is: 0.01
+  : abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150538 secs, worst is: 0.01
+mnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00150134 secs, worst is: 0.01
+z0123TEST OK.
+Divide    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149733 secs, worst is: 0.01
+abcdefghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149333 secs, worst is: 0.01
+opqrstuvwTEST OK.
+Di
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148936 secs, worst is: 0.01
+vide    : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148541 secs, worst is: 0.01
+klmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148148 secs, worst is: 0.01
+xyz0123456TEST OK.
+C
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147757 secs, worst is: 0.01
+ontrol   : abcdefghijklmnopqrstuvwxyz
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0015 secs, worst is: 0.01
+0TEST OK.
+Control   : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149606 secs, worst is: 0.01
+hijklmnopqrstuvwxyz0123456789.
+Case 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00149215 secs, worst is: 0.01
+     : abcdefghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148825 secs, worst is: 0.01
+tuvwxyz0123456789.
+Block     : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148437 secs, worst is: 0.01
+abcdefghijklmnopqrs012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148052 secs, worst is: 0.01
+6789.
+Virtual   : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147668 secs, worst is: 0.01
+efghijklmnopqrstuvwxyzTEST
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147287 secs, worst is: 0.01
+ OK.
+Virtual   : abcdefijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00146907 secs, worst is: 0.01
+pqrstuvwxyz0123456789.
+Virtual   : 
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.001491 secs, worst is: 0.01
+abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148718 secs, worst is: 0.01
+klmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00148338 secs, worst is: 0.01
+xyz0123456789.
+Virtual   : a
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147959 secs, worst is: 0.01
+bcdefghijklmnopqrTES
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147583 secs, worst is: 0.01
+T OK.
+VarPtn    : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00147208 secs, worst is: 0.01
+fghijklmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00146835 secs, worst is: 0.01
+vwxyz023459.
+This     
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00146465 secs, worst is: 0.01
+ : abcdefghijklmnopqrst
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00146096 secs, worst is: 0.01
+uvwxyz0123456789.
+Rea
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145729 secs, worst is: 0.01
+l      : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145363 secs, worst is: 0.01
+efghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145 secs, worst is: 0.01
+tuvwxyz012.
+Re
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144638 secs, worst is: 0.01
+al      : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144279 secs, worst is: 0.01
+hijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143921 secs, worst is: 0.01
+stuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143564 secs, worst is: 0.01
+3456789.
+Real      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0014321 secs, worst is: 0.01
+abcdef
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.0014532 secs, worst is: 0.01
+_hkTEST OK.
+DoPart  
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144963 secs, worst is: 0.01
+  : abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144608 secs, worst is: 0.01
+nopqrstuvwxyz012456789
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144254 secs, worst is: 0.01
+.
+MainPart  : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143902 secs, worst is: 0.01
+ghijklmnopqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143552 secs, worst is: 0.01
+0123456789Hello world!.
+Reference : a
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143204 secs, worst is: 0.01
+bcdefghijklmnopqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142857 secs, worst is: 0.01
+0123456789.
+RelOp     : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142512 secs, worst is: 0.01
+abcdefghijklmnopq
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00144578 secs, worst is: 0.01
+rstuvwxyz0123456789.
+BoolOp
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144231 secs, worst is: 0.01
+    : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143885 secs, worst is: 0.01
+jklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143541 secs, worst is: 0.01
+rstuvwx
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143198 secs, worst is: 0.01
+yz0123456789.
+A
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00145238 secs, worst is: 0.01
+rithOp   : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144893 secs, worst is: 0.01
+ijkTEST OK.
+ArithOp   : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0014455 secs, worst is: 0.01
+cdefghijkTEST OK.
+ArithOp   
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144208 secs, worst is: 0.01
+: abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143868 secs, worst is: 0.01
+nTEST OK.
+Multiply  : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143529 secs, worst is: 0.01
+efghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143192 secs, worst is: 0.01
+sTEST OK.
+Multiply  : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142857 secs, worst is: 0.01
+efghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142523 secs, worst is: 0.01
+stuvwxyz01234
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142191 secs, worst is: 0.01
+56TEST OK.
+Divide    : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0014186 secs, worst is: 0.01
+efghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141531 secs, worst is: 0.01
+rstuvwxyz0123T
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141204 secs, worst is: 0.01
+EST OK.
+Divide    : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00140878 secs, worst is: 0.01
+ghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00140553 secs, worst is: 0.01
+tuvwTEST OK.
+Divide    : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0014023 secs, worst is: 0.01
+cdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00139908 secs, worst is: 0.01
+pqrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00139588 secs, worst is: 0.01
+3456TEST OK.
+Control   : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00139269 secs, worst is: 0.01
+defghijklmnopqrstuvwxyz0TEST OK.
+Co
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00138952 secs, worst is: 0.01
+ntrol   : abcdefghijklmnopqrstuv
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00138636 secs, worst is: 0.01
+wxyz0123456789.
+Case      : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00138322 secs, worst is: 0.01
+defghijklmnopqrstuvwxyz012345678
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00138009 secs, worst is: 0.01
+9.
+Block     : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00137697 secs, worst is: 0.01
+fghijklmnopqrs0123456789.
+Virtual 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00137387 secs, worst is: 0.01
+  : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00137079 secs, worst is: 0.01
+pqrstuvwxyzTEST OK.
+Virtual   
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136771 secs, worst is: 0.01
+: abcdefijklmnopqrstuvwxyz012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136465 secs, worst is: 0.01
+6789.
+Virtual   : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136161 secs, worst is: 0.01
+efghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135857 secs, worst is: 0.01
+tuvwxyz012345678
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135556 secs, worst is: 0.01
+9.
+Virtual   : abcdefghi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135255 secs, worst is: 0.01
+jklmnopqrTEST OK.
+VarPtn   
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134956 secs, worst is: 0.01
+ : abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134658 secs, worst is: 0.01
+nopqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134361 secs, worst is: 0.01
+23459.
+This      : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134066 secs, worst is: 0.01
+cdefghijklmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133772 secs, worst is: 0.01
+z0123456789.
+Real      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133479 secs, worst is: 0.01
+abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133188 secs, worst is: 0.01
+klmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132898 secs, worst is: 0.01
+z012.
+Real      : a
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132609 secs, worst is: 0.01
+bcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132321 secs, worst is: 0.01
+mnopqrstuvw
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00134199 secs, worst is: 0.01
+xyz01234567
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133909 secs, worst is: 0.01
+89.
+Real      : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133621 secs, worst is: 0.01
+def_h
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133333 secs, worst is: 0.01
+kTEST OK.
+DoPart    : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133047 secs, worst is: 0.01
+defghijklmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132762 secs, worst is: 0.01
+vwxyz012456789.
+MainPart  : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132479 secs, worst is: 0.01
+abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132196 secs, worst is: 0.01
+mnopqrstuvwxyz0123456789Hello world!.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00131915 secs, worst is: 0.01
+Reference : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00131635 secs, worst is: 0.01
+pqrstuvwxyz012345678
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00133475 secs, worst is: 0.01
+9.
+RelOp     : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00133192 secs, worst is: 0.01
+klmnopqrstuvwx
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00132911 secs, worst is: 0.01
+yz0123456789.
+BoolOp    : abc
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00134737 secs, worst is: 0.01
+defghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134454 secs, worst is: 0.01
+opqrs
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00136268 secs, worst is: 0.01
+tuvwxyz0123
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135983 secs, worst is: 0.01
+456789.
+ArithOp   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135699 secs, worst is: 0.01
+abcdefghijkTEST OK.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135417 secs, worst is: 0.01
+ArithOp   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135135 secs, worst is: 0.01
+TEST OK.
+ArithOp   : abcde
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134855 secs, worst is: 0.01
+fghijklmnTEST OK.
+Mult
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134576 secs, worst is: 0.01
+iply  : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134298 secs, worst is: 0.01
+klmnopqrsTEST OK.
+Mult
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00136082 secs, worst is: 0.01
+iply  : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135802 secs, worst is: 0.01
+klmnopqrstuvwx
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135524 secs, worst is: 0.01
+yz0123456TEST OK.
+Di
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135246 secs, worst is: 0.01
+vide    : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00134969 secs, worst is: 0.01
+klmnopqrstuvw
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00136735 secs, worst is: 0.01
+xyz0123TEST OK.
+Divide 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136456 secs, worst is: 0.01
+   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136179 secs, worst is: 0.01
+lmnopqrstuvwTEST O
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135903 secs, worst is: 0.01
+K.
+Divide    : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00135628 secs, worst is: 0.01
+hijklmnopqrstu
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00137374 secs, worst is: 0.01
+vwxyz0123456TEST
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00137097 secs, worst is: 0.01
+ OK.
+Control   : abcdefghijklmnopqrs
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00136821 secs, worst is: 0.01
+tuvwxyz0TEST OK.
+Control   : ab
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00138554 secs, worst is: 0.01
+cdefghijklmnopqrstuvwxyz0123456789.
+
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00140281 secs, worst is: 0.01
+Case      : abcdefghijkl
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0014 secs, worst is: 0.01
+mnopqrstuvwxyz0123456789.
+Block     :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00139721 secs, worst is: 0.01
+ abcdefghijklmnopqrs
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00141434 secs, worst is: 0.01
+0123456789.
+Virtual   : abc
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00143141 secs, worst is: 0.01
+defghijklmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142857 secs, worst is: 0.01
+zTEST OK.
+Virtual   : abcdefi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142574 secs, worst is: 0.01
+jklmnopqrstuvwxyz0123456789.
+Virtual 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142293 secs, worst is: 0.01
+  : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142012 secs, worst is: 0.01
+klmnopqrstuv
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141732 secs, worst is: 0.01
+wxyz0123456789.
+Virtual   :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141454 secs, worst is: 0.01
+ abcdefghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141176 secs, worst is: 0.01
+rTEST OK.
+VarPtn    : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.001409 secs, worst is: 0.01
+cdefghijklmnopqrs
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00142578 secs, worst is: 0.01
+tuvwxyz023459.
+Thi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.001423 secs, worst is: 0.01
+s      : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142023 secs, worst is: 0.01
+pqrstuvwxyz0123456789.
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00143689 secs, worst is: 0.01
+
+Real      : abc
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00145349 secs, worst is: 0.01
+defghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145068 secs, worst is: 0.01
+rstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144788 secs, worst is: 0.01
+.
+Real      : abcde
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00146435 secs, worst is: 0.01
+fghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00146154 secs, worst is: 0.01
+qrstuvwxyz01
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145873 secs, worst is: 0.01
+23456789.
+Real    
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145594 secs, worst is: 0.01
+  : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145315 secs, worst is: 0.01
+_hkTEST OK.
+DoP
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145038 secs, worst is: 0.01
+art    : abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144762 secs, worst is: 0.01
+nopqrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144487 secs, worst is: 0.01
+456789.
+MainPart  : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144213 secs, worst is: 0.01
+cdefghijklmnopqrstuvw
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143939 secs, worst is: 0.01
+xyz0123456789Hello world!.
+Reference : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143667 secs, worst is: 0.01
+abcdefghijklmnopqrst
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00145283 secs, worst is: 0.01
+uvwxyz0123456789.
+RelOp   
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145009 secs, worst is: 0.01
+  : abcdefghijklmno
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144737 secs, worst is: 0.01
+pqrstuvwxyz0123456789.
+
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144465 secs, worst is: 0.01
+BoolOp    : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144195 secs, worst is: 0.01
+hijklmnop
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00145794 secs, worst is: 0.01
+qrstuv
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145522 secs, worst is: 0.01
+wxyz012345678
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145251 secs, worst is: 0.01
+9.
+ArithOp   : abcdef
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144981 secs, worst is: 0.01
+ghijkTEST OK.
+ArithOp   : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144712 secs, worst is: 0.01
+abcdefghijkTEST OK.
+Arit
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144444 secs, worst is: 0.01
+hOp   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144177 secs, worst is: 0.01
+lmnTEST OK.
+Multiply  : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143911 secs, worst is: 0.01
+cdefghijklmnop
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00145488 secs, worst is: 0.01
+qrsTEST OK.
+Multiply  : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145221 secs, worst is: 0.01
+cdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144954 secs, worst is: 0.01
+qrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144689 secs, worst is: 0.01
+3456TEST OK.
+Divide    : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144424 secs, worst is: 0.01
+cdefghijklmno
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00145985 secs, worst is: 0.01
+pqrstuvwxyz01
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145719 secs, worst is: 0.01
+23TEST OK.
+Divide    : abcd
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145455 secs, worst is: 0.01
+efghijklmnopq
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00145191 secs, worst is: 0.01
+rstuvwTEST OK.
+Divide    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144928 secs, worst is: 0.01
+abcdefghijklm
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144665 secs, worst is: 0.01
+nopqrstuvwxyz0
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144404 secs, worst is: 0.01
+123456TEST OK.
+Control   :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00144144 secs, worst is: 0.01
+ abcdefghijklmnopqrstuvwxyz0TEST OK
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143885 secs, worst is: 0.01
+.
+Control   : abcdefghijklmnop
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143627 secs, worst is: 0.01
+qrstuvwxyz0123456789.
+Case      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143369 secs, worst is: 0.01
+abcdefghijklmnopqrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143113 secs, worst is: 0.01
+3456789.
+Block     : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142857 secs, worst is: 0.01
+abcdefghijklmnopqrs0123456789.
+Vi
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142602 secs, worst is: 0.01
+rtual   : abcdefghijk
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142349 secs, worst is: 0.01
+lmnopqrstuvwxyzTEST OK.
+Virt
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142096 secs, worst is: 0.01
+ual   : abcdefijklmnopqrstuvwxyz
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141844 secs, worst is: 0.01
+0123456789.
+Virtual   : abc
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141593 secs, worst is: 0.01
+defghijklmn
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141343 secs, worst is: 0.01
+opqrstuvwxyz012
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141093 secs, worst is: 0.01
+3456789.
+Virtual   : abcdefg
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00140845 secs, worst is: 0.01
+hijklmnopqrTEST OK.
+Var
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00140598 secs, worst is: 0.01
+Ptn    : abcdefgh
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00140351 secs, worst is: 0.01
+ijklmnopqrstuvwxy
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00140105 secs, worst is: 0.01
+z023459.
+This      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0013986 secs, worst is: 0.01
+abcdefghijklmnopqrstuvw
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00141361 secs, worst is: 0.01
+xyz0123456789.
+Real      : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141115 secs, worst is: 0.01
+abcdefgh
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00142609 secs, worst is: 0.01
+ijklmnopqrstuv
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142361 secs, worst is: 0.01
+wxyz012.
+Real      :
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142114 secs, worst is: 0.01
+ abcdefghij
+gc took: 1 ticks ~ 0.01 seconds
+Average is: 0.00143599 secs, worst is: 0.01
+klmnopqrstu
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143351 secs, worst is: 0.01
+vwxyz012345
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00143103 secs, worst is: 0.01
+6789.
+Real      : ab
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142857 secs, worst is: 0.01
+cdef_h
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142612 secs, worst is: 0.01
+kTEST OK.
+DoPart    : 
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142367 secs, worst is: 0.01
+abcdefghijklmnopqr
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00142123 secs, worst is: 0.01
+stuvwxyz012456789.
+MainPar
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.0014188 secs, worst is: 0.01
+t  : abcdefghij
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141638 secs, worst is: 0.01
+klmnopqrstuvwxyz0123456
+gc took: 0 ticks ~ 0 seconds
+Average is: 0.00141397 secs, worst is: 0.01
+789
+
+gc's: 587 avg. time: 0.00141397 sec, worst: 0.01 sec, total: 0.83
+deleting garbage collector
+5.69user 0.32system 0:06.22elapsed 96%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (298major+308minor)pagefaults 0swaps

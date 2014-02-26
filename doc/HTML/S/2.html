@@ -1,0 +1,134 @@
+<HTML>
+<HEAD>
+<TITLE>src/allocator/MemoryBlock.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/allocator/MemoryBlock.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/allocator/MemoryBlock.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#6>[^]</A><A HREF=#71>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#6>MemoryBlock_t</A>
+<LI><A HREF=#19>MemoryBlock_t</A>
+<LI><A HREF=#33>allocCarSpace</A>
+<LI><A HREF=#71>freeCar</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: MemoryBlock.cc,v 1.2 2001/05/21 11:42:41 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "MemoryBlock.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "allocator.hpp"
+
+<A NAME=6>MemoryBlock_t::<A HREF=../R/95.html>MemoryBlock_t</A>(<B>unsigned</B> <B>int</B> size): carArraySize(size),
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#19>[&gt;]</A>[^]<A HREF=#71>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                 carsInUse(0),
+                                                 freeList(0) <FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//allocate alligned block</FONT></I>
+  DB_INDENT;
+  carArray = (Car_t*)memalign(BYTES_IN_CAR, size*BYTES_IN_CAR);
+  DB_OUT(gc_memblk, "MemoryBlock(): Allocated new memory block at: "
+         &lt;&lt; (<B>void</B>*) carArray &lt;&lt; " with length: 0x" &lt;&lt; hex
+         &lt;&lt; (size*BYTES_IN_CAR) &lt;&lt; dec &lt;&lt; endl);
+  freePtr = carArray;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=19>MemoryBlock_t::~<A HREF=../R/95.html>MemoryBlock_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#6>[&lt;]</A><A HREF=#33>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#71>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>if</B>(carArray &amp;&amp; !carsInUse) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_memblk, "~MemoryBlock_t(): freeing memory block with size: "
+           &lt;&lt; carArraySize &lt;&lt; endl);
+    free(carArray);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "~MemoryBlock_t(): error nothing was allocated or cars still"
+      " in use\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=33><B>void</B> *MemoryBlock_t::<A HREF=../R/130.html>allocCarSpace</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#19>[&lt;]</A><A HREF=#71>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#71>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_memblk, "MemoryBlock_t::allocCarSpace(): carsInUse; " &lt;&lt; carsInUse
+         &lt;&lt; ", max " &lt;&lt; carArraySize &lt;&lt; endl);
+
+  <I><FONT COLOR=green>//try our freelist first</FONT></I>
+  <B>if</B>(carArraySize &lt;= carsInUse) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//no more room in memory block</FONT></I>
+    DB_OUT(gc_memblk, "MemoryBlock_t::allocCarSpace(): all cars in use\n");
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(freeList) <FONT COLOR=blue>{</FONT>
+    Car_t *car = freeList;
+    freeList = freeList-&gt;next();
+    carsInUse++;
+    DB_OUTDENT;
+    <B>return</B> (<B>void</B>*)car;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//try a new block then</FONT></I>
+  <B>if</B>((size_t)freePtr &lt; ((size_t)carArray + size_t(carArraySize)*BYTES_IN_CAR)) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_memblk, "MemoryBlock_t::allocCarSpace(): trying to allocate new"
+           " car from same block\n");
+    Car_t *car = freePtr;
+    freePtr = (Car_t*)(size_t(freePtr) + BYTES_IN_CAR);
+    carsInUse++;
+    DB_OUT(gc_memblk, "MemoryBlock_t::allocCarSpace(): returning car address: "
+           &lt;&lt; (<B>void</B>*)car &lt;&lt; endl);
+    DB_OUTDENT;
+    <B>return</B> (<B>void</B>*)car;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//should never happen</FONT></I>
+  cerr &lt;&lt; "MemoryBlock_t::allocCarSpace(): strange internal error\n";
+  exit(1);
+  DB_OUTDENT;
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=71><B>int</B> MemoryBlock_t::<A HREF=../R/152.html>freeCar</A>(Car_t *car2Free) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#33>[&lt;]</A>[&gt;]<A HREF=#6>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+
+  <I><FONT COLOR=green>//check if car is in this memory block</FONT></I>
+  <B>if</B>(car2Free &lt; carArray || car2Free &gt;= (carArray + carArraySize*BYTES_IN_CAR)) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//not this memory block</FONT></I>
+    DB_OUT(gc_memblk, "MemoryBlock_t::freeCar(): car not in this block\n");
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//insert car in freelist</FONT></I>
+  car2Free-&gt;setNext(freeList);
+  freeList = car2Free;
+  carsInUse--;
+
+  DB_OUT(gc_memblk, "MemoryBlock_t::freeCar(): carsInUse: " &lt;&lt; carsInUse
+         &lt;&lt; ", max " &lt;&lt; carArraySize &lt;&lt; endl);
+
+  <I><FONT COLOR=green>//check if we are the last block and all our cars have been freed</FONT></I>
+  <B>if</B>(!(<B>this</B>-&gt;next())) <FONT COLOR=blue>{</FONT>
+    <B>if</B>(!carsInUse) <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_memblk, "MemoryBlock_t::freeCar(): block is last and unused,"
+             " could be freed\n");
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_memblk, "MemoryBlock_t::freeCar(): freed car successfully\n");
+  DB_OUTDENT;
+  <B>return</B> 1;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#6>[^]</A><A HREF=#71>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

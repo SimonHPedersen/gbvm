@@ -1,0 +1,421 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/garbage_collector.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/garbage_collector.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/garbage_collector.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#20>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#20>GarbageCollector_t</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: garbage_collector.cc,v 1.41 2001/06/08 10:26:25 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> &lt;stdlib.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;stdio.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;iostream.h&gt;
+
+<I><FONT COLOR=green>//#include "garbage_collector.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<I><FONT COLOR=green>/* our global garbage collector object */</FONT></I>
+GarbageCollector_t  garbageCollector(1);
+IntroductorySpace_t introSpace;
+StackSpace_t        stackSpace(1&lt;&lt;16);
+TrainGeneration_t   trainGeneration(8);;
+TrainTable_t        ttable;
+
+<I><FONT COLOR=green>/* --- GARBAGE COLLECTOR --- */</FONT></I>
+
+<I><FONT COLOR=green>//generations parameter is ignored</FONT></I>
+<A NAME=20>GarbageCollector_t::<A HREF=../R/7.html>GarbageCollector_t</A>(<B>int</B> generations) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  prepareForGC_fkt = 0;
+<FONT COLOR=darkred>#ifdef</FONT> DISRUPT_STAT
+  gctimes = 0; gc_avg_time = 0; gc_worst_time = 0;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DISRUPT_STAT</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=27>GarbageCollector_t::~<A HREF=../D/8.html>GarbageCollector_t</A>() <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DISRUPT_STAT
+  printFinalDisruptStat();
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DISRUPT_STAT</FONT></I>
+  cout &lt;&lt; "deleting garbage collector\n";
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+VMObject_t *GarbageCollector_t::addStackObject(ObjectDescriptor_t *objDesc) <FONT COLOR=blue>{</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(!objDesc) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector_t::addStackObject(): objDesc was null\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+<A NAME=43>  <B>return</B> stackSpace.<A HREF=../S/29.html#57>allocStackVMO</A>(objDesc);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=47>VMObject_t *GarbageCollector_t::<A HREF=../D/128.html>addNewObject</A>(ObjectDescriptor_t *objDesc) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(!objDesc) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector_t::addNewObject(): objDesc was null\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> NO_GC
+<A NAME=57>  VMObject_t *vmo = trainGeneration.<A HREF=../D/128.html>addNewObject</A>(objDesc);
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NO_GC that is GC</FONT></I>
+  VMObject_t *vmo = introSpace.allocVMO(objDesc);
+  <B>if</B>(!vmo) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//intro space is full, allocate in train generation and ask mutator</FONT></I>
+    <I><FONT COLOR=green>//for gc</FONT></I>
+    DB_OUT(gc_gc, "GarbageCollector_t::addNewObject(): introSpace is full,"
+           " allocating in train generation\n" &lt;&lt; endl);
+<A NAME=65>    vmo = trainGeneration.<A HREF=../D/128.html>addNewObject</A>(objDesc);
+    <B>if</B>(prepareForGC_fkt) <FONT COLOR=blue>{</FONT>
+      (prepareForGC_fkt)();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//  newBytesAllocated += objDesc-&gt;getObjLengthBytes()</FONT></I>
+  <I><FONT COLOR=green>//    + sizeof(VMObject_t) - sizeof(void*);</FONT></I>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NO_GC</FONT></I>
+  DB_OUTDENT;
+  <B>return</B> vmo;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=78><B>void</B> GarbageCollector_t::<A HREF=../D/313.html>registerMutator</A>(<B>void</B> (prepareForGC_f) (<B>void</B>)) <FONT COLOR=blue>{</FONT>
+  prepareForGC_fkt = prepareForGC_f;
+  <I><FONT COLOR=green>//just checking...</FONT></I>
+  <I><FONT COLOR=green>//(prepareForGC_fkt)();</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=84><B>void</B> GarbageCollector_t::<A HREF=../D/171.html>garbageCollect</A>() <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+
+
+<FONT COLOR=darkred>#ifndef</FONT> NO_GC
+<FONT COLOR=darkred># ifdef</FONT>   INTEGRITY_CHECK
+<FONT COLOR=darkred>#  ifdef</FONT>   DEBUG
+<A NAME=91>  <A HREF=../D/253.html>heapDump</A>();
+<A NAME=92>  <A HREF=../D/145.html>checkIntegrity</A>();
+<FONT COLOR=darkred>#  endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//INTEGRITY_CHECK</FONT></I>
+
+<FONT COLOR=darkred># ifdef</FONT>   LIVESTAT
+  <I><FONT COLOR=green>//cout &lt;&lt; "* LiveStat before gc *\n";</FONT></I>
+<A NAME=98>  <A HREF=../D/156.html>doLiveStat</A>();
+  <I><FONT COLOR=green>//  cout &lt;&lt; "* LiveStat before gc - done *\n";</FONT></I>
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+
+  DB_OUT(gc_notify, "*** Garbage collecting ***\n");
+  <I><FONT COLOR=green>//  trainGeneration.garbageCollect();</FONT></I>
+<FONT COLOR=darkred># ifdef</FONT>   DEBUG
+  <B>static</B> <B>int</B> time = 1;
+  cout &lt;&lt; "*" &lt;&lt; time &lt;&lt; endl;
+  DB_OUT(gc_notify, "*** number " &lt;&lt; time &lt;&lt; " ***\n");
+  ++time;
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+
+  <I><FONT COLOR=green>//  static int gctimes = 0;</FONT></I>
+  <I><FONT COLOR=green>//  static float avg = 0, worst = 0;</FONT></I>
+
+<FONT COLOR=darkred># ifdef</FONT> DISRUPT_STAT
+  <B>struct</B> tms beforeGCTime, afterGCTime;
+
+  <B>if</B>((clock_t)-1 == times(&amp;beforeGCTime)) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector_t::garbageCollect(): error getting time\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//DISRUPT_STAT</FONT></I>
+
+  doGC();
+
+<FONT COLOR=darkred># ifdef</FONT> DISRUPT_STAT
+  <B>if</B>((clock_t)-1 == times(&amp;afterGCTime)) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector_t::garbageCollect(): error getting time\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+  <B>int</B> tics = afterGCTime.tms_utime - beforeGCTime.tms_utime;
+  <B>double</B> secs = ((<B>double</B>)tics)/CLK_TCK;
+
+  cout &lt;&lt; "\ngc took: " &lt;&lt; tics &lt;&lt; " ticks ~ " &lt;&lt; secs &lt;&lt; " seconds\n";
+
+  <B>if</B>(gc_worst_time &lt; secs) gc_worst_time = secs;
+
+  gc_avg_time = (gc_avg_time * gctimes + secs) / (gctimes + 1);
+
+  ++gctimes;
+
+  cout &lt;&lt; "Average is: " &lt;&lt; gc_avg_time &lt;&lt; " secs, worst is: " &lt;&lt; gc_worst_time &lt;&lt; endl;
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//DISRUPT_STAT</FONT></I>
+
+
+<FONT COLOR=darkred># ifdef</FONT>   INTEGRITY_CHECK
+<FONT COLOR=darkred>#  ifdef</FONT>   DEBUG
+<A NAME=148>  <A HREF=../D/253.html>heapDump</A>();
+<A NAME=149>  <A HREF=../D/145.html>checkIntegrity</A>();
+<FONT COLOR=darkred>#  endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+<FONT COLOR=darkred># endif</FONT> <I><FONT COLOR=green>//INTEGRITY_CHECK</FONT></I>
+  <I><FONT COLOR=green>//  newBytesAllocated = 0;</FONT></I>
+<FONT COLOR=darkred>#else</FONT>  <I><FONT COLOR=green>//NO_GC</FONT></I>
+  DB_OUT(gc_gc, "GarbageCollector::garbageCollect(): Warning, gc is disabled\n");
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NO_GC</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT>   LIVESTAT
+  <I><FONT COLOR=green>//cout &lt;&lt; "* LiveStat after gc *\n";</FONT></I>
+<A NAME=158>  <A HREF=../D/156.html>doLiveStat</A>();
+  <I><FONT COLOR=green>//  cout &lt;&lt; "* LiveStat after gc - done *\n";</FONT></I>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+  DB_OUT(gc_notify, "*** Garbage collecting done ***\n");
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> GarbageCollector_t::checkTrainSpaceSetup() <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  DB_OUT(gc_gc, "GarbageCollector::checkTrainSpaceSetup(): checking if "
+         "there is a need to renumber trains and/or cars\n");
+<A NAME=169>  ttable.<A HREF=../S/31.html#205>renumberTrainsAndCars</A>();
+
+  DB_OUT(gc_gc, "GarbageCollector::checkTrainSpaceSetup(): checking if "
+         "there is a from-car and a last car\n");
+  
+  <I><FONT COLOR=green>//check if the train generation is in a state with an existing fromCar</FONT></I>
+  <I><FONT COLOR=green>//and an existing lastCar in a different train</FONT></I>
+<A NAME=176>  Car_t *fromCar = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+  Car_t *lastCar;
+  <B>if</B>(!fromCar) <FONT COLOR=blue>{</FONT>
+<A NAME=179>    trainGeneration.<A HREF=../S/30.html#61>addNewTrainFirst</A>();
+<A NAME=180>    trainGeneration.<A HREF=../S/30.html#75>addNewTrainLast</A>();
+    
+    <I><FONT COLOR=green>//last car must be different from from car</FONT></I>
+<A NAME=183>  <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>((lastCar = ttable.<A HREF=../S/31.html#127>getLastTrainLastCar</A>())
+            == fromCar) <FONT COLOR=blue>{</FONT>
+<A NAME=185>    trainGeneration.<A HREF=../S/30.html#75>addNewTrainLast</A>();
+    
+    <I><FONT COLOR=green>//last car and from car must be in different trains</FONT></I>
+<A NAME=188>  <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(fromCar).getTrain() ==
+<A NAME=189>            trainGeneration.<A HREF=../S/3.html#290>getCarTrain</A>(lastCar).getTrain()) <FONT COLOR=blue>{</FONT>
+<A NAME=190>    trainGeneration.<A HREF=../S/30.html#75>addNewTrainLast</A>();
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<B>void</B> GarbageCollector_t::doGC(<B>void</B>)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  
+  DirtyCars_t *dirtyCars = trainGeneration.dirtyCars;
+  
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=202>  <B>if</B>(!dirtyCars-&gt;<A HREF=../D/160.html>empty</A>()) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector::doGC(): dirty cars was not empty\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  
+  checkTrainSpaceSetup();
+
+  <I><FONT COLOR=green>/<I><FONT COLOR=green>/***** the actual train algorithm *****</FONT></I></FONT></I>
+
+  DB_OUT(gc_gc, "GarbageCollector::doGC(): moving externally referenced "
+         "objects in introductory space\n");
+
+<FONT COLOR=darkred>#ifdef</FONT> INTRO_FIRST
+  <I><FONT COLOR=green>// old version where introspace is garbage collected before from car</FONT></I>
+<A NAME=217>  introSpace.<A HREF=../D/283.html>moveObjects</A>();
+
+  <I><FONT COLOR=green>//cout &lt;&lt; "GarbageCollector::doGC(): dumping dirty cars 3: " &lt;&lt; dirtyCars &lt;&lt; endl;</FONT></I>
+  
+  DB_OUT(gc_gc, "GarbageCollector::doGC(): moving objects referenced from "
+         "from car\n");
+
+<A NAME=224>  Car_t *firstCar = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+<A NAME=225>  firstCar-&gt;<A HREF=../S/23.html#278>moveExtObjects</A>();
+
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//INTRO_FIRST</FONT></I>
+
+  <I><FONT COLOR=green>/* new version */</FONT></I>
+  DB_OUT(gc_gc, "GarbageCollector::doGC(): moving objects referenced from "
+         "from car\n");
+
+<A NAME=233>  Car_t *firstCar = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+<A NAME=234>  firstCar-&gt;<A HREF=../S/23.html#278>moveExtObjects</A>();
+
+  <I><FONT COLOR=green>//scan all the moved objects</FONT></I>
+<A NAME=237>  <B>while</B>(!(dirtyCars-&gt;<A HREF=../D/160.html>empty</A>())) <FONT COLOR=blue>{</FONT>
+<A NAME=238>    Car_t *dirtyCar = dirtyCars-&gt;<A HREF=../D/193.html>getFirst</A>();
+    DB_OUT(gc_gc, "GarbageCollectort::doGC(): scanning dirty car at: "
+           &lt;&lt; (<B>void</B>*)dirtyCar &lt;&lt; endl);
+<A NAME=241>    dirtyCar-&gt;<A HREF=../S/23.html#184>doGCScan</A>();
+<A NAME=242>    dirtyCars-&gt;<A HREF=../D/314.html>remove</A>(dirtyCar);
+  <FONT COLOR=blue>}</FONT>
+  
+<A NAME=245>  introSpace.<A HREF=../D/283.html>moveObjects</A>();
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//INTRO_FIRST</FONT></I>
+
+
+  <I><FONT COLOR=green>//move the immediate reachable objects from the stacks</FONT></I>
+  DB_OUT(gc_gc, "GarbageCollector::doGC(): moving objects referenced from "
+         "stack space\n");
+<A NAME=253>  <B>int</B> extRefed = stackSpace.<A HREF=../D/283.html>moveObjects</A>();
+  
+  <I><FONT COLOR=green>//cout &lt;&lt; "GarbageCollector::doGC(): dumping dirty cars 3: " &lt;&lt; dirtyCars &lt;&lt; endl;</FONT></I>
+  
+  DB_OUT(gc_gc, "GarbageCollector::doGC(): scanning dirty cars pass one\n");
+  
+  <I><FONT COLOR=green>//scan all the moved objects</FONT></I>
+<A NAME=260>  <B>while</B>(!(dirtyCars-&gt;<A HREF=../D/160.html>empty</A>())) <FONT COLOR=blue>{</FONT>
+<A NAME=261>    Car_t *dirtyCar = dirtyCars-&gt;<A HREF=../D/193.html>getFirst</A>();
+    DB_OUT(gc_gc, "GarbageCollectort::doGC(): scanning dirty car at: "
+           &lt;&lt; (<B>void</B>*)dirtyCar &lt;&lt; endl);
+<A NAME=264>    dirtyCar-&gt;<A HREF=../S/23.html#184>doGCScan</A>();
+<A NAME=265>    dirtyCars-&gt;<A HREF=../D/314.html>remove</A>(dirtyCar);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_gc, "GarbageCollector::doGC(): scanning dirty cars pass one "
+         "- done\n");
+  
+  <I><FONT COLOR=green>//check if the first train is externally referenced</FONT></I>
+  <B>if</B>(!extRefed) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_gc, "GarbageCollector::doGC(): train not ext refed from stack, "
+           "checking external remembered sets\n");
+    Car_t *currentCar = firstCar-&gt;next();
+    <B>for</B>(; currentCar; currentCar = currentCar-&gt;next()) <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_gc, "garbageCollector::doGC(): current car: " &lt;&lt; currentCar &lt;&lt; endl);
+<A NAME=277>      <B>if</B>(currentCar-&gt;<A HREF=../S/23.html#346>isExtRefdTrain</A>()) <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_gc, "garbageCollector::doGC(): *** car: " &lt;&lt; currentCar &lt;&lt;
+               " is externally referenced\n");
+        extRefed = 1;
+        <B>break</B>;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>  
+  <B>if</B>(!extRefed) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//train not ext refed</FONT></I>
+    <I><FONT COLOR=green>//delete all cars</FONT></I>
+    DB_OUT(gc_gc, "GarbageCollector::doGC(): train is not externally "
+           "referenced, deleting\n");
+<A NAME=290>    trainGeneration.<A HREF=../S/30.html#80>deleteFirstTrain</A>();
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//move int refed objects from first car</FONT></I>
+<A NAME=293>    firstCar-&gt;<A HREF=../S/23.html#319>moveIntObjects</A>();
+<A NAME=294>    <B>while</B>(!(dirtyCars-&gt;<A HREF=../D/160.html>empty</A>())) <FONT COLOR=blue>{</FONT>
+<A NAME=295>      Car_t *dirtyCar = dirtyCars-&gt;<A HREF=../D/193.html>getFirst</A>();
+<A NAME=296>      dirtyCar-&gt;<A HREF=../S/23.html#184>doGCScan</A>();
+<A NAME=297>      dirtyCars-&gt;<A HREF=../D/314.html>remove</A>(dirtyCar);
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//reclaim firstCar</FONT></I>
+    DB_OUT(gc_gc, "GarbageCollector::doGC(): reclaiming first car\n");
+<A NAME=301>    trainGeneration.<A HREF=../S/30.html#111>deleteFirstTrainsFirstCar</A>();
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//reset introductory space / clear remset and contents</FONT></I>
+  introSpace.reset();
+
+  DB_OUT(gc_gc, "GarbageCollector::doGC(): done for now\n");
+
+<FONT COLOR=darkred>#ifdef</FONT> undefined
+  <I><FONT COLOR=green>//reclaim/reset introductory space</FONT></I>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//undefined</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT
+<A NAME=316><B>void</B> GarbageCollector_t::<A HREF=../D/156.html>doLiveStat</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+  size_t liveIntro = 0, deadIntro = 0, unusedIntro = 0,
+         liveTrain = 0, deadTrain = 0, unusedTrain = 0,
+         liveStack = 0, deadStack = 0, unusedStack = 0;
+
+  <I><FONT COLOR=green>//mark all live objects recursively</FONT></I>
+  stackSpace.doMarking();
+
+  <I><FONT COLOR=green>//run stats</FONT></I>
+<A NAME=325>  stackSpace.<A HREF=../D/156.html>doLiveStat</A>(&amp;liveStack, &amp;deadStack, &amp;unusedStack);
+<A NAME=326>  introSpace.<A HREF=../D/156.html>doLiveStat</A>(&amp;liveIntro, &amp;deadIntro, &amp;unusedIntro);
+<A NAME=327>  ttable.<A HREF=../D/156.html>doLiveStat</A>    (&amp;liveTrain, &amp;deadTrain, &amp;unusedTrain);
+
+  <I><FONT COLOR=green>//we don't want anything to do with the stack stats, but we</FONT></I>
+  <I><FONT COLOR=green>//clear the fwd ptrs anyway so the integrity check does not get mad</FONT></I>
+
+  cout &lt;&lt; "\nMEMORY STAT:"
+       &lt;&lt; " intro: " &lt;&lt; liveIntro &lt;&lt; " " &lt;&lt; deadIntro &lt;&lt; " " &lt;&lt; unusedIntro
+       &lt;&lt; " train: " &lt;&lt; liveTrain &lt;&lt; " " &lt;&lt; deadTrain &lt;&lt; " " &lt;&lt; unusedTrain
+       &lt;&lt; " stack: " &lt;&lt; liveStack &lt;&lt; " " &lt;&lt; deadStack &lt;&lt; " " &lt;&lt; unusedStack &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DISRUPT_STAT
+<B>void</B> GarbageCollector_t::printFinalDisruptStat(<B>void</B>) <FONT COLOR=blue>{</FONT>
+  cout &lt;&lt; "\ngc's: " &lt;&lt; gctimes &lt;&lt; " avg. time: " &lt;&lt; gc_avg_time
+       &lt;&lt; " sec, worst: " &lt;&lt; gc_worst_time &lt;&lt; " sec, total: "
+       &lt;&lt; gctimes*gc_avg_time &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DISRUPT_STAT</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=348><B>void</B> GarbageCollector_t::<A HREF=../D/253.html>heapDump</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  DB_OUT(gc_heapdump, "GarbageCollector::heapDump(): *** dumping heap ***\n" &lt;&lt; endl);
+  DB_OUT(gc_heapdump, stackSpace &lt;&lt; endl);
+  DB_OUT(gc_heapdump, introSpace &lt;&lt; endl);
+  DB_OUT(gc_heapdump, ttable &lt;&lt; endl);
+  DB_OUT(gc_heapdump, "GarbageCollector::heapDump(): *** done dumping heap ***\n" &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=358><B>void</B> GarbageCollector_t::<A HREF=../D/145.html>checkIntegrity</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+
+  DB_INDENT;
+  DB_OUT(gc_integrity, "GarbageCollector::checkIntegrity(): *** checkIntegrity started ***\n");
+  <B>int</B> errors = 0;
+
+<A NAME=364>  VMOHash_t *validObjRefs = <B>new</B> <A HREF=../S/32.html#21>VMOHash_t</A>();
+
+  <I><FONT COLOR=green>//build array of valid object references</FONT></I>
+  DB_OUT(gc_integrity, "GarbageCollector::checkIntegrity: gathering all"
+         " valid vmo's\n");
+<A NAME=369>  introSpace.<A HREF=../D/172.html>gatherObjRefs</A>(validObjRefs);
+<A NAME=370>  stackSpace.<A HREF=../D/172.html>gatherObjRefs</A>(validObjRefs);
+<A NAME=371>  ttable.<A HREF=../D/172.html>gatherObjRefs</A>(validObjRefs);
+
+  <I><FONT COLOR=green>//check references</FONT></I>
+  DB_OUT(gc_integrity, "GarbageCollector::checkIntegrity: checking "
+         "references in all objects\n");
+<A NAME=376>  errors += introSpace.<A HREF=../D/147.html>checkObjRefs</A>(validObjRefs);
+<A NAME=377>  errors += stackSpace.<A HREF=../D/147.html>checkObjRefs</A>(validObjRefs);
+<A NAME=378>  errors += ttable.<A HREF=../D/147.html>checkObjRefs</A>(validObjRefs);
+
+  <B>delete</B>(validObjRefs);
+
+  <B>if</B>(errors) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "GarbageCollector_t::checkIntegrity(): *** found " &lt;&lt; errors &lt;&lt;
+      " error(s), bailing out! ***\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_integrity, "GarbageCollector::checkIntegrity: *** no errors found! ***\n");
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT>
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#20>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

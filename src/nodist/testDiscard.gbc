@@ -1,0 +1,20 @@
+MainPart("`250"
+|
+   PUSHI-char 'a'
+   PUSHI-boolean true
+   PUSHI-integer 1
+   PUSHI-real 1.5
+   PUSH-ptn_"object"
+   PUSHI_NONE(obj)
+   PUSHI-string "hej"
+   stdio/in
+   stdio/out
+   DISCARD-char
+   DISCARD-boolean
+   DISCARD-integer
+   DISCARD-real
+   DISCARD-string
+   DISCARD-ptn
+   DISCARD-objref	
+)
+

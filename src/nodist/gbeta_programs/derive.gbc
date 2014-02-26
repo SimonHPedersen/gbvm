@@ -1,0 +1,175 @@
+
+MainPart("`derive.gb:26-549"
+   "derive/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `derive.gb:41-525 origin {}
+      INSTALL-ptn 0
+   )
+|
+   PUSH-ptn {"derive/0"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+)
+MainPart("`derive.gb:41-525"
+   "result/0": (
+      PUSH-ptn {<-2,"real/4"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   namedFor("i"
+      PUSHI-integer 50000
+      RESETFRAME
+   |
+      PUSHI-integer 1
+      PUSHI-integer 2
+      MULOP(_*_)_integer
+      PUSHI-integer 2
+      PUSHI-integer 3
+      MULOP(_*_)_integer
+      ADDOP(_+_)_integer
+      PUSHI-integer 4
+      PUSHI-integer 3
+      MULOP(_*_)_integer
+      ADDOP(_+_)_integer
+      PUSHI-integer 4
+      PUSHI-integer 5
+      MULOP(_*_)_integer
+      ADDOP(_+_)_integer
+      PUSHI-integer 6
+      PUSHI-integer 7
+      MULOP(_*_)_integer
+      ADDOP(_+_)_integer
+      PUSHI-integer 8
+      PUSHI-integer 9
+      MULOP(_*_)_integer
+      ADDOP(_+_)_integer
+      PUSHI-integer 10
+      PUSHI-integer 11
+      MULOP(_*_)_integer
+      ADDOP(_+_)_integer
+      POP-integer,_I-->R,_PUSH-real
+      POP-real {<-1,"result/0"}
+      RESETFRAME
+      PUSH-real {<-1,"result/0"}
+      PUSHI-real 1.300000
+      PUSHI-real 2.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 2.100000
+      PUSHI-real 3.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 4.900000
+      PUSHI-real 3.800000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 4.700000
+      PUSHI-real 5.600000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 6.500000
+      PUSHI-real 7.400000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 8.300000
+      PUSHI-real 9.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 10.100000
+      PUSHI-real 11.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      POP-real {<-1,"result/0"}
+      RESETFRAME
+      PUSH-real {<-1,"result/0"}
+      PUSHI-real 21.300000
+      PUSHI-real 32.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 52.100000
+      PUSHI-real 43.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 64.900000
+      PUSHI-real 3.800000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 74.700000
+      PUSHI-real 85.600000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 96.500000
+      PUSHI-real 107.114000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 128.300000
+      PUSHI-real 139.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 1410.100000
+      PUSHI-real 1511.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 21.300000
+      PUSHI-real 32.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 52.100000
+      PUSHI-real 43.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 64.900000
+      PUSHI-real 3.800000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 74.700000
+      PUSHI-real 85.600000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 96.500000
+      PUSHI-real 107.114000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 128.300000
+      PUSHI-real 139.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 1410.100000
+      PUSHI-real 1511.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 1.300000
+      PUSHI-real 2.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 2.100000
+      PUSHI-real 3.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 4.900000
+      PUSHI-real 3.800000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 4.700000
+      PUSHI-real 5.600000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 6.500000
+      PUSHI-real 7.400000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 8.300000
+      PUSHI-real 9.200000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      PUSHI-real 10.100000
+      PUSHI-real 11.000000
+      MULOP(_*_)_real
+      ADDOP(_+_)_real
+      POP-real {<-1,"result/0"}
+      RESETFRAME
+   )
+   RESETFRAME
+)

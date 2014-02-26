@@ -1,0 +1,56 @@
+
+MainPart("`222"
+   "a/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `48 origin {}
+      INSTALL-ptn 0
+   )
+   "b/1": (
+      PUSH-ptn {"a/0"}
+      ADD-mainpart `170 origin {}
+      INSTALL-ptn 1
+   )
+|
+   PUSH-ptn {"b/1"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   PUSH-obj {tmp(1)}
+   CHK_NONE
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`170,"v/0"}
+   NEW,_ptn->tmp 3
+   CALL {tmp(3)}
+   RESETFRAME
+)
+MainPart("`48"
+   "v/0": (virtual
+      PUSHI-string "***** gv-intro *****"
+      stdio/out
+      PUSH-ptn {<-2,"object/0"}
+      END_OF_GATHERVIRT_CODE
+      PUSHI-string "***** init-intro *****"
+      stdio/out
+      GATHER-virt "v/0" in "`48"
+      INSTALL-ptn 0
+   )
+|
+)
+MainPart("`170"
+   "v/0": (virtual "v/0" in "`48"
+      PUSHI-string "***** gv-added *****"
+      stdio/out
+      PUSH-ptn_"object"
+      ADD-mainpart `118 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSHI-string "***** init-added *****"
+      stdio/out
+      PUSH-ptn {^`48,"v/0"}
+      INSTALL-ptn 0
+   )
+|
+)
+MainPart("`118"
+|
+   INNER 0
+)

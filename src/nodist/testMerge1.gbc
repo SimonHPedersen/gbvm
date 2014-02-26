@@ -1,0 +1,85 @@
+MainPart("`480"
+   "pm1/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `3 origin {}
+      INSTALL-ptn 0
+   )
+   "pm2/1": (
+      PUSH-ptn {"pm1/0"}
+      ADD-mainpart `4 origin {}
+      INSTALL-ptn 1
+   )
+   "pm3/2": (
+      PUSH-ptn {"pm2/1"}
+      ADD-mainpart `2 origin {}
+      INSTALL-ptn 2
+   )
+   "pm4/3": (
+      PUSH-ptn {"pm3/2"}
+      ADD-mainpart `0 origin {}
+      INSTALL-ptn 3
+   )
+   "qm1/4": (
+      PUSH-ptn_"object"
+      ADD-mainpart `5 origin {}
+      INSTALL-ptn 4
+   )
+   "qm2/5": (
+      PUSH-ptn {"qm1/4"}
+      ADD-mainpart `3 origin {}
+      INSTALL-ptn 5
+   )
+   "qm3/6": (
+      PUSH-ptn {"qm2/5"}
+      ADD-mainpart `1 origin {}
+      INSTALL-ptn 6
+   )
+   "qm4/7": (
+      PUSH-ptn {"qm3/6"}
+      ADD-mainpart `0 origin {}
+      INSTALL-ptn 7
+   )
+|
+   PUSH-ptn {"pm4/3"}
+   PUSH-ptn {"qm4/7"}
+   MERGE-ptn
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+)
+MainPart("`0"
+|
+   PUSHI-string "0"
+   stdio/out
+   INNER 0
+)
+MainPart("`1"
+|
+   PUSHI-string "1"
+   stdio/out
+   INNER 0
+)
+MainPart("`2"
+|
+   PUSHI-string "2"
+   stdio/out
+   INNER 0
+)
+MainPart("`3"
+|
+   PUSHI-string "3"    
+   stdio/out
+   INNER 0
+)
+MainPart("`4"
+|
+   PUSHI-string "4"
+   stdio/out
+   INNER 0
+)
+MainPart("`5"
+|
+   PUSHI-string "5"
+   stdio/out
+   INNER 0
+)
+

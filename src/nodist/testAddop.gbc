@@ -1,0 +1,28 @@
+MainPart("'250"
+|
+   PUSHI-char `a'
+   PUSHI-char `b'
+   ADDOP(_+_)_char
+   PUSHI-char `a'
+   PUSHI-char `b'
+   ADDOP(_-_)_char
+   PUSHI-boolean false
+   PUSHI-boolean false
+   ADDOP(_or_)_boolean
+   PUSHI-boolean true
+   PUSHI-boolean true
+   ADDOP(_xor_)_boolean
+   PUSHI-integer 2
+   PUSHI-integer 3
+   ADDOP(_+_)_integer
+   PUSHI-integer 2
+   PUSHI-integer 3
+   ADDOP(_-_)_integer
+   PUSHI-real 2.5
+   PUSHI-real 3.5
+   ADDOP(_+_)_real
+   PUSHI-real 2.5
+   PUSHI-real 1.3
+   ADDOP(_-_)_real
+)
+

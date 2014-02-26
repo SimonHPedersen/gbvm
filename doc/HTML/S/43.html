@@ -1,0 +1,78 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/AttrStack.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/AttrStack.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/AttrStack.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#33>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>AttrStack_t</A>
+<LI><A HREF=#18>AttrStack_t</A>
+<LI><A HREF=#23>push</A>
+<LI><A HREF=#28>pop</A>
+<LI><A HREF=#33>print</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: AttrStack.cc,v 1.3 2000/12/05 18:28:57 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "AttrStack.hpp"
+
+<I><FONT COLOR=green>//size in bytes in input (remembered as size in number of elements)</FONT></I>
+<I><FONT COLOR=green>//which is the number passed to the object descriptor too</FONT></I>
+<A NAME=7>AttrStack_t::AttrStack_t()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#18>[&gt;]</A>[^]<A HREF=#33>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=8>  ObjectDescriptor_t *stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, UINT_MAX);
+<A NAME=9>  VMObject_t* stackSpace   = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(stackObjDesc);
+<A NAME=10>  partObjectStack = <B>new</B>(stackSpace-&gt;<A HREF=../S/13.html#450>getDataPtr</A>()) RefStack_t&lt;PartObject_t*&gt;(STACK_SIZE, 
+                                                                            stackObjDesc);
+<A NAME=12>  stackObjDesc = <A HREF=../S/66.html#9>getStackObjDesc</A>(STACK_SIZE, 0);
+<A NAME=13>  stackSpace   = garbageCollector-&gt;<A HREF=../D/128.html>addNewObject</A>(stackObjDesc);
+<A NAME=14>  indexStack = <B>new</B>(stackSpace-&gt;<A HREF=../S/13.html#450>getDataPtr</A>()) NonRefStack_t&lt;<B>unsigned</B> <B>int</B>&gt;(STACK_SIZE, 
+                                                                            stackObjDesc);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=18>AttrStack_t::AttrStack_t(ObjectDescriptor_t* objDesc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#7>[&lt;]</A><A HREF=#23>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#33>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=19>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;partObjectStack-(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<A NAME=20>  objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(((<B>unsigned</B> <B>int</B>)&amp;indexStack-(<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=23><B>void</B> AttrStack_t::<A HREF=../R/277.html>push</A>(PartObject_t* po, <B>unsigned</B> <B>int</B> index) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#18>[&lt;]</A><A HREF=#28>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#33>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=24>  partObjectStack-&gt;<A HREF=../S/43.html#23>push</A>(po);
+<A NAME=25>  indexStack-&gt;<A HREF=../S/43.html#23>push</A>(index);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=28><B>void</B> AttrStack_t::<A HREF=../R/271.html>pop</A>(PartObject_t **po, <B>unsigned</B> <B>int</B> *index) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#23>[&lt;]</A><A HREF=#33>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#33>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=29>  *po = partObjectStack-&gt;<A HREF=../S/43.html#28>pop</A>();
+<A NAME=30>  *index = indexStack-&gt;<A HREF=../S/43.html#28>pop</A>(); 
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=33><B>void</B> AttrStack_t::<A HREF=../R/273.html>print</A>(<B>unsigned</B> <B>int</B> index)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#28>[&lt;]</A>[&gt;]<A HREF=#7>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        indentPrint(index);
+        cout &lt;&lt; "Attribute stack - part object stack: \n";
+<A NAME=36>        partObjectStack-&gt;<A HREF=../D/307.html>print</A>(index + 2, 0);
+        
+        indentPrint(index);
+        cout &lt;&lt; "Attribute stack - index stack: \n";
+<A NAME=40>        indexStack-&gt;<A HREF=../D/307.html>print</A>(index + 2);   
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#33>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

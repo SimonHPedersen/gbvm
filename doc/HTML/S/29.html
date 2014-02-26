@@ -1,0 +1,349 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/StackSpace.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/StackSpace.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/StackSpace.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#23>[^]</A><A HREF=#82>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#23>StackSpace_t</A>
+<LI><A HREF=#41>StackSpace_t</A>
+<LI><A HREF=#46>member</A>
+<LI><A HREF=#57>allocStackVMO</A>
+<LI><A HREF=#82>moveObjects</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: StackSpace.cc,v 1.23 2001/06/08 10:26:24 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<I><FONT COLOR=green>//----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, StackSpace_t* ss) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(ss) <FONT COLOR=blue>{</FONT>
+<A NAME=9>    ss-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-stackspace ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, StackSpace_t&amp; ss) <FONT COLOR=blue>{</FONT>
+<A NAME=17>  ss.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//------ member functions ------</FONT></I>
+
+<A NAME=23>StackSpace_t::StackSpace_t(size_t bytes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#41>[&gt;]</A>[^]<A HREF=#82>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(bytes &lt;= 0) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "StackSpace_t(): Error: was given zero or negative bytes\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+  <B>if</B>(!(stackSpacePtr = (<B>void</B>**)malloc(bytes))) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "StackSpace_t(): Error: unable to allocate memory for"
+      " stacks\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  cout &lt;&lt; "StackSpace(): allocated stackspace at: " &lt;&lt; stackSpacePtr &lt;&lt; endl;
+
+  freePtr = stackSpacePtr;
+  stackSpaceSize = bytes;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=41>StackSpace_t::~StackSpace_t() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#23>[&lt;]</A><A HREF=#46>[&gt;]</A><A HREF=#23>[^]</A><A HREF=#82>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  free(stackSpacePtr);
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> undefined
+<A NAME=46>bool StackSpace_t::<A HREF=../R/243.html>member</A>(<B>void</B> *address) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#41>[&lt;]</A><A HREF=#57>[&gt;]</A><A HREF=#23>[^]</A><A HREF=#82>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>if</B>(address &lt; stackSpacePtr) <FONT COLOR=blue>{</FONT>
+    <B>return</B> false;
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(((size_t)address) &gt;= ((size_t)stackSpacePtr + stackSpaceSize)) <FONT COLOR=blue>{</FONT>
+    <B>return</B> false;
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> true;
+<FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> undefined
+
+<A NAME=57>VMObject_t * StackSpace_t::<A HREF=../S/34.html#43>allocStackVMO</A>(ObjectDescriptor_t *objDesc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#46>[&lt;]</A><A HREF=#82>[&gt;]</A><A HREF=#23>[^]</A><A HREF=#82>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(!objDesc) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "StackSpace_t::allocStackSpace(): objdesc was null\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+
+  size_t freeSpace = (size_t)stackSpacePtr + stackSpaceSize - (size_t)freePtr;
+  size_t reqSpace = <B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)
+<A NAME=67>    + objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+  <B>if</B>(freeSpace &lt; reqSpace) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "StackSpace_t::allocStackSpace(): cannot allocate more"
+      " stackspace, please fix if this is a problem ;)\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <B>void</B> *objSpace = freePtr;
+  freePtr = (<B>void</B>*)((size_t)freePtr + reqSpace);
+
+  DB_OUT(gc_stackSp, "StackSpace::allocStackSpace(): new object at: "
+         &lt;&lt; objSpace &lt;&lt; " new freePtr: " &lt;&lt; freePtr &lt;&lt; endl);
+
+<A NAME=79>  <B>return</B> <B>new</B>(objSpace, objDesc)<A HREF=../D/121.html>VMObject_t</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=82><B>int</B> StackSpace_t::<A HREF=../R/249.html>moveObjects</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#57>[&lt;]</A>[&gt;]<A HREF=#23>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>int</B> extRefed = 0; <I><FONT COLOR=green>//used for checking if there are external references</FONT></I>
+                    <I><FONT COLOR=green>//from the stack to other objects inside the first train</FONT></I>
+  bool haveAddedCar = false; <I><FONT COLOR=green>//only add one new car for each session</FONT></I>
+
+<A NAME=88>  Car_t *fromCar = ttable.<A HREF=../S/31.html#117>getFromCar</A>();
+
+  DB_OUT(gc_stackSp, "StackSpace::moveObjects(): fromcar at: " &lt;&lt; (<B>void</B>*)fromCar &lt;&lt; endl);
+
+  VMObject_t *scan = (VMObject_t*)stackSpacePtr;
+  <B>void</B> **scanObj;
+
+  <B>for</B>(;((<B>void</B>*)scan) &lt; freePtr; scan = NEXT_VMO(scan)) <FONT COLOR=blue>{</FONT> <I><FONT COLOR=green>//scan stack objects</FONT></I>
+    scanObj = (<B>void</B>**)VOIDP_FROM_VMO(scan);
+
+    <I><FONT COLOR=green>//DB_OUT(gc_stackSp, "StackSpace::moveObjects(): scan at: " &lt;&lt; (void*)scan</FONT></I>
+    <I><FONT COLOR=green>//     &lt;&lt; " freePtr at: " &lt;&lt; freePtr &lt;&lt; endl);</FONT></I>
+
+<A NAME=101>    ObjectDescriptor_t *objDesc = scan-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+<A NAME=102>    <B>unsigned</B> <B>int</B>       *refMask = objDesc-&gt;<A HREF=../S/22.html#86>getReferenceMask</A>();
+<A NAME=103>    <B>unsigned</B> <B>int</B>   refsInObject = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+    <B>unsigned</B> <B>int</B>     intsInMask = (refsInObject/(<B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8))+1;
+    <B>int</B>              bits2Check = <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+    <B>void</B> **objRefPtr; <I><FONT COLOR=green>//pointer to the location where the references in</FONT></I>
+                      <I><FONT COLOR=green>//the objects are</FONT></I>
+
+
+    <I><FONT COLOR=green>//i counts integers in mask</FONT></I>
+    <I><FONT COLOR=green>//j counts the bits in each mask</FONT></I>
+
+    <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; intsInMask; i++)<FONT COLOR=blue>{</FONT>
+      <B>int</B> mask = refMask[i];
+      <B>if</B>(mask) <FONT COLOR=blue>{</FONT>
+        <B>if</B>(i == (intsInMask -1)) <FONT COLOR=blue>{</FONT>
+          bits2Check = refsInObject - (intsInMask - 1) * <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+        <FONT COLOR=blue>}</FONT>
+        <B>for</B>(<B>int</B> j = 0; j &lt; bits2Check; j++)<FONT COLOR=blue>{</FONT>
+          <B>if</B>((1&lt;&lt;j) &amp; mask)<FONT COLOR=blue>{</FONT>        <I><FONT COLOR=green>//we've got a reference according to the mask</FONT></I>
+            objRefPtr = &amp;scanObj[i * <B>sizeof</B>(<B>int</B>) * 8 + j];
+
+            <B>if</B>(*objRefPtr) <FONT COLOR=blue>{</FONT>        <I><FONT COLOR=green>//we've got a reference which is set</FONT></I>
+
+<A NAME=125>              <B>if</B>((introSpace.<A HREF=../D/276.html>member</A>(*objRefPtr) || fromCar-&gt;<A HREF=../D/276.html>member</A>(*objRefPtr))) <FONT COLOR=blue>{</FONT>
+                <I><FONT COLOR=green>//The reference refers to an object that is in the area being gc'ed.</FONT></I>
+                <B>void</B> *fwdPtr = VMO_FROM_VOIDP(*objRefPtr)-&gt;getForwardPtr();
+                <B>if</B>(fwdPtr) <FONT COLOR=blue>{</FONT>
+                  DB_OUT(gc_stackSp, "StackSpace::moveObjects(): found fwd ptr\n");
+                  *objRefPtr = fwdPtr;
+                <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STACK_RESCUE
+<A NAME=133>                  Car_t *destCar = ttable.<A HREF=../S/31.html#127>getLastTrainLastCar</A>();
+                  <B>if</B>(haveAddedCar) <FONT COLOR=blue>{</FONT>
+<A NAME=135>                    *objRefPtr = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(*objRefPtr);
+                  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=137>                    Car_t *lastTrFCar = ttable.<A HREF=../S/31.html#145>getLastTrainFirstCar</A>();
+                    <B>if</B>(destCar == lastTrFCar) <FONT COLOR=blue>{</FONT>
+                      <B>void</B> *tmpObjRefPtr;
+<A NAME=140>                      <B>if</B>((tmpObjRefPtr = destCar-&gt;<A HREF=../S/23.html#127>moveObjHere</A>(*objRefPtr))) <FONT COLOR=blue>{</FONT>
+                        *objRefPtr = tmpObjRefPtr;
+                      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=143>                        trainGeneration.<A HREF=../S/30.html#75>addNewTrainLast</A>();
+                        haveAddedCar = true;
+<A NAME=145>                        destCar = ttable.<A HREF=../S/31.html#127>getLastTrainLastCar</A>();
+<A NAME=146>                        *objRefPtr = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(*objRefPtr);
+                      <FONT COLOR=blue>}</FONT>
+                    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=149>                      destCar = ttable.<A HREF=../S/31.html#127>getLastTrainLastCar</A>();
+<A NAME=150>                      *objRefPtr = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(*objRefPtr);                      
+                    <FONT COLOR=blue>}</FONT>
+                  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STACK_RESCUE</FONT></I>
+                  <B>if</B>(!haveAddedCar) <FONT COLOR=blue>{</FONT>  
+<A NAME=155>                    trainGeneration.<A HREF=../S/30.html#75>addNewTrainLast</A>();
+                    haveAddedCar = true;
+                  <FONT COLOR=blue>}</FONT>
+<A NAME=158>                  Car_t *destCar = ttable.<A HREF=../S/31.html#127>getLastTrainLastCar</A>();
+                  DB_OUT(gc_stackSp, "StackSpace::moveObjects(): found "
+                         "interesting ref from stack: " &lt;&lt; *objRefPtr &lt;&lt;
+                         " destCar will be at: " &lt;&lt; (<B>void</B>*)destCar &lt;&lt; endl);
+<A NAME=162>                  *objRefPtr = destCar-&gt;<A HREF=../S/23.html#97>moveObj</A>(*objRefPtr);
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STACK_RESCUE</FONT></I>
+                <FONT COLOR=blue>}</FONT>
+              <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+                <I><FONT COLOR=green>//Even though the referenced object does not have to be</FONT></I>
+                <I><FONT COLOR=green>//moved, we still check if it is a reference to the first</FONT></I>
+                <I><FONT COLOR=green>//train. If no ext refs are found, we know that we can</FONT></I>
+                <I><FONT COLOR=green>//throw the train away afterwards.</FONT></I>
+                <B>if</B>(!extRefed) <FONT COLOR=blue>{</FONT>
+                  <I><FONT COLOR=green>//check if reference was into the first train</FONT></I>
+                  <B>for</B>(Car_t *tmpCar = fromCar-&gt;next(); tmpCar; tmpCar = tmpCar-&gt;next()) <FONT COLOR=blue>{</FONT>
+                    DB_OUT(gc_stackSp, "StackSpace::moveObjects(): searching"
+                           " for ref to train in car at: " &lt;&lt; (<B>void</B>*)tmpCar &lt;&lt; "\n");
+<A NAME=175>                    <B>if</B>(tmpCar-&gt;<A HREF=../D/276.html>member</A>(*objRefPtr)) <FONT COLOR=blue>{</FONT>
+                      DB_OUT(gc_stackSp, "StackSpace::moveObjects(): "
+                             "found ext ref\n");
+                      extRefed = 1;
+                      <B>break</B>;
+                    <FONT COLOR=blue>}</FONT>
+                  <FONT COLOR=blue>}</FONT>
+                <FONT COLOR=blue>}</FONT>
+              <FONT COLOR=blue>}</FONT>
+            <FONT COLOR=blue>}</FONT>
+          <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> extRefed;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=194><B>void</B> StackSpace_t::<A HREF=../D/309.html>printOn</A>(ostream&amp; stream)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+  stream &lt;&lt; "--- StackSpace at " &lt;&lt; (<B>void</B>*)<B>this</B>;
+<A NAME=198>  <A HREF=../S/35.html#157>dumpBlock</A>(stackSpacePtr, (size_t)((size_t)freePtr - (size_t)stackSpacePtr), stream);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT
+<B>void</B> StackSpace_t::doMarking(<B>void</B>) <FONT COLOR=blue>{</FONT>
+  VMObject_t *vmo = (VMObject_t*)stackSpacePtr;
+  <B>while</B>(vmo &lt; freePtr) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//DB_OUT(gc_integrity, "VMObject at: " &lt;&lt; (void*)vmo &lt;&lt; endl);</FONT></I>
+<A NAME=207>    vmo-&gt;<A HREF=../D/275.html>mark</A>();
+    <I><FONT COLOR=green>//get next object</FONT></I>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=213><B>void</B> StackSpace_t::<A HREF=../D/156.html>doLiveStat</A>(size_t *live, size_t *dead, size_t *unused) <FONT COLOR=blue>{</FONT>
+  size_t liveObjects = 0, deadObjects = 0, liveBytes = 0, deadBytes = 0;
+  <B>for</B>(VMObject_t *vmoIndex = (VMObject_t*)stackSpacePtr;
+      vmoIndex &lt; freePtr; vmoIndex = NEXT_VMO(vmoIndex)) <FONT COLOR=blue>{</FONT>
+<A NAME=217>    ObjectDescriptor_t *objDesc = vmoIndex-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+    <B>if</B>(vmoIndex-&gt;isForward()) <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//a live object</FONT></I>
+      vmoIndex-&gt;setForwardBit(false);
+      ++liveObjects;
+<A NAME=222>      liveBytes += objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//a dead object</FONT></I>
+      ++deadObjects;
+<A NAME=226>      deadBytes += objDesc-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT_VERB
+  cout &lt;&lt; "Livestat for: stack/root-space" &lt;&lt; endl
+       &lt;&lt; "  Live/dead objects: " &lt;&lt; liveObjects &lt;&lt; "/" &lt;&lt; deadObjects &lt;&lt; endl
+       &lt;&lt; "  Live/dead bytes  : " &lt;&lt; liveBytes &lt;&lt; "/" &lt;&lt; deadBytes &lt;&lt; endl
+       &lt;&lt; "   -in vmo bytes   : " &lt;&lt; liveBytes + liveObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*))
+       &lt;&lt; "/" &lt;&lt; deadBytes + deadObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)) &lt;&lt; endl;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT_VERB</FONT></I>
+
+  size_t liveBytesH = liveBytes + liveObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)); <I><FONT COLOR=green>//includes headers</FONT></I>
+  size_t deadBytesH = deadBytes + deadObjects*(<B>sizeof</B>(VMObject_t) - <B>sizeof</B>(<B>void</B>*)); <I><FONT COLOR=green>//includes headers</FONT></I>
+  *live   += liveBytesH;
+  *dead   += deadBytesH;
+  *unused += stackSpaceSize - (liveBytesH + deadBytesH);
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+
+<A NAME=248><B>void</B> StackSpace_t::<A HREF=../D/172.html>gatherObjRefs</A>(VMOHash_t *vmoRefs) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  VMObject_t *vmo = (VMObject_t*)stackSpacePtr;
+  <B>while</B>(vmo &lt; freePtr) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//DB_OUT(gc_integrity, "VMObject at: " &lt;&lt; (void*)vmo &lt;&lt; endl);</FONT></I>
+    <I><FONT COLOR=green>//    *vmoRefArray = vmo; <I><FONT COLOR=green>/* + sizeof(VMObject_t) - sizeof(void*); //ref to internal object...*/</FONT></I></FONT></I>
+    <I><FONT COLOR=green>//    vmoRefArray++;</FONT></I>
+<A NAME=255>    vmoRefs-&gt;<A HREF=../D/260.html>insert</A>(vmo);
+    <I><FONT COLOR=green>//get next object</FONT></I>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=262><B>int</B> StackSpace_t::<A HREF=../D/147.html>checkObjRefs</A>(VMOHash_t *vmoRefs) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  <B>int</B> retval = 0;
+  VMObject_t *vmo = (VMObject_t*)stackSpacePtr;
+  ObjectDescriptor_t *objDesc;
+
+  <I><FONT COLOR=green>//check all objects in stack space</FONT></I>
+  <B>while</B>(vmo &lt; freePtr) <FONT COLOR=blue>{</FONT>
+<A NAME=270>    <B>if</B>(!(objDesc = vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>())) <FONT COLOR=blue>{</FONT>
+<A NAME=271>      cerr &lt;&lt; "StackSpace_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; 
+        ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " without ObjDesc!" &lt;&lt; endl;
+      cerr &lt;&lt; "Train was: " <I><FONT COLOR=green>/*&lt;&lt; trainRef.getTrainNumber()*/</FONT></I> &lt;&lt; " and car was: "
+           &lt;&lt; <I><FONT COLOR=green>/*carNumber &lt;&lt;*/</FONT></I> endl;
+      retval++;
+      DB_OUTDENT;
+      <B>return</B> retval;
+    <FONT COLOR=blue>}</FONT>
+    <B>if</B>(<B>void</B> * forward = vmo-&gt;getForwardPtr()) <FONT COLOR=blue>{</FONT>
+<A NAME=280>      cerr &lt;&lt; "StackSpace::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; 
+        ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " with forward pointer set to:" &lt;&lt;
+        forward &lt;&lt; endl;
+      retval++;
+    <FONT COLOR=blue>}</FONT>
+<A NAME=285>    <B>unsigned</B> <B>int</B> numberOfRefs = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+    <I><FONT COLOR=green>//check each reference</FONT></I>
+    <B>for</B>(<B>unsigned</B> <B>int</B> refInVMO = 0; refInVMO &lt; numberOfRefs; refInVMO++) <FONT COLOR=blue>{</FONT>
+<A NAME=288>      <B>if</B>(objDesc-&gt;<A HREF=../S/22.html#122>hasReferenceAt</A>(refInVMO) &amp;&amp; vmo-&gt;data[refInVMO]) <FONT COLOR=blue>{</FONT>
+        VMObject_t *vmoRef = VMO_FROM_VOIDP(vmo-&gt;data[refInVMO]);
+        <I><FONT COLOR=green>//check if reference is in list</FONT></I>
+<A NAME=291>        <B>if</B>(!(vmoRefs-&gt;<A HREF=../D/269.html>lookup</A>(vmoRef))) <FONT COLOR=blue>{</FONT>
+<A NAME=292>          cerr &lt;&lt; "StackSpace_t::checkObjRefs(): found object " &lt;&lt; vmo-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt;
+            ", vmo at: " &lt;&lt; (<B>void</B>*)vmo &lt;&lt; " with illegal object pointer" &lt;&lt; endl;
+<A NAME=294>          cerr &lt;&lt; "Object descriptor: " &lt;&lt; endl &lt;&lt; vmo-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>() &lt;&lt; endl;
+          cerr &lt;&lt; "Train was: " <I><FONT COLOR=green>/*&lt;&lt; trainRef.getTrainNumber()*/</FONT></I> &lt;&lt; " and car was: "
+               &lt;&lt; <I><FONT COLOR=green>/*carNumber &lt;&lt;*/</FONT></I> endl;
+          cerr &lt;&lt; "Bad reference was number: " &lt;&lt; refInVMO &lt;&lt; " with value: "
+               &lt;&lt; (<B>void</B>*)(vmo-&gt;data[refInVMO]) &lt;&lt; endl;
+          cerr &lt;&lt; "Object with illegal pointer has typeid: "
+               &lt;&lt; <I><FONT COLOR=green>/*typeid(VOIDP_FROM_VMO(vmo)).name() &lt;&lt;*/</FONT></I> endl;
+          retval++;
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    vmo = NEXT_VMO(vmo);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> retval;
+<FONT COLOR=blue>}</FONT>
+
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#23>[^]</A><A HREF=#82>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

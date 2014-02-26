@@ -1,0 +1,321 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc/Train.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc/Train.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc/Train.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#19>[^]</A><A HREF=#250>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#19>Train_t</A>
+<LI><A HREF=#36>Train_t</A>
+<LI><A HREF=#48>addNewObject</A>
+<LI><A HREF=#88>isExternallyReferenced</A>
+<LI><A HREF=#108>moveObject</A>
+<LI><A HREF=#152>freeFirstCar</A>
+<LI><A HREF=#159>getFirstCar</A>
+<LI><A HREF=#163>getTrainNumber</A>
+<LI><A HREF=#167>setTrainNumber</A>
+<LI><A HREF=#171>setNextTrainPtr</A>
+<LI><A HREF=#175>getNextTrainPtr</A>
+<LI><A HREF=#180>addObject</A>
+<LI><A HREF=#207>addCar</A>
+<LI><A HREF=#217>addCarForced</A>
+<LI><A HREF=#225>printOn</A>
+<LI><A HREF=#241>gatherObjRefs</A>
+<LI><A HREF=#250>checkObjRefs</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Train.cc,v 1.17 2001/05/29 16:17:48 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "Train.hpp"
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Train_t* train) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(train) <FONT COLOR=blue>{</FONT>
+<A NAME=7>    train-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-train ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, Train_t&amp; train) <FONT COLOR=blue>{</FONT>
+<A NAME=15>  train.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=19>Train_t::<A HREF=../R/112.html>Train_t</A>(MatureGeneration_t&amp; matureGenRef, <B>unsigned</B> <B>int</B> number, <B>unsigned</B> <B>int</B> maxCars) : 
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#36>[&gt;]</A>[^]<A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  matureGenerationRef(matureGenRef)
+<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  trainNumber = number;
+  maxCars     = maxCars;
+  nextCarNumber = 0;
+  nextTrainPtr = 0;
+  numberOfCars = 1;
+<A NAME=28>  <B>void</B>* newCarAddress = matureGenerationRef.<A HREF=../S/20.html#151>getCarAddress</A>();
+  DB_OUT(gc_trn, "Train_t::Train_t(): train " &lt;&lt; number &lt;&lt; " new car address at: "
+         &lt;&lt; newCarAddress &lt;&lt; endl);
+<A NAME=31>  carList = <B>new</B>(newCarAddress) <A HREF=../D/2.html>Car_t</A>(matureGenerationRef, *<B>this</B>, nextCarNumber++);
+  lastCar = carList;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=36>Train_t::~<A HREF=../R/112.html>Train_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#19>[&lt;]</A><A HREF=#48>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//iterate and delete cars</FONT></I>
+  Car_t *car, *tmpCar;
+  car = carList;
+  <B>while</B>(car)<FONT COLOR=blue>{</FONT>
+    tmpCar = car;
+<A NAME=42>    car = car-&gt;<A HREF=../S/11.html#103>getNextCarPtr</A>();
+    <B>delete</B> tmpCar;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=48>VMObject_t *Train_t::<A HREF=../R/122.html>addNewObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#36>[&lt;]</A><A HREF=#88>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//this function in particular must be able to build new trains</FONT></I>
+  VMObject_t *newObj;
+<A NAME=52>  <B>if</B>((newObj = lastCar-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes))) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_trn, "Train_t::addNewObject(): train " &lt;&lt; trainNumber &lt;&lt; " added object\n");
+    DB_OUTDENT;
+    <B>return</B> newObj;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=57>    <B>if</B>(<A HREF=../S/12.html#207>addCar</A>()) <FONT COLOR=blue>{</FONT>
+      DB_OUT(gc_trn, "Train_t::addNewObject(): train " &lt;&lt; trainNumber &lt;&lt; " added new car\n");
+<A NAME=59>      <B>if</B>((newObj = lastCar-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes))) <FONT COLOR=blue>{</FONT>
+        DB_OUTDENT;
+        <B>return</B> newObj;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        <I><FONT COLOR=green>//daelme et stort objekt</FONT></I>
+        DB_OUT(gc_trn, "Train_t::addNewObject(): objects bigger than cars not supported, "
+               "contact your program supplier if the problem continues\n");
+        DB_OUTDENT;
+        exit(1);
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//no room for more cars in this train</FONT></I>
+      Train_t *newTrain;
+<A NAME=72>      newTrain = matureGenerationRef.<A HREF=../D/134.html>addTrain</A>();
+<A NAME=73>      <B>if</B>((newObj = newTrain-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes))) <FONT COLOR=blue>{</FONT>
+        DB_OUTDENT;
+        <B>return</B> newObj;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        <I><FONT COLOR=green>//daelme et stort objekt</FONT></I>
+        DB_OUT(gc_trn, "Train_t::addNewObject(): objects bigger than cars not supported, "
+               "contact your program supplier if the problem continues\n");
+        DB_OUTDENT;
+        exit(1);
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=88><B>int</B> Train_t::<A HREF=../S/20.html#73>isExternallyReferenced</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#48>[&lt;]</A><A HREF=#108>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>if</B>(!carList) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//train is empty</FONT></I>
+    DB_OUT(gc_trn, "Train_t::isExternallyReferenced(): carlist is empty\n");
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+  Car_t* car = carList;
+  <B>while</B>(car)<FONT COLOR=blue>{</FONT>
+<A NAME=98>    <B>if</B>(car-&gt;<A HREF=../S/11.html#258>isReferencedOutsideTrain</A>())<FONT COLOR=blue>{</FONT>
+      DB_OUTDENT;
+      <B>return</B> 1;
+    <FONT COLOR=blue>}</FONT>
+<A NAME=102>    car = car-&gt;<A HREF=../S/11.html#103>getNextCarPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=108>VMObject_t* Train_t::<A HREF=../R/248.html>moveObject</A>(VMObject_t* vmo, RememberedSetNode_t* remSetNode,
+<I><FONT COLOR=green>/* <A HREF=#88>[&lt;]</A><A HREF=#152>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                Car_t* car, <B>int</B> forced)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  <I><FONT COLOR=green>//first check if there is not a request for a specific car</FONT></I>
+  <B>if</B>(!car) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//default behaviour is to add to last car if no car is specified</FONT></I>
+    car = lastCar;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>// else {</FONT></I>
+  <I><FONT COLOR=green>//?? Should this method check if the car* belongs to this train?</FONT></I>
+  <I><FONT COLOR=green>//}</FONT></I>
+
+  VMObject_t* destination;
+
+  <I><FONT COLOR=green>//first try to add object to car</FONT></I>
+<A NAME=123>  <B>if</B>(!(destination = car-&gt;<A HREF=../D/131.html>addObject</A>(vmo, remSetNode)))<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//then try to add object to this train</FONT></I>
+<A NAME=125>    destination = <A HREF=../D/131.html>addObject</A>(vmo, remSetNode, forced);
+    <B>if</B>(!destination)<FONT COLOR=blue>{</FONT>
+      <B>if</B>(forced) <FONT COLOR=blue>{</FONT>
+        DB_OUT(gc_trn, "Train_t::moveObject(): forced failed! (internal error) bailing out\n");
+        exit(1);
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        <I><FONT COLOR=green>//add a new train</FONT></I>
+<A NAME=132>        Train_t* newTrain = matureGenerationRef.<A HREF=../D/134.html>addTrain</A>();
+        <B>if</B> (remSetNode) <FONT COLOR=blue>{</FONT>
+          DB_OUT(gc_trn, "Train_t::moveObject(); remsetnode: " &lt;&lt; remSetNode-&gt;vmIdObjectPtr &lt;&lt; endl);
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+          DB_OUT(gc_trn, "Train_t::moveObject(); remsetnode: 0\n");
+        <FONT COLOR=blue>}</FONT>
+<A NAME=138>        destination = newTrain-&gt;<A HREF=../D/131.html>addObject</A>(vmo, remSetNode, forced);
+        <B>if</B>(!destination) <FONT COLOR=blue>{</FONT>
+          DB_OUT(gc_trn, "Train_t::moveObject(): unable to find a new location for object"
+                 " - very strange! - bailing out\n");
+          exit(1);
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_trn, "Train_t::moveObject(): returning new object location\n");
+  DB_OUTDENT;
+  <B>return</B> destination;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=152><B>void</B> Train_t::<A HREF=../S/20.html#107>freeFirstCar</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#108>[&lt;]</A><A HREF=#159>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Car_t* firstCar = carList;
+<A NAME=154>  carList = carList-&gt;<A HREF=../S/11.html#103>getNextCarPtr</A>();
+  numberOfCars--;
+  <B>delete</B> firstCar;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=159>Car_t* Train_t::<A HREF=../R/175.html>getFirstCar</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#152>[&lt;]</A><A HREF=#163>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> carList;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=163><B>unsigned</B> <B>int</B> Train_t::<A HREF=../R/217.html>getTrainNumber</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#159>[&lt;]</A><A HREF=#167>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> trainNumber;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=167><B>void</B> Train_t::<A HREF=../S/20.html#147>setTrainNumber</A>(<B>unsigned</B> <B>int</B> trainNumber) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#163>[&lt;]</A><A HREF=#171>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>this</B>-&gt;trainNumber = trainNumber;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=171><B>void</B> Train_t::<A HREF=../S/20.html#139>setNextTrainPtr</A>(Train_t* train)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#167>[&lt;]</A><A HREF=#175>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  nextTrainPtr = train;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=175>Train_t* Train_t::<A HREF=../R/194.html>getNextTrainPtr</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#171>[&lt;]</A><A HREF=#180>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> nextTrainPtr;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=180>VMObject_t* Train_t::<A HREF=../R/125.html>addObject</A>(VMObject_t* vmo, RememberedSetNode_t* remSetNode, <B>int</B> forced)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#175>[&lt;]</A><A HREF=#207>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  VMObject_t* destination;
+  <I><FONT COLOR=green>//check that the train has a car, if not try to add one</FONT></I>
+  <B>if</B>(!carList)<FONT COLOR=blue>{</FONT>
+<A NAME=184>    <A HREF=../S/12.html#207>addCar</A>();
+    carList = lastCar;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//add object to last car if no room then add a car</FONT></I>
+<A NAME=189>  <B>if</B>(!(destination = lastCar-&gt;<A HREF=../D/131.html>addObject</A>(vmo, remSetNode)))<FONT COLOR=blue>{</FONT>
+    <B>if</B>(forced) <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//we want the object in THIS train</FONT></I>
+<A NAME=192>      <A HREF=../S/12.html#217>addCarForced</A>();
+<A NAME=193>      <B>return</B> lastCar-&gt;<A HREF=../D/131.html>addObject</A>(vmo, remSetNode);
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//only add car if there are not too many cars in the train</FONT></I>
+<A NAME=196>      <B>if</B>(<A HREF=../S/12.html#207>addCar</A>())<FONT COLOR=blue>{</FONT>
+<A NAME=197>        <B>return</B> lastCar-&gt;<A HREF=../D/131.html>addObject</A>(vmo, remSetNode);
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        <B>return</B> 0;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    <B>return</B> destination;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=207><B>unsigned</B> <B>int</B> Train_t::<A HREF=../R/119.html>addCar</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#180>[&lt;]</A><A HREF=#217>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//check if there is space in train for a new car</FONT></I>
+  <B>if</B>(numberOfCars &lt; (maxCars-1))<FONT COLOR=blue>{</FONT>
+<A NAME=210>    <A HREF=../S/12.html#217>addCarForced</A>();
+    <B>return</B> 1;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>      
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=217><B>void</B> Train_t::<A HREF=../R/120.html>addCarForced</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#207>[&lt;]</A><A HREF=#225>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=218>  <B>void</B>* carAddress = matureGenerationRef.<A HREF=../S/20.html#151>getCarAddress</A>();
+<A NAME=219>  Car_t* newCar = <B>new</B>(carAddress) <A HREF=../D/2.html>Car_t</A>(matureGenerationRef, *<B>this</B>, nextCarNumber++);
+<A NAME=220>  lastCar-&gt;<A HREF=../S/11.html#99>setNextCarPtr</A>(newCar);
+  lastCar = newCar;
+  numberOfCars++;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=225><B>void</B> Train_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#217>[&lt;]</A><A HREF=#241>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+  stream &lt;&lt; "----- Train " &lt;&lt; trainNumber &lt;&lt; " at " &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; " next train at "
+         &lt;&lt; (<B>void</B>*)nextTrainPtr;
+  Car_t *currentCar = carList;
+  <B>while</B>(currentCar) <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; endl &lt;&lt; currentCar;
+<A NAME=233>    currentCar = currentCar-&gt;<A HREF=../S/11.html#103>getNextCarPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+  stream &lt;&lt; endl;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+
+<A NAME=241>VMObject_t **Train_t::<A HREF=../R/155.html>gatherObjRefs</A>(VMObject_t **vmoRefArray) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#225>[&lt;]</A><A HREF=#250>[&gt;]</A><A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Car_t *car = carList;
+  <B>while</B>(car) <FONT COLOR=blue>{</FONT>
+<A NAME=244>    vmoRefArray = car-&gt;<A HREF=../D/172.html>gatherObjRefs</A>(vmoRefArray);
+<A NAME=245>    car = car-&gt;<A HREF=../S/11.html#103>getNextCarPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> vmoRefArray;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=250><B>int</B> Train_t::<A HREF=../R/138.html>checkObjRefs</A>(VMObject_t **vmoRefArray, <B>unsigned</B> <B>int</B> length) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#241>[&lt;]</A>[&gt;]<A HREF=#19>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Car_t *car = carList;
+  <B>int</B> retval = 0;
+  <B>while</B>(car) <FONT COLOR=blue>{</FONT>
+<A NAME=254>    retval += car-&gt;<A HREF=../D/147.html>checkObjRefs</A>(vmoRefArray, length);
+<A NAME=255>    car = car-&gt;<A HREF=../S/11.html#103>getNextCarPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> retval;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#19>[^]</A><A HREF=#250>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

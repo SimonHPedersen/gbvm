@@ -1,0 +1,10 @@
+#!/bin/sh
+# $Id: rebuildhtml,v 1.2 2001/03/14 09:21:06 ilsoe Exp $
+
+gtags;
+GTAGSROOT=`pwd`;
+export GTAGSROOT;
+GTAGSDBPATH=./;
+export GTAGSDBPATH;
+htags doc;
+#global main

@@ -1,0 +1,777 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/RunTimeSteps.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/RunTimeSteps.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/RunTimeSteps.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#30>[^]</A><A HREF=#622>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#30>UpStep</A>
+<LI><A HREF=#45>printOn</A>
+<LI><A HREF=#49>getMainPartId</A>
+<LI><A HREF=#53>getPartObject</A>
+<LI><A HREF=#74>getPattern</A>
+<LI><A HREF=#81>getObject</A>
+<LI><A HREF=#85>getObjectReference</A>
+<LI><A HREF=#93>getPatternReference</A>
+<LI><A HREF=#102>DownStep</A>
+<LI><A HREF=#118>printOn</A>
+<LI><A HREF=#122>getMainPartId</A>
+<LI><A HREF=#126>getPartObject</A>
+<LI><A HREF=#143>getPattern</A>
+<LI><A HREF=#149>getObject</A>
+<LI><A HREF=#153>getObjectReference</A>
+<LI><A HREF=#162>getPatternReference</A>
+<LI><A HREF=#171>OutStep</A>
+<LI><A HREF=#186>getSteps</A>
+<LI><A HREF=#190>printOn</A>
+<LI><A HREF=#194>getPartObject</A>
+<LI><A HREF=#204>getPattern</A>
+<LI><A HREF=#210>getObject</A>
+<LI><A HREF=#214>getObjectReference</A>
+<LI><A HREF=#222>getPatternReference</A>
+<LI><A HREF=#231>LookupStep</A>
+<LI><A HREF=#255>printOn</A>
+<LI><A HREF=#259>getName</A>
+<LI><A HREF=#263>getIndex</A>
+<LI><A HREF=#267>getPartObject</A>
+<LI><A HREF=#280>getPattern</A>
+<LI><A HREF=#285>getObject</A>
+<LI><A HREF=#290>getPatternReference</A>
+<LI><A HREF=#297>getObjectReference</A>
+<LI><A HREF=#304>IndirectLookupStep</A>
+<LI><A HREF=#331>printOn</A>
+<LI><A HREF=#335>getName</A>
+<LI><A HREF=#339>getIndex</A>
+<LI><A HREF=#343>getPartObject</A>
+<LI><A HREF=#357>getPattern</A>
+<LI><A HREF=#372>getObject</A>
+<LI><A HREF=#389>getPatternReference</A>
+<LI><A HREF=#396>getObjectReference</A>
+<LI><A HREF=#403>TmpStep</A>
+<LI><A HREF=#419>printOn</A>
+<LI><A HREF=#423>getIndex</A>
+<LI><A HREF=#427>getPartObject</A>
+<LI><A HREF=#435>getPattern</A>
+<LI><A HREF=#441>getObject</A>
+<LI><A HREF=#445>getObjectReference</A>
+<LI><A HREF=#453>getPatternReference</A>
+<LI><A HREF=#466>evaluateRuntimePath_PO_steps</A>
+<LI><A HREF=#511>evaluateRuntimePath_PO</A>
+<LI><A HREF=#551>evaluateRuntimePath_Obj</A>
+<LI><A HREF=#579>evaluateRuntimePath_Ptn</A>
+<LI><A HREF=#598>evaluateRuntimePath_ObjRef</A>
+<LI><A HREF=#622>evaluateRuntimePath_PtnRef</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: RunTimeSteps.cc,v 1.16 2001/05/21 11:42:52 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Thread.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "RunTimeSteps.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// ----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Printing of run-time entities</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, RuntimeStep* inst) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(inst) <FONT COLOR=blue>{</FONT>
+<A NAME=13>    inst-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null RuntimeStep ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, RuntimeStep&amp; inst) <FONT COLOR=blue>{</FONT>
+<A NAME=22>  inst.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>//----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Runtime paths</FONT></I>
+
+<A NAME=30>UpStep::<A HREF=../S/44.html#1024>UpStep</A>(<B>char</B>** pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#45>[&gt;]</A>[^]<A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  (*pc) = &amp;(*pc)[1]; <I><FONT COLOR=green>// ^skippes 'skippes ikke!</FONT></I>
+  <B>unsigned</B> <B>int</B> comma = 0;
+  <B>for</B>( ; (*pc)[comma]!=',' &amp;&amp; (*pc)[comma]!='}' ; comma++);
+  <B>char</B> *str = (<B>char</B>*)malloc(comma+1);
+  memcpy(str, *pc, comma);
+  str[comma] = 0;
+  mainPartId = str;
+  *pc = *pc + comma;
+  DB_OUT(vm_rtp,  "UpStep::UpStep parsed with mainPartId: " 
+         &lt;&lt; strdup(mainPartId) &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45><B>void</B> UpStep::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#30>[&lt;]</A><A HREF=#49>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "^" &lt;&lt; mainPartId;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=49><B>char</B>* UpStep::<A HREF=../R/189.html>getMainPartId</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#53>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> mainPartId;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=53>PartObject_t* UpStep::<A HREF=../R/205.html>getPartObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#49>[&lt;]</A><A HREF=#74>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//go upwards until mainpartId found or end</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_rtp,  "UpStep::getPartObjec: Found mainPartId " &lt;&lt; 
+<A NAME=57>         strdup(cpo-&gt;<A HREF=../D/209.html>getMainPartId</A>())
+         &lt;&lt; "wanted mainPartId: " &lt;&lt; strdup(mainPartId) &lt;&lt; endl);
+<A NAME=59>  <B>while</B>(strcmp(cpo-&gt;<A HREF=../D/209.html>getMainPartId</A>(),mainPartId))<FONT COLOR=blue>{</FONT>
+    <B>if</B>(cpo-&gt;prev()!=NULL)<FONT COLOR=blue>{</FONT>
+      DB_OUT(vm_rtp,  ".");
+      cpo = cpo-&gt;prev();
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "*_*_*_* UpStep::getPartObject: Did not find partobject *_*_*_*\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_rtp,  "UpStep::getPartObject(): found po " 
+         &lt;&lt; "(dots = number of upsteps)\n");
+  DB_OUTDENT;
+  <B>return</B> cpo;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=74>Pattern_t *UpStep::<A HREF=../S/64.html#594>getPattern</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#53>[&lt;]</A><A HREF=#81>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "UpStep::getPattern : *_*_*getPattern called on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=81>Object_t *UpStep::<A HREF=../R/198.html>getObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#74>[&lt;]</A><A HREF=#85>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=82>  <B>return</B> <A HREF=../D/226.html>getPartObject</A>(cpo, thr)-&gt;<A HREF=../D/219.html>getObject</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=85>ObjectReference_t *UpStep::<A HREF=../S/64.html#619>getObjectReference</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#81>[&lt;]</A><A HREF=#93>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "UpStep::getObjectReference : *_*_*getObjectReference " 
+       &lt;&lt; "called on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=93>PatternReference_t *UpStep::<A HREF=../S/64.html#637>getPatternReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#85>[&lt;]</A><A HREF=#102>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  cout &lt;&lt; "UpStep::getPatternReference : *_*_*getPatternReference " 
+       &lt;&lt; "called on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=102>DownStep::<A HREF=../S/44.html#1026>DownStep</A>(<B>char</B>** pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#93>[&lt;]</A><A HREF=#118>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  (*pc) = &amp;(*pc)[2]; <I><FONT COLOR=green>// v` skippes</FONT></I>
+  <B>unsigned</B> <B>int</B> comma = 0;
+  <B>for</B>( ; (*pc)[comma]!=',' &amp;&amp; (*pc)[comma]!='}'  ; comma++);
+  <B>char</B> *str = (<B>char</B>*)malloc(comma+1);
+  memcpy(str, *pc, comma);
+  str[comma] = 0;
+  mainPartId = str;
+  *pc = *pc + comma;
+  DB_OUT(vm_rtp,  "DownStep::DownStep parsed with mainPartId: " 
+         &lt;&lt; strdup(mainPartId) 
+         &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=118><B>void</B> DownStep::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#102>[&lt;]</A><A HREF=#122>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "v" &lt;&lt; mainPartId;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=122><B>char</B>* DownStep::<A HREF=../R/189.html>getMainPartId</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#118>[&lt;]</A><A HREF=#126>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> mainPartId;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=126>PartObject_t* DownStep::<A HREF=../R/205.html>getPartObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#122>[&lt;]</A><A HREF=#143>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//go upwards until end mainpartId found or end </FONT></I>
+  DB_INDENT;
+<A NAME=129>  <B>while</B>(strcmp(cpo-&gt;<A HREF=../D/209.html>getMainPartId</A>(),mainPartId))<FONT COLOR=blue>{</FONT>
+    <B>if</B>(cpo-&gt;next()!=NULL)<FONT COLOR=blue>{</FONT>
+      cpo = cpo-&gt;next();
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cout &lt;&lt; "*_*_*_* DownStep::getPartObject: Did not find " 
+           &lt;&lt; " partobejct *_*_*_*\n";
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_rtp,  "DownStep::getPartObject(): found po\n");
+  DB_OUTDENT;
+  <B>return</B> cpo;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=143>Pattern_t *DownStep::<A HREF=../S/64.html#594>getPattern</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#126>[&lt;]</A><A HREF=#149>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "DownStep::getPattern : *_*_*getPattern called on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=149>Object_t *DownStep::<A HREF=../R/198.html>getObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#143>[&lt;]</A><A HREF=#153>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=150>  <B>return</B> <A HREF=../D/226.html>getPartObject</A>(cpo, thr)-&gt;<A HREF=../D/219.html>getObject</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=153>ObjectReference_t *DownStep::<A HREF=../S/64.html#619>getObjectReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#149>[&lt;]</A><A HREF=#162>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  cout &lt;&lt; "DownStep::getObjectReference : *_*_*getObjectReference called on "
+       &lt;&lt; "wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=162>PatternReference_t *DownStep::<A HREF=../S/64.html#637>getPatternReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#153>[&lt;]</A><A HREF=#171>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                  Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  cout &lt;&lt; "DownStep::getPatternReference : *_*_*getPatternReference called on "
+       &lt;&lt; "wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=171>OutStep::<A HREF=../S/44.html#1022>OutStep</A>(<B>char</B>** pc)<FONT COLOR=blue>{</FONT> 
+<I><FONT COLOR=green>/* <A HREF=#162>[&lt;]</A><A HREF=#186>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  (*pc)=&amp;(*pc)[2]; <I><FONT COLOR=green>//skip &lt;-</FONT></I>
+  <I><FONT COLOR=green>//get number of digits</FONT></I>
+  <B>if</B>(sscanf(*pc,"%i",&amp;steps) != 1) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt;  "OutStep::OutStep(): parse error - could not parse int\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//maintain pc</FONT></I>
+  <B>for</B>( ; **pc!=',' &amp;&amp; **pc!='}' ; (*pc)++);
+  <I><FONT COLOR=green>//no skipping , skipped in while loop (parseRuntimeStep) </FONT></I>
+  DB_OUT(vm_rtp,  "OutStep::OutStep parsed with steps: " &lt;&lt; steps &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=186><B>unsigned</B> <B>int</B> OutStep::getSteps()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#171>[&lt;]</A><A HREF=#190>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> steps;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=190><B>void</B> OutStep::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#186>[&lt;]</A><A HREF=#194>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "&lt;-" &lt;&lt; steps;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=194>PartObject_t* OutStep::<A HREF=../R/205.html>getPartObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#190>[&lt;]</A><A HREF=#204>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; steps; i++)<FONT COLOR=blue>{</FONT>
+<A NAME=197>    cpo = cpo-&gt;<A HREF=../D/224.html>getOrigin</A>();
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_rtp,  "OutStep::getPartObject(): found po\n");
+  DB_OUTDENT;
+  <B>return</B> cpo;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=204>Pattern_t *OutStep::<A HREF=../S/64.html#594>getPattern</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#194>[&lt;]</A><A HREF=#210>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "OutStep::getPattern : *_*_*getPattern called on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=210>Object_t *OutStep::<A HREF=../R/198.html>getObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#204>[&lt;]</A><A HREF=#214>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=211>  <B>return</B> <A HREF=../D/226.html>getPartObject</A>(cpo, thr)-&gt;<A HREF=../D/219.html>getObject</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=214>ObjectReference_t *OutStep::<A HREF=../S/64.html#619>getObjectReference</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#210>[&lt;]</A><A HREF=#222>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "OutStep::getObjectReference : *_*_*getObjectReference called on "
+       &lt;&lt; "wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=222>PatternReference_t *OutStep::<A HREF=../S/64.html#637>getPatternReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#214>[&lt;]</A><A HREF=#231>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                 Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  cout &lt;&lt; "OutStep::getPatternReference : *_*_*getPatternReference called on "
+       &lt;&lt; "wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=231>LookupStep::<A HREF=../S/44.html#1035>LookupStep</A>(<B>char</B>** pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#222>[&lt;]</A><A HREF=#255>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//parse name</FONT></I>
+  DB_INDENT;
+  (*pc) = &amp;(*pc)[1]; <I><FONT COLOR=green>//skip "</FONT></I>
+  <B>unsigned</B> <B>int</B> slash = 0;
+  <B>for</B>( ; (*pc)[slash]!='/' ; slash++);
+  <B>char</B> *str = (<B>char</B>*)malloc(slash+1);
+  memcpy(str, *pc, slash);
+  str[slash] = 0;
+  name = str;
+  *pc = *pc + slash + 1;
+  <I><FONT COLOR=green>//parse index</FONT></I>
+  <B>if</B>(sscanf(*pc,"%i\"",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "LookupStep::LookupStep(): parse error - could not parse int\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//maintain pc</FONT></I>
+  <B>for</B>( ; **pc!='"' ; (*pc)++);
+  (*pc) = &amp;(*pc)[1]; <I><FONT COLOR=green>//skip "</FONT></I>
+  DB_OUT(vm_rtp, "LookupStep::LookupStep parsed with name: " &lt;&lt; strdup(name) 
+       &lt;&lt; " and index: " &lt;&lt; index &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=255><B>void</B> LookupStep::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#231>[&lt;]</A><A HREF=#259>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "\"" &lt;&lt; name &lt;&lt; "/" &lt;&lt; index &lt;&lt; "\"";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=259><B>char</B>* LookupStep::getName()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#255>[&lt;]</A><A HREF=#263>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> name;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=263><B>unsigned</B> <B>int</B> LookupStep::<A HREF=../S/44.html#1279>getIndex</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#259>[&lt;]</A><A HREF=#267>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> index;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=267>PartObject_t* LookupStep::<A HREF=../R/205.html>getPartObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#263>[&lt;]</A><A HREF=#280>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+  DB_OUT(vm_rtp,  "LookupStep::getPartObject(): \n");
+<A NAME=271>  AttributeInstance_t *object = ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, 
+                                                                       thr);
+  DB_OUTDENT;
+  <B>if</B>(!object)<FONT COLOR=blue>{</FONT>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> ((Object_t*)object)-&gt;last();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=280>Pattern_t *LookupStep::<A HREF=../S/64.html#594>getPattern</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#267>[&lt;]</A><A HREF=#285>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=282>  <B>return</B> ((Pattern_t*) ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, thr));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=285>Object_t *LookupStep::<A HREF=../R/198.html>getObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#280>[&lt;]</A><A HREF=#290>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=287>  <B>return</B> ((Object_t*) ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, thr));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=290>PatternReference_t *LookupStep::<A HREF=../S/64.html#637>getPatternReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#285>[&lt;]</A><A HREF=#297>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                    Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=293>  <B>return</B> ((PatternReference_t*) ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, 
+                                                                       thr));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=297>ObjectReference_t *LookupStep::<A HREF=../S/64.html#619>getObjectReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#290>[&lt;]</A><A HREF=#304>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                  Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=300>  <B>return</B> ((ObjectReference_t*) ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, 
+                                                                      thr));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=304>IndirectLookupStep::<A HREF=../S/44.html#1037>IndirectLookupStep</A>(<B>char</B>** pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#297>[&lt;]</A><A HREF=#331>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//parse name</FONT></I>
+  DB_INDENT;
+  (*pc) = &amp;(*pc)[1]; <I><FONT COLOR=green>//skip '</FONT></I>
+  <B>unsigned</B> <B>int</B> slash = 0;
+  <B>for</B>( ; (*pc)[slash]!='/' ; slash++);
+  <B>char</B> *str = (<B>char</B>*)malloc(slash+1);
+  memcpy(str, *pc, slash);
+  str[slash] = 0;
+  name = str;
+  *pc = *pc + slash + 1;
+  <I><FONT COLOR=green>//parse index</FONT></I>
+  <B>if</B>(sscanf(*pc,"%i'",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "IndirectLookupStep::IndirectLookupStep(): parse error - " 
+         &lt;&lt; "could not parse int\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//maintain pc</FONT></I>
+  <B>for</B>( ; **pc!='\'' ; (*pc)++);
+  (*pc) = &amp;(*pc)[1]; <I><FONT COLOR=green>//skip '</FONT></I>
+  DB_OUT(vm_rtp,  "IndirectLookupStep::IndirectLookupStep parsed with name: " 
+         &lt;&lt; strdup(name) 
+         &lt;&lt; " and index: " &lt;&lt; index &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=331><B>void</B> IndirectLookupStep::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#304>[&lt;]</A><A HREF=#335>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "'" &lt;&lt; name &lt;&lt; "/" &lt;&lt; index &lt;&lt; "'";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=335><B>char</B>* IndirectLookupStep::getName()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#331>[&lt;]</A><A HREF=#339>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> name;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=339><B>unsigned</B> <B>int</B> IndirectLookupStep::<A HREF=../S/44.html#1279>getIndex</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#335>[&lt;]</A><A HREF=#343>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> index;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=343>PartObject_t* IndirectLookupStep::<A HREF=../R/205.html>getPartObject</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#339>[&lt;]</A><A HREF=#357>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=347>  AttributeInstance_t *objectref = ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, 
+                                                                          thr);
+  <B>if</B>(!objectref)<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<A NAME=354>  <B>return</B> ((ObjectReference_t*)objectref)-&gt;<A HREF=../D/245.html>getValue</A>()-&gt;last();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=357>Pattern_t *IndirectLookupStep::<A HREF=../S/64.html#594>getPattern</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#343>[&lt;]</A><A HREF=#372>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=360>  AttributeInstance_t *patternref = ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index,
+                                                                           thr);
+  DB_OUT(vm_rtp, "ILS::getPattern(): got patternReference: " 
+         &lt;&lt; (<B>void</B>*)patternref &lt;&lt; endl);
+  <B>if</B>(!patternref)<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<A NAME=369>  <B>return</B> ((PatternReference_t*)patternref)-&gt;<A HREF=../D/245.html>getValue</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=372>Object_t *IndirectLookupStep::<A HREF=../R/198.html>getObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#357>[&lt;]</A><A HREF=#389>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=375>  AttributeInstance_t *objectref = ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, 
+                                                                          thr);
+  <B>if</B>(!objectref)<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_rtp, "IndirectLookupStep::getObject() found objRef: " &lt;&lt; objectref 
+<A NAME=382>         &lt;&lt; " with value: " &lt;&lt; ((ObjectReference_t*)objectref)-&gt;<A HREF=../D/245.html>getValue</A>() 
+         &lt;&lt; endl);
+  DB_OUTDENT;
+<A NAME=385>  <B>return</B> ((ObjectReference_t*)objectref)-&gt;<A HREF=../D/245.html>getValue</A>();
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=389>PatternReference_t *IndirectLookupStep::<A HREF=../S/64.html#637>getPatternReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#372>[&lt;]</A><A HREF=#396>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                            Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=392>  <B>return</B> ((PatternReference_t*) ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, 
+                                                                       thr));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=396>ObjectReference_t *IndirectLookupStep::<A HREF=../S/64.html#619>getObjectReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#389>[&lt;]</A><A HREF=#403>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                          Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//if the attribute is NULL getAttribute could result in an initialization</FONT></I>
+<A NAME=399>  <B>return</B> ((ObjectReference_t*) ((UserPartObject_t*)cpo)-&gt;<A HREF=../S/61.html#125>getAttribute</A>(index, 
+                                                                      thr));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=403>TmpStep::<A HREF=../S/44.html#1039>TmpStep</A>(<B>char</B>** pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#396>[&lt;]</A><A HREF=#419>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  (*pc)=&amp;(*pc)[4]; <I><FONT COLOR=green>//skip 'tmp('</FONT></I>
+  <I><FONT COLOR=green>//get number of digits</FONT></I>
+  <B>if</B>(sscanf(*pc,"%i)",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "TmpStep::TmpStep(): parse error - could not parse int\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//maintain pc</FONT></I>
+  <B>for</B>( ; **pc!=')' ; (*pc)++);
+  (*pc) = &amp;(*pc)[1]; <I><FONT COLOR=green>//skip )</FONT></I>
+  DB_OUT(vm_rtp,  "TmpStep::TmpStep parsed with index: " &lt;&lt; index &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=419><B>void</B> TmpStep::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#403>[&lt;]</A><A HREF=#423>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "tmp(" &lt;&lt; index &lt;&lt; ")";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=423><B>unsigned</B> <B>int</B> TmpStep::<A HREF=../S/44.html#1279>getIndex</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#419>[&lt;]</A><A HREF=#427>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> index;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=427>PartObject_t* TmpStep::<A HREF=../R/205.html>getPartObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#423>[&lt;]</A><A HREF=#435>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//Take the most specific </FONT></I>
+  DB_INDENT
+  DB_OUT(vm_rtp,  "TmpStep::getPartObject(): found po\n");
+  DB_OUTDENT;
+  <B>return</B> ((Object_t*)(thr-&gt;tmpStack-&gt;getElementAt(index)))-&gt;last();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=435>Pattern_t *TmpStep::<A HREF=../S/64.html#594>getPattern</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#427>[&lt;]</A><A HREF=#441>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "TmpStep::getPattern : *_*_*getPattern called on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  <B>return</B> NULL;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=441>Object_t *TmpStep::<A HREF=../R/198.html>getObject</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#435>[&lt;]</A><A HREF=#445>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> ((Object_t*)(thr-&gt;tmpStack-&gt;getElementAt(index)));
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=445>ObjectReference_t *TmpStep::<A HREF=../S/64.html#619>getObjectReference</A>(PartObject_t* cpo, Thread_t* thr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#441>[&lt;]</A><A HREF=#453>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cout &lt;&lt; "TmpStep::getObjectReference : *_*_*getObjectReference called " 
+       &lt;&lt; " on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=453>PatternReference_t *TmpStep::<A HREF=../S/64.html#637>getPatternReference</A>(PartObject_t* cpo, 
+<I><FONT COLOR=green>/* <A HREF=#445>[&lt;]</A><A HREF=#466>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                 Thread_t* thr)<FONT COLOR=blue>{</FONT>
+  cout &lt;&lt; "TmpStep::getPatternReference : *_*_*getPatternReference called " 
+       &lt;&lt; "on wrong runtime step" 
+       &lt;&lt; "*_*_*";
+  exit(1);
+  <B>return</B> NULL;  
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ******************** functions ********************</FONT></I>
+
+<I><FONT COLOR=green>//internal, use same without _steps in its name externally</FONT></I>
+<A NAME=466><B>static</B> PartObject_t* <A HREF=../R/150.html>evaluateRuntimePath_PO_steps</A>(SingleInstructionWRTP *inst, 
+<I><FONT COLOR=green>/* <A HREF=#453>[&lt;]</A><A HREF=#511>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                                  PartObject_t *po, 
+                                                  Thread_t *thr,
+                                                  RuntimeStep **rs)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  Lst&lt;RuntimeStep&gt; *rtp = inst-&gt;getRuntimePath();
+
+  <I><FONT COLOR=green>//handle empty lists...</FONT></I>
+  <B>if</B>(!(rtp-&gt;getCount())) <FONT COLOR=blue>{</FONT>
+    *rs = 0;
+    DB_OUTDENT;
+    <B>return</B> po;
+  <FONT COLOR=blue>}</FONT>  
+
+  DB_OUT(vm_rtp,  "evaluateRuntimePath_PO_steps() got inst's runtimepath count: "
+         &lt;&lt; rtp-&gt;getCount() &lt;&lt; endl);
+
+  <B>unsigned</B> <B>int</B> rtpLength = rtp-&gt;getCount();
+  *rs = rtp-&gt;first();
+  
+  DB_OUT(vm_rtp,  "evaluateRuntimePath_PO_steps() got first runtime step\n");
+  
+  PartObject_t *currentPartObject = po;
+  
+  <I><FONT COLOR=green>//follow partobject path: </FONT></I>
+  <I><FONT COLOR=green>//skal ikke medtage den sidste SKAL KALDE rs-&gt;getObjOrPtn()..</FONT></I>
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 1;
+      i &lt; rtpLength; 
+      *rs = (*rs)-&gt;next(), i++)<FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_rtp,  "evaluateRuntimePath_PO() before getPartObject " 
+           &lt;&lt; i &lt;&lt; endl);
+<A NAME=497>    currentPartObject = (*rs)-&gt;<A HREF=../D/226.html>getPartObject</A>(currentPartObject, thr);
+    <B>if</B>(!currentPartObject)<FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//attribute was not initialized</FONT></I>
+      DB_OUTDENT;
+      <B>return</B> NULL;
+    <FONT COLOR=blue>}</FONT>
+    DB_OUT(vm_rtp,  "evaluateRuntimePath_PO() after getPartObject " 
+           &lt;&lt; i &lt;&lt; endl);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_rtp,  "evaluateRuntimePath_PO_steps() after for\n");
+  DB_OUTDENT;
+  <B>return</B> currentPartObject;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=511>PartObject_t *evaluateRuntimePath_PO(SingleInstructionWRTP *inst, 
+<I><FONT COLOR=green>/* <A HREF=#466>[&lt;]</A><A HREF=#551>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                     PartObject_t *po,
+                                     Thread_t *thr) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  RuntimeStep *rts;
+
+  DB_OUT(vm_rtp, "evaluateRuntimePath_PO(): got po: " &lt;&lt; po &lt;&lt; endl); 
+
+  <I><FONT COLOR=green>/* evaluate the first n-1 steps */</FONT></I>
+<A NAME=520>  PartObject_t *currentPartObj = <A HREF=../S/64.html#466>evaluateRuntimePath_PO_steps</A>(inst, 
+                                                              po, 
+                                                              thr, 
+                                                              &amp;rts);
+
+  DB_OUT(vm_rtp,  "evaluateRuntimePath_PO() got currentPartObj: " 
+         &lt;&lt; currentPartObj &lt;&lt; endl );
+
+  <B>if</B>(!currentPartObj)<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//attribute was not initialized</FONT></I>
+    DB_OUTDENT;
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//rtp might have been empty</FONT></I>
+  <B>if</B>(rts) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>/* evaluate the final step, n */</FONT></I>
+    <B>if</B>(rts-&gt;next())<FONT COLOR=blue>{</FONT>
+      rts = rts-&gt;next();
+    <FONT COLOR=blue>}</FONT>
+<A NAME=540>    currentPartObj = rts-&gt;<A HREF=../D/226.html>getPartObject</A>(currentPartObj, thr);
+  <FONT COLOR=blue>}</FONT>
+
+  DB_OUT(vm_rtp,  "evaluateRuntimePath_PO() returning po: " 
+         &lt;&lt; currentPartObj &lt;&lt; endl );
+
+  DB_OUTDENT;
+  <B>return</B> currentPartObj;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=551>Object_t* evaluateRuntimePath_Obj(SingleInstructionWRTP *inst, 
+<I><FONT COLOR=green>/* <A HREF=#511>[&lt;]</A><A HREF=#579>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                  PartObject_t *po, 
+                                  Thread_t*thr)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  RuntimeStep *rts;
+<A NAME=556>  PartObject_t *interestingPartObj = <A HREF=../S/64.html#466>evaluateRuntimePath_PO_steps</A>(inst, 
+                                                                  po, 
+                                                                  thr, 
+                                                                  &amp;rts);
+
+  <B>if</B>(!interestingPartObj)<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//attribute was not initialized</FONT></I>
+    DB_OUTDENT;
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+
+  DB_OUT(vm_rtp,  "evaluateRuntimePath_Obj(): found interesting part object : " 
+         &lt;&lt; interestingPartObj &lt;&lt; endl);
+
+  <I><FONT COLOR=green>//return the object of the last step from interesting partobject</FONT></I>
+  DB_OUTDENT;
+  <B>if</B>(rts)<FONT COLOR=blue>{</FONT>
+<A NAME=573>    <B>return</B> rts-&gt;<A HREF=../D/219.html>getObject</A>(interestingPartObj, thr);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=575>    <B>return</B> interestingPartObj-&gt;<A HREF=../D/219.html>getObject</A>();
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=579>Pattern_t* evaluateRuntimePath_Ptn(SingleInstructionWRTP *inst, 
+<I><FONT COLOR=green>/* <A HREF=#551>[&lt;]</A><A HREF=#598>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                  PartObject_t *po, 
+                                  Thread_t*thr)<FONT COLOR=blue>{</FONT>
+  RuntimeStep *rts;
+<A NAME=583>  PartObject_t *interestingPartObj = <A HREF=../S/64.html#466>evaluateRuntimePath_PO_steps</A>(inst,
+                                                                  po, 
+                                                                  thr, 
+                                                                  &amp;rts);
+
+  <B>if</B>(!interestingPartObj)<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//attribute was not initialized</FONT></I>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//return the pattern of the last step from interesting partobject</FONT></I>
+<A NAME=594>  <B>return</B> rts-&gt;<A HREF=../D/227.html>getPattern</A>(interestingPartObj, thr);
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=598>ObjectReference_t* evaluateRuntimePath_ObjRef(SingleInstructionWRTP *inst, 
+<I><FONT COLOR=green>/* <A HREF=#579>[&lt;]</A><A HREF=#622>[&gt;]</A><A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                     PartObject_t *po, 
+                                     Thread_t*thr)<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  RuntimeStep *rts;
+<A NAME=603>  PartObject_t *interestingPartObj = <A HREF=../S/64.html#466>evaluateRuntimePath_PO_steps</A>(inst, 
+                                                                  po, 
+                                                                  thr, 
+                                                                  &amp;rts);
+
+  <B>if</B>(!interestingPartObj)<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <I><FONT COLOR=green>//attribute was not initialized</FONT></I>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+
+  DB_OUT(vm_rtp,  "evaluateRuntimePath_Obj(): found interesting part object : " 
+         &lt;&lt; interestingPartObj &lt;&lt; endl);
+
+  <I><FONT COLOR=green>//return the objectreference of the last step from interesting partobject</FONT></I>
+  DB_OUTDENT;
+<A NAME=619>  <B>return</B> rts-&gt;<A HREF=../D/222.html>getObjectReference</A>(interestingPartObj, thr);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=622>PatternReference_t* evaluateRuntimePath_PtnRef(SingleInstructionWRTP *inst, 
+<I><FONT COLOR=green>/* <A HREF=#598>[&lt;]</A>[&gt;]<A HREF=#30>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                      PartObject_t *po, 
+                                      Thread_t*thr)<FONT COLOR=blue>{</FONT>
+  RuntimeStep *rts;
+<A NAME=626>  PartObject_t *interestingPartObj = <A HREF=../S/64.html#466>evaluateRuntimePath_PO_steps</A>(inst, 
+                                                                  po, 
+                                                                  thr, 
+                                                                  &amp;rts);
+
+  <B>if</B>(!interestingPartObj)<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//attribute was not initialized</FONT></I>
+    <B>return</B> NULL;
+  <FONT COLOR=blue>}</FONT>
+  
+  <I><FONT COLOR=green>//return the patternreference of the last step from interesting partobject</FONT></I>
+<A NAME=637>  <B>return</B> rts-&gt;<A HREF=../D/229.html>getPatternReference</A>(interestingPartObj, thr);
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#30>[^]</A><A HREF=#622>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

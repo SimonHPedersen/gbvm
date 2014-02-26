@@ -1,0 +1,156 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Mixin.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Mixin.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Mixin.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#17>[^]</A><A HREF=#99>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#17>Mixin_t</A>
+<LI><A HREF=#22>Mixin_t</A>
+<LI><A HREF=#37>getOriginOffset</A>
+<LI><A HREF=#45>getOrigin</A>
+<LI><A HREF=#49>getMainPart</A>
+<LI><A HREF=#53>instantiate</A>
+<LI><A HREF=#66>getInstructionListPtr</A>
+<LI><A HREF=#70>getMPAttrsInstrPtr</A>
+<LI><A HREF=#74>getAttrInstrPtr</A>
+<LI><A HREF=#82>PredefinedStringMixin_t</A>
+<LI><A HREF=#88>instantiate</A>
+<LI><A HREF=#95>getMainPart</A>
+<LI><A HREF=#99>getMPAttrsInstrPtr</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Mixin.cc,v 1.17 2001/05/25 09:31:20 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<B>void</B>* Mixin_t::<B>operator</B> <B>new</B>(size_t size)<FONT COLOR=blue>{</FONT>
+  DB_INDENT
+    DB_OUT(vm_mixin, "Mixin_t:new() called - * this should only happen " &lt;&lt; 
+           "during initialization*\n");
+  DB_OUTDENT;
+  <B>return</B> malloc(size); 
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B>* Mixin_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B>* location)<FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=17>Mixin_t::<A HREF=../R/96.html>Mixin_t</A>():
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#22>[&gt;]</A>[^]<A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  mainPart(*((MainPart*)0))
+<FONT COLOR=blue>{</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=22>Mixin_t::<A HREF=../R/96.html>Mixin_t</A>(MainPart* mainPart, PartObject_t* origin):
+<I><FONT COLOR=green>/* <A HREF=#17>[&lt;]</A><A HREF=#37>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  mainPart(*mainPart)
+<FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+
+  <I><FONT COLOR=green>//setting origin for the second time</FONT></I>
+  <I><FONT COLOR=green>// - it must be initialized before constructor</FONT></I>
+  DB_OUT(vm_mixin, "Mixin_t::Mixin_t origin address: " &lt;&lt; origin &lt;&lt; endl);
+  <B>if</B>(origin)<FONT COLOR=blue>{</FONT>
+<A NAME=31>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;origin), origin);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_mixin, "Mixin_t::Mixin_t origin address: " &lt;&lt; origin &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=37><B>unsigned</B> <B>int</B> Mixin_t::<A HREF=../S/68.html#138>getOriginOffset</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#22>[&lt;]</A><A HREF=#45>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_mixin, "Mixin_t::getOriginOffset(): &amp;origin: " &lt;&lt; &amp;origin 
+       &lt;&lt; " this: " &lt;&lt; <B>this</B> &lt;&lt; endl);
+  DB_OUTDENT;
+  <B>return</B> ((<B>unsigned</B> <B>int</B>)&amp;origin - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45>PartObject_t *Mixin_t::<A HREF=../R/203.html>getOrigin</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#37>[&lt;]</A><A HREF=#49>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> origin;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=49>MainPart *Mixin_t::<A HREF=../R/188.html>getMainPart</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#53>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> &amp;mainPart;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=53>PartObject_t *Mixin_t::<A HREF=../R/232.html>instantiate</A>(Object_t* object) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#49>[&lt;]</A><A HREF=#66>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//we do lazy initialization</FONT></I>
+  DB_INDENT;
+  DB_OUT(vm_mixin, "Mixin_t::instantiate(): mainPart: " 
+         &lt;&lt; (<B>void</B>*)&amp;mainPart &lt;&lt; endl); 
+
+<A NAME=59>  ObjectDescriptor_t *objDes = <A HREF=../D/208.html>getMainPart</A>()-&gt;<A HREF=../D/220.html>getObjectDescriptor</A>();
+  DB_OUT(vm_mixin, "Mixin_t::instantiate(): got object descriptor from" 
+         &lt;&lt; " main part\n");
+  DB_OUTDENT;
+<A NAME=63>  <B>return</B> <B>new</B>(allocateVM(objDes)) <A HREF=../D/119.html>UserPartObject_t</A>(<B>this</B>, object);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=66>Lst&lt;Instruction&gt;* Mixin_t::<A HREF=../R/182.html>getInstructionListPtr</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#53>[&lt;]</A><A HREF=#70>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=67>  <B>return</B> mainPart.<A HREF=../D/202.html>getInstructionListPtr</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=70>Lst&lt;Instruction&gt;* Mixin_t::<A HREF=../R/187.html>getMPAttrsInstrPtr</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#66>[&lt;]</A><A HREF=#74>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=71>  <B>return</B> mainPart.<A HREF=../D/207.html>getMPAttrsInstrPtr</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=74>Lst&lt;Instruction&gt;* Mixin_t::<A HREF=../R/158.html>getAttrInstrPtr</A>(<B>unsigned</B> <B>int</B> index) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#70>[&lt;]</A><A HREF=#82>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=75>  <B>return</B> mainPart.<A HREF=../D/176.html>getAttrInstrPtr</A>(index);
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B> *PredefinedStringMixin_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B> *location)<FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+ 
+<A NAME=82>PredefinedStringMixin_t::<A HREF=../S/45.html#95>PredefinedStringMixin_t</A>(PartObject_t* origin)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#74>[&lt;]</A><A HREF=#88>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>if</B>(origin)<FONT COLOR=blue>{</FONT>
+<A NAME=84>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;(<B>this</B>-&gt;origin), origin);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+   
+<A NAME=88>PartObject_t *PredefinedStringMixin_t::<A HREF=../R/232.html>instantiate</A>(Object_t *object)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#82>[&lt;]</A><A HREF=#95>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  PredefinedStringPartObject_t *prePO = 
+<A NAME=90>    <B>new</B> (allocateVM(predefStringPODesc)) <A HREF=../S/61.html#192>PredefinedStringPartObject_t</A>(<B>this</B>, 
+                                                                      object);
+  <B>return</B> prePO;
+<FONT COLOR=blue>}</FONT>
+ 
+<A NAME=95>MainPart* PredefinedStringMixin_t::<A HREF=../R/188.html>getMainPart</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#88>[&lt;]</A><A HREF=#99>[&gt;]</A><A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> sharedStringPredefMP;
+<FONT COLOR=blue>}</FONT>
+   
+<A NAME=99>Lst&lt;Instruction&gt; *PredefinedStringMixin_t::<A HREF=../R/187.html>getMPAttrsInstrPtr</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#95>[&lt;]</A>[&gt;]<A HREF=#17>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=100>  <B>return</B> <A HREF=../D/208.html>getMainPart</A>()-&gt;<A HREF=../D/207.html>getMPAttrsInstrPtr</A>();
+<FONT COLOR=blue>}</FONT>
+ 
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#17>[^]</A><A HREF=#99>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

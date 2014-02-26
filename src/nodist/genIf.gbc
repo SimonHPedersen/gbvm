@@ -1,0 +1,31 @@
+MainPart("`42424242"
+|
+   generalIf(char
+      PUSHI-char `d'
+      RESETFRAME
+   |case
+      PUSHI-char `a'
+      RESETFRAME
+   |then
+      PUSHI-string "*****first choice*****"
+      stdio/out
+      RESETFRAME
+   |case
+      PUSHI-char `b'
+      RESETFRAME
+   |case
+      PUSHI-char `c'
+      RESETFRAME
+   |case
+      PUSHI-char `d'
+      RESETFRAME
+   |then
+      PUSHI-string "*****second choice*****"
+      stdio/out
+      RESETFRAME
+   |else
+      PUSHI-string "*****else choice*****"
+      stdio/out
+      RESETFRAME
+   )
+)

@@ -1,0 +1,344 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Misc.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Misc.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Misc.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#5>[^]</A><A HREF=#244>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#5>printOn</A>
+<LI><A HREF=#17>Instr_AddMP_t</A>
+<LI><A HREF=#29>printOn</A>
+<LI><A HREF=#38>printOn</A>
+<LI><A HREF=#43>Instr_Call_t</A>
+<LI><A HREF=#53>printOn</A>
+<LI><A HREF=#57>Instr_ChkNone_t</A>
+<LI><A HREF=#63>printOn</A>
+<LI><A HREF=#67>Instr_ChkPtnNone_t</A>
+<LI><A HREF=#73>printOn</A>
+<LI><A HREF=#77>Instr_ChkQualObj_t</A>
+<LI><A HREF=#84>printOn</A>
+<LI><A HREF=#88>Instr_Discard_t</A>
+<LI><A HREF=#95>Instr_GatherVirt_t</A>
+<LI><A HREF=#132>printOn</A>
+<LI><A HREF=#138>printOn</A>
+<LI><A HREF=#142>Instr_Inner_t</A>
+<LI><A HREF=#153>printOn</A>
+<LI><A HREF=#157>Instr_Merge_t</A>
+<LI><A HREF=#163>printOn</A>
+<LI><A HREF=#167>Instr_NegInt_t</A>
+<LI><A HREF=#173>printOn</A>
+<LI><A HREF=#177>Instr_NegReal_t</A>
+<LI><A HREF=#183>Instr_NewPtnObj_t</A>
+<LI><A HREF=#187>printOn</A>
+<LI><A HREF=#193>Instr_NewPtnTmp_t</A>
+<LI><A HREF=#203>printOn</A>
+<LI><A HREF=#210>printOn</A>
+<LI><A HREF=#214>Instr_Not_t</A>
+<LI><A HREF=#220>printOn</A>
+<LI><A HREF=#224>Instr_Resetframe_t</A>
+<LI><A HREF=#230>Instr_StdioOut_t</A>
+<LI><A HREF=#234>printOn</A>
+<LI><A HREF=#240>Instr_StdioIn_t</A>
+<LI><A HREF=#244>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: Instr_Misc.cc,v 1.19 2001/05/23 08:43:45 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<A NAME=5><B>void</B> Instr_Label_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest)
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#17>[&gt;]</A>[^]<A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=blue>{</FONT>
+  dest &lt;&lt; ind &lt;&lt; "label(" &lt;&lt; endl;
+  Instruction* current=instrs.first();
+<A NAME=9>  <A HREF=../S/44.html#23>indent</A>();
+<A NAME=10>  <B>while</B> (current) <FONT COLOR=blue>{</FONT> current-&gt;<A HREF=../D/309.html>printOn</A>(dest); current=current-&gt;next(); <FONT COLOR=blue>}</FONT>
+<A NAME=11>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- Add mainpart ---</FONT></I>
+
+<A NAME=17>Instr_AddMP_t::<A HREF=../S/44.html#690>Instr_AddMP_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#5>[&lt;]</A><A HREF=#29>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = ADDMP_ID;
+  <I><FONT COLOR=green>//parse mainpart</FONT></I>
+  <B>unsigned</B> <B>int</B> space = 0;
+  <B>for</B>( ; pc[space] != ' ' ; space++);
+  <B>char</B> *str = (<B>char</B>*)malloc(space+1);
+  memcpy(str, pc, space);
+  str[space] = 0;
+  mainPartId = str;
+<A NAME=26>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(&amp;pc[space + 8], <B>this</B>);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=29><B>void</B> Instr_AddMP_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#17>[&lt;]</A><A HREF=#38>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_AddMP_t with id: " &lt;&lt; mainPartId 
+         &lt;&lt; " and with run-time path: ";
+<A NAME=32>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>//--- Call ---</FONT></I>
+
+<A NAME=38><B>void</B> Instr_Call_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#29>[&lt;]</A><A HREF=#43>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Call_t with run-time path: ";
+<A NAME=40>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=43>Instr_Call_t::<A HREF=../S/44.html#710>Instr_Call_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#38>[&lt;]</A><A HREF=#53>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = CALL_ID;
+  DB_OUT(vm_bcl_inst,  "Instr_Call_t::Instr_Call_t pc: " &lt;&lt; *pc &lt;&lt; endl);
+<A NAME=47>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- chk none ---</FONT></I>
+
+<A NAME=53><B>void</B> Instr_ChkNone_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#43>[&lt;]</A><A HREF=#57>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_ChkNone_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=57>Instr_ChkNone_t::<A HREF=../S/44.html#714>Instr_ChkNone_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#53>[&lt;]</A><A HREF=#63>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = CHKNONE_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- chk ptn none ---</FONT></I>
+
+<A NAME=63><B>void</B> Instr_ChkPtnNone_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#57>[&lt;]</A><A HREF=#67>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_ChkPtnNone_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=67>Instr_ChkPtnNone_t::<A HREF=../S/44.html#718>Instr_ChkPtnNone_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#63>[&lt;]</A><A HREF=#73>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = CHKPTNNONE_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- chk ptn none ---</FONT></I>
+
+<A NAME=73><B>void</B> Instr_ChkQualObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#67>[&lt;]</A><A HREF=#77>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_ChkQualObj_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=77>Instr_ChkQualObj_t::<A HREF=../S/44.html#722>Instr_ChkQualObj_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#73>[&lt;]</A><A HREF=#84>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = CHKQUALOBJ_ID;
+<A NAME=79>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- discard ---</FONT></I>
+
+<A NAME=84><B>void</B> Instr_Discard_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#77>[&lt;]</A><A HREF=#88>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Discard_t: with type: " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=88>Instr_Discard_t::<A HREF=../R/18.html>Instr_Discard_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#84>[&lt;]</A><A HREF=#95>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = DISCARD_ID;
+<A NAME=90>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- gather virtual ---</FONT></I>
+
+<A NAME=95>Instr_GatherVirt_t::<A HREF=../S/44.html#734>Instr_GatherVirt_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#88>[&lt;]</A><A HREF=#132>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = GATHERVIRT_ID;
+
+  <B>char</B> *pc2 = pc = &amp;pc[2];   <I><FONT COLOR=green>// pc, pc2 now at 1st char of name</FONT></I>
+
+  <B>while</B> (*pc2 &amp;&amp; *pc2 != '/') pc2++; <I><FONT COLOR=green>// pc2 now after end of name</FONT></I>
+  *pc2 = 0;
+  parentAttrName = strdup(pc);
+  
+  pc2++; <I><FONT COLOR=green>// pc2 now at beginning of index</FONT></I>
+  parentAttrIndex = atoi(pc2);
+  
+  <I><FONT COLOR=green>//skip to end of number</FONT></I>
+  <B>while</B> (*pc2 != '"' &amp;&amp; *pc2 != 0) pc2++;
+  
+  <I><FONT COLOR=green>//goto start of mainpart id</FONT></I>
+  pc2 = &amp;pc2[6];
+  <B>if</B>(*pc2 != '`') <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "mainpart name expected\n";
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//  pc = ++pc2;</FONT></I>
+  pc = pc2; <I><FONT COLOR=green>//don't skip backquote</FONT></I>
+
+  <I><FONT COLOR=green>//find end of string</FONT></I>
+  <B>for</B>(pc2 = pc; *pc2 &amp;&amp; *pc2 != '"'; pc2++);
+  *pc2 = 0;
+
+  parentMainPartID = strdup(pc);
+
+  DB_OUT(vm_parse_misc,  "Instr_GatherVirt_t: nameAndIndex    : " &lt;&lt; 
+         parentAttrName &lt;&lt; "/" &lt;&lt; parentAttrIndex &lt;&lt; 
+         "\n                        parentMainPartId: "
+         &lt;&lt; parentMainPartID &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=132><B>void</B> Instr_GatherVirt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#95>[&lt;]</A><A HREF=#138>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_GatherVirt_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- inner ---</FONT></I>
+
+<A NAME=138><B>void</B> Instr_Inner_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#132>[&lt;]</A><A HREF=#142>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Inner_t with \"out-index\": " &lt;&lt; index;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=142>Instr_Inner_t::<A HREF=../S/44.html#750>Instr_Inner_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#138>[&lt;]</A><A HREF=#153>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>if</B>(sscanf(pc,"%i",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_NewPtnTmp_t::Instr_PushiNewPtnTmp_t(): parse error - " 
+         &lt;&lt;  "could not parse index " &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>  
+  id = INNER_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- merge ---</FONT></I>
+
+<A NAME=153><B>void</B> Instr_Merge_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#142>[&lt;]</A><A HREF=#157>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Merge_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=157>Instr_Merge_t::<A HREF=../S/44.html#738>Instr_Merge_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#153>[&lt;]</A><A HREF=#163>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = MERGE_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- neg int ---</FONT></I>
+
+<A NAME=163><B>void</B> Instr_NegInt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#157>[&lt;]</A><A HREF=#167>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_NegInt_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=167>Instr_NegInt_t::<A HREF=../S/44.html#742>Instr_NegInt_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#163>[&lt;]</A><A HREF=#173>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = NEGINT_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- neg real ---</FONT></I>
+
+<A NAME=173><B>void</B> Instr_NegReal_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#167>[&lt;]</A><A HREF=#177>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_NegReal_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=177>Instr_NegReal_t::<A HREF=../S/44.html#746>Instr_NegReal_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#173>[&lt;]</A><A HREF=#183>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = NEGREAL_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- NewPtnObj ---</FONT></I>
+
+<A NAME=183>Instr_NewPtnObj_t::<A HREF=../S/44.html#790>Instr_NewPtnObj_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#177>[&lt;]</A><A HREF=#187>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = NEWPTNOBJ_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=187><B>void</B> Instr_NewPtnObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#183>[&lt;]</A><A HREF=#193>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_NewPtnObj_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- NewPtnTmp ---</FONT></I>
+
+<A NAME=193>Instr_NewPtnTmp_t::<A HREF=../S/44.html#794>Instr_NewPtnTmp_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#187>[&lt;]</A><A HREF=#203>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = NEWPTNTMP_ID;
+  <B>if</B>(sscanf(pc,"%i",&amp;index) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_NewPtnTmp_t::Instr_PushiNewPtnTmp_t(): parse error - " 
+         &lt;&lt;  "could not parse index " &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=203><B>void</B> Instr_NewPtnTmp_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#193>[&lt;]</A><A HREF=#210>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_NewPtnTmp_t";
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>//--- not ---</FONT></I>
+
+<A NAME=210><B>void</B> Instr_Not_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#203>[&lt;]</A><A HREF=#214>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Not_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=214>Instr_Not_t::<A HREF=../S/44.html#798>Instr_Not_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#210>[&lt;]</A><A HREF=#220>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = NOT_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- resetframe ---</FONT></I>
+
+<A NAME=220><B>void</B> Instr_Resetframe_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#214>[&lt;]</A><A HREF=#224>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_Resetframe_t";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=224>Instr_Resetframe_t::<A HREF=../S/44.html#998>Instr_Resetframe_t</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#220>[&lt;]</A><A HREF=#230>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RESETFRAME_ID;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- stdio out ---</FONT></I>
+
+<A NAME=230>Instr_StdioOut_t::<A HREF=../S/44.html#1002>Instr_StdioOut_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#224>[&lt;]</A><A HREF=#234>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = STDIOOUT_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=234><B>void</B> Instr_StdioOut_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#230>[&lt;]</A><A HREF=#240>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_StdioOut_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- stdio in ---</FONT></I>
+
+<A NAME=240>Instr_StdioIn_t::<A HREF=../S/44.html#1006>Instr_StdioIn_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#234>[&lt;]</A><A HREF=#244>[&gt;]</A><A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = STDIOIN_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=244><B>void</B> Instr_StdioIn_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#240>[&lt;]</A>[&gt;]<A HREF=#5>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_StdioIn_t";
+<FONT COLOR=blue>}</FONT>
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#5>[^]</A><A HREF=#244>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

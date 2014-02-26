@@ -1,0 +1,103 @@
+MainPart("`480"
+   "p/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `298 origin {}
+      INSTALL-ptn 0
+   )
+   "q/1": (
+      PUSH-ptn {"p/0"}
+      ADD-mainpart `438 origin {}
+      INSTALL-ptn 1
+   )
+|
+   PUSH-ptn {"q/1"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+)
+MainPart("`298"
+   "r/0": (
+      PUSH-ptn {"v/1"}
+      PUSH-ptn_"object"
+      ADD-mainpart `240 origin {}
+      MERGE-ptn
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+   "v/1": (virtual
+      PUSH-ptn_"object"
+      ADD-mainpart `132 origin {}
+      END_OF_GATHERVIRT_CODE
+      GATHER-virt "v/1" in "`298"
+      INSTALL-ptn 1
+   )
+|
+   PUSH-ptn {"r/0","w/0"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+   INNER 0
+)
+MainPart("`132"
+   "w/0": (virtual
+      PUSH-ptn_"object"
+      ADD-mainpart `104 origin {}
+      END_OF_GATHERVIRT_CODE
+      GATHER-virt "w/0" in "`132"
+      INSTALL-ptn 0
+   )
+|
+)
+MainPart("`104"
+   "a/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `68 origin {}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   INNER 0
+)
+MainPart("`68"
+|
+   INNER 0
+)
+MainPart("`240"
+   "w/0": (virtual "w/0" in "`132"
+      PUSH-ptn_"object"
+      ADD-mainpart `212 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`132,"w/0"}
+      INSTALL-ptn 0
+   )
+|
+)
+MainPart("`212"
+|
+   CALL {^`104,"a/0"}
+   RESETFRAME
+)
+MainPart("`438"
+   "v/0": (virtual "v/1" in "`298"
+      PUSH-ptn_"object"
+      ADD-mainpart `380 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`298,"v/1"}
+      INSTALL-ptn 0
+   )
+|
+   PUSH-ptn {^`298,"r/0","w/0"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+)
+MainPart("`380"
+   "w/0": (
+      PUSH-ptn {<-3,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+)

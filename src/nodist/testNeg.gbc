@@ -1,0 +1,12 @@
+MainPart("'250"
+|
+   PUSHI-integer 3
+   NEG(integer)
+   PUSHI-real 3.141592654
+   NEG(real)
+   PUSHI-integer -3
+   NEG(integer)
+   PUSHI-real -3.141592654
+   NEG(real)
+)
+

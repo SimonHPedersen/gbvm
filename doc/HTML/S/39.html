@@ -1,0 +1,113 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/testRememberedSet.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/testRememberedSet.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/testRememberedSet.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#8>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#8>main</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: testRememberedSet.cc,v 1.7 2001/04/10 12:01:24 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "RememberedSet.hpp"
+<FONT COLOR=darkred>#include</FONT> &lt;unistd.h&gt;
+
+<I><FONT COLOR=green>//COMMENT: remembered sets generate unreclaimable garbage?!</FONT></I>
+
+<A NAME=8><B>int</B> main()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+  <I><FONT COLOR=green>/*  float tst = 31400.123456;</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  cout &lt;&lt; (float)tst &lt;&lt; endl;</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  unsigned int size = 1000000;</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  void* blocks[100];</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  for(unsigned int i = 0; i &lt; 100 ; i++){</FONT></I>
+<I><FONT COLOR=green>    blocks[i] = malloc(size);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  int* mem = (int*)malloc(sizeof(int) * size);</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  for(unsigned int i = 0; i&lt;size ; i++){</FONT></I>
+<I><FONT COLOR=green>    mem[i] = 1;</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  cout &lt;&lt; "allocated" &lt;&lt; endl;</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  sleep(10);</FONT></I>
+<I><FONT COLOR=green> </FONT></I>
+<I><FONT COLOR=green>  free(mem);</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>  cout &lt;&lt; "freed" &lt;&lt; endl;</FONT></I>
+<I><FONT COLOR=green>  </FONT></I>
+<I><FONT COLOR=green>  for(unsigned int i = 0; i &lt; 100 ; i++){</FONT></I>
+<I><FONT COLOR=green>    free(blocks[i]);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  </FONT></I>
+<I><FONT COLOR=green>  sleep(10);</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+<A NAME=44>  RememberedSet_t* rs = <B>new</B> <A HREF=../S/28.html#28>RememberedSet_t</A>();
+  <B>int</B> i,j,k;
+  <B>void</B>* ip = &amp;i;
+  <B>void</B>* jp = &amp;j;
+  <B>void</B>* kp = &amp;k;
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; 5000000; i++)<FONT COLOR=blue>{</FONT>
+<A NAME=51>    rs-&gt;<A HREF=../D/260.html>insert</A>((<B>void</B>**)i);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  for(unsigned int i = 0; i &lt; 5000000; i++){</FONT></I>
+<I><FONT COLOR=green>    rs-&gt;remove((void*)i);</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+<A NAME=59>  rs-&gt;<A HREF=../D/260.html>insert</A>(&amp;ip);
+<A NAME=60>  rs-&gt;<A HREF=../D/260.html>insert</A>(&amp;jp);
+<A NAME=61>  rs-&gt;<A HREF=../D/260.html>insert</A>(&amp;kp);
+
+  <I><FONT COLOR=green>//  remSetIt_t it = rs-&gt;getIterator();</FONT></I>
+
+<A NAME=65>  cout &lt;&lt; "ip: " &lt;&lt; ip &lt;&lt; ", " &lt;&lt; rs-&gt;<A HREF=../D/269.html>lookup</A>(&amp;ip) &lt;&lt; endl;
+<A NAME=66>  cout &lt;&lt; "jp: " &lt;&lt; jp &lt;&lt; ", " &lt;&lt; rs-&gt;<A HREF=../D/269.html>lookup</A>(&amp;jp) &lt;&lt; endl;
+<A NAME=67>  cout &lt;&lt; "kp: " &lt;&lt; kp &lt;&lt; ", " &lt;&lt; rs-&gt;<A HREF=../D/269.html>lookup</A>(&amp;kp) &lt;&lt; endl;
+
+  <I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  for( ; it != rs-&gt;getEndIterator(); it++){</FONT></I>
+<I><FONT COLOR=green>    cout &lt;&lt; *it &lt;&lt; endl;</FONT></I>
+<I><FONT COLOR=green>  }</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+  <I><FONT COLOR=green>//rs-&gt;clear();</FONT></I>
+
+  cout &lt;&lt; "before delete \n";
+
+  <B>delete</B>(rs);
+
+  sleep(20);
+
+<FONT COLOR=blue>}</FONT>
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#8>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

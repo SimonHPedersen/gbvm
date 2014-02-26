@@ -1,0 +1,775 @@
+
+MainPart("`26-3038"
+   "list/1": (
+      PUSH-ptn_"object"
+      ADD-mainpart `43-809 origin {}
+      INSTALL-ptn 1
+   )
+   "node/6": (
+      PUSH-ptn_"object"
+      ADD-mainpart `827-2262 origin {}
+      INSTALL-ptn 6
+   )
+   "dfs/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2279-2416 origin {}
+      INSTALL-ptn 0
+   )
+   "makeTree/2": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2438-2826 origin {}
+      INSTALL-ptn 2
+   )
+   "root/7": (
+      PUSH-ptn {"node/6"}
+      INSTALL-qua-obj 7
+   )
+   "n1/3": (
+      PUSH-ptn {"node/6"}
+      INSTALL-qua-obj 3
+   )
+   "n2/4": (
+      PUSH-ptn {"node/6"}
+      INSTALL-qua-obj 4
+   )
+   "n3/5": (
+      PUSH-ptn {"node/6"}
+      INSTALL-qua-obj 5
+   )
+|
+   PUSH-ptn {"makeTree/2"}
+   NEW,_ptn->tmp 1
+   PUSHI-integer 7
+   POP-integer {tmp(1),"depth/0"}
+   CALL {tmp(1)}
+   PUSH-objref {'root/7'}
+   POP-objref {'root/7'}
+   RESETFRAME
+   PUSH-ptn {'root/7',^`827-2262,"getChild/5"}
+   NEW,_ptn->tmp 1
+   PUSHI-integer 3
+   POP-integer {tmp(1),^`969-1130,"i/0"}
+   CALL {tmp(1)}
+   CALL {tmp(1),^`969-1130,'n/1'}
+   PUSH-obj {tmp(1),^`969-1130,'n/1'}
+   POP-objref {'n3/5'}
+   RESETFRAME
+   PUSH-ptn {'n3/5',^`827-2262,"getChild/5"}
+   NEW,_ptn->tmp 1
+   PUSHI-integer 3
+   POP-integer {tmp(1),^`969-1130,"i/0"}
+   CALL {tmp(1)}
+   CALL {tmp(1),^`969-1130,'n/1'}
+   PUSH-obj {tmp(1),^`969-1130,'n/1'}
+   POP-objref {'n1/3'}
+   RESETFRAME
+   namedFor("i"
+      PUSHI-integer 10
+      RESETFRAME
+   |
+      CALL {<-1,'root/7'}
+      PUSH-ptn {<-1,"dfs/0"}
+      NEW,_ptn->tmp 1
+      PUSH-obj {<-1,'root/7'}
+      POP-objref {tmp(1),'n/0'}
+      CALL {tmp(1)}
+      RESETFRAME
+      PUSH-ptn {<-1,"makeTree/2"}
+      NEW,_ptn->tmp 1
+      PUSHI-integer 4
+      POP-integer {tmp(1),"depth/0"}
+      CALL {tmp(1)}
+      PUSH-objref {<-1,'root/7'}
+      POP-objref {<-1,'n2/4'}
+      RESETFRAME
+      PUSH-ptn {<-1,'n1/3',^`827-2262,"changeChildN/0"}
+      NEW,_ptn->tmp 1
+      PUSHI-integer 2
+      POP-integer {tmp(1),^`969-1130,"i/0"}
+      PUSH-objref {<-1,'n2/4'}
+      POP-objref {tmp(1),^`969-1130,'n/1'}
+      CALL {tmp(1)}
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`43-809"
+   "element/3": (virtual
+      PUSH-ptn {<-2,"object/0"}
+      END_OF_GATHERVIRT_CODE
+      GATHER-virt "element/3" in "`43-809"
+      INSTALL-ptn 3
+   )
+   "scan/8": (
+      PUSH-ptn_"object"
+      ADD-mainpart `88-271 origin {}
+      INSTALL-ptn 8
+   )
+   "add/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `297-518 origin {}
+      INSTALL-ptn 0
+   )
+   "add3/1": (
+      PUSH-ptn_"object"
+      ADD-mainpart `535-559 origin {}
+      INSTALL-ptn 1
+   )
+   "makeEmpty/7": (
+      PUSH-ptn_"object"
+      ADD-mainpart `581-616 origin {}
+      INSTALL-ptn 7
+   )
+   "isEmpty/6": (
+      PUSH-ptn_"object"
+      ADD-mainpart `636-658 origin {}
+      INSTALL-ptn 6
+   )
+   "cell/2": (
+      PUSH-ptn_"object"
+      ADD-mainpart `675-724 origin {}
+      INSTALL-ptn 2
+   )
+   "head/5": (
+      PUSH-ptn {"cell/2"}
+      INSTALL-qua-obj 5
+   )
+   "tail/9": (
+      PUSH-ptn {"cell/2"}
+      INSTALL-qua-obj 9
+   )
+   "elements/4": (
+      PUSH-ptn {<-2,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 4
+   )
+|
+)
+MainPart("`88-271"
+   "current/1": (
+      PUSH-ptn {<-1,"element/3"}
+      INSTALL-qua-obj 1
+   )
+   "c/0": (
+      PUSH-ptn {<-1,"cell/2"}
+      INSTALL-qua-obj 0
+   )
+|
+   CALL {<-1,'head/5'}
+   PUSH-obj {<-1,'head/5'}
+   POP-objref {'c/0'}
+   RESETFRAME
+   while(
+      PUSH-objref {'c/0'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |
+      PUSH-objref {'c/0',^`675-724,'elm/0'}
+      POP-objref {'current/1'}
+      RESETFRAME
+      INNER 0
+      PUSH-objref {'c/0',^`675-724,'next/1'}
+      POP-objref {'c/0'}
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`297-518"
+   "c/0": (
+      PUSH-ptn {<-1,"cell/2"}
+      INSTALL-qua-obj 0
+   )
+|
+   simpleIf(
+      PUSH-integer {<-1,"elements/4"}
+      PUSHI-integer 0
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      CALL {'c/0'}
+      PUSH-obj {'c/0'}
+      POP-objref {<-1,'head/5'}
+      PUSH-objref {<-1,'head/5'}
+      POP-objref {<-1,'tail/9'}
+      RESETFRAME
+      PUSHI-integer 1
+      POP-integer {<-1,"elements/4"}
+      RESETFRAME
+   |else
+      CALL {'c/0'}
+      PUSH-obj {'c/0'}
+      POP-objref {<-1,'tail/9',^`675-724,'next/1'}
+      PUSH-objref {<-1,'tail/9',^`675-724,'next/1'}
+      POP-objref {<-1,'tail/9'}
+      RESETFRAME
+      PUSH-integer {<-1,"elements/4"}
+      PUSHI-integer 1
+      ADDOP(_+_)_integer
+      POP-integer {<-1,"elements/4"}
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`535-559"
+|
+)
+MainPart("`581-616"
+|
+   PUSHI-integer 0
+   POP-integer {<-1,"elements/4"}
+   RESETFRAME
+   PUSH-objref {<-1,'tail/9'}
+   POP-objref {<-1,'head/5'}
+   RESETFRAME
+)
+MainPart("`636-658"
+|
+)
+MainPart("`675-724"
+   "elm/0": (
+      PUSH-ptn {<-1,"element/3"}
+      INSTALL-qua-obj 0
+   )
+   "next/1": (
+      PUSH-ptn {<-1,"cell/2"}
+      INSTALL-qua-obj 1
+   )
+|
+)
+MainPart("`827-2262"
+   "child1/1": (
+      PUSH-ptn {<-1,"node/6"}
+      INSTALL-qua-obj 1
+   )
+   "child2/2": (
+      PUSH-ptn {<-1,"node/6"}
+      INSTALL-qua-obj 2
+   )
+   "child3/3": (
+      PUSH-ptn {<-1,"node/6"}
+      INSTALL-qua-obj 3
+   )
+   "id/6": (
+      PUSH-ptn {<-2,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 6
+   )
+   "myMark/11": (
+      PUSH-ptn {<-2,"boolean/1"}
+      NEW,_ptn->obj
+      INSTALL-obj 11
+   )
+   "init/7": (
+      PUSH-ptn_"object"
+      ADD-mainpart `904-935 origin {}
+      INSTALL-ptn 7
+   )
+   "childMethod/4": (
+      PUSH-ptn_"object"
+      ADD-mainpart `969-1130 origin {}
+      INSTALL-ptn 4
+   )
+   "changeChildN/0": (
+      PUSH-ptn {"childMethod/4"}
+      ADD-mainpart `1177-1324 origin {}
+      INSTALL-ptn 0
+   )
+   "getChild/5": (
+      PUSH-ptn {"childMethod/4"}
+      ADD-mainpart `1367-1504 origin {}
+      INSTALL-ptn 5
+   )
+   "setId/13": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1522-1535 origin {}
+      INSTALL-ptn 13
+   )
+   "printMe/12": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1565-1712 origin {}
+      INSTALL-ptn 12
+   )
+   "mark/10": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1729-1749 origin {}
+      INSTALL-ptn 10
+   )
+   "unmark/14": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1768-1789 origin {}
+      INSTALL-ptn 14
+   )
+   "isMarked/8": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1820-1991 origin {}
+      INSTALL-ptn 8
+   )
+   "makeChildren/9": (
+      PUSH-ptn_"object"
+      ADD-mainpart `2027-2194 origin {}
+      INSTALL-ptn 9
+   )
+|
+   INNER 0
+)
+MainPart("`904-935"
+|
+)
+MainPart("`969-1130"
+   "on1/2": (virtual
+      PUSH-ptn {<-3,"object/0"}
+      END_OF_GATHERVIRT_CODE
+      GATHER-virt "on1/2" in "`969-1130"
+      INSTALL-ptn 2
+   )
+   "on2/3": (virtual
+      PUSH-ptn {<-3,"object/0"}
+      END_OF_GATHERVIRT_CODE
+      GATHER-virt "on2/3" in "`969-1130"
+      INSTALL-ptn 3
+   )
+   "on3/4": (virtual
+      PUSH-ptn {<-3,"object/0"}
+      END_OF_GATHERVIRT_CODE
+      GATHER-virt "on3/4" in "`969-1130"
+      INSTALL-ptn 4
+   )
+   "n/1": (
+      PUSH-ptn {<-2,"node/6"}
+      INSTALL-qua-obj 1
+   )
+   "i/0": (
+      PUSH-ptn {<-3,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   generalIf(integer
+      PUSH-integer {"i/0"}
+      RESETFRAME
+   |case
+      PUSHI-integer 1
+      RESETFRAME
+   |then
+      PUSH-ptn {"on1/2"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |case
+      PUSHI-integer 2
+      RESETFRAME
+   |then
+      PUSH-ptn {"on2/3"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |case
+      PUSHI-integer 3
+      RESETFRAME
+   |then
+      PUSH-ptn {"on3/4"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`1177-1324"
+   "on1/0": (virtual "on1/2" in "`969-1130"
+      PUSH-ptn_"object"
+      ADD-mainpart `1185-1204 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`969-1130,"on1/2"}
+      INSTALL-ptn 0
+   )
+   "on2/1": (virtual "on2/3" in "`969-1130"
+      PUSH-ptn_"object"
+      ADD-mainpart `1225-1244 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`969-1130,"on2/3"}
+      INSTALL-ptn 1
+   )
+   "on3/2": (virtual "on3/4" in "`969-1130"
+      PUSH-ptn_"object"
+      ADD-mainpart `1265-1284 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`969-1130,"on3/4"}
+      INSTALL-ptn 2
+   )
+|
+)
+MainPart("`1185-1204"
+|
+   CALL {<-1,^`969-1130,'n/1'}
+   PUSH-obj {<-1,^`969-1130,'n/1'}
+   POP-objref {<-2,'child1/1'}
+   RESETFRAME
+)
+MainPart("`1225-1244"
+|
+   CALL {<-1,^`969-1130,'n/1'}
+   PUSH-obj {<-1,^`969-1130,'n/1'}
+   POP-objref {<-2,'child2/2'}
+   RESETFRAME
+)
+MainPart("`1265-1284"
+|
+   CALL {<-1,^`969-1130,'n/1'}
+   PUSH-obj {<-1,^`969-1130,'n/1'}
+   POP-objref {<-2,'child3/3'}
+   RESETFRAME
+)
+MainPart("`1367-1504"
+   "on1/0": (virtual "on1/2" in "`969-1130"
+      PUSH-ptn_"object"
+      ADD-mainpart `1375-1394 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`969-1130,"on1/2"}
+      INSTALL-ptn 0
+   )
+   "on2/1": (virtual "on2/3" in "`969-1130"
+      PUSH-ptn_"object"
+      ADD-mainpart `1415-1434 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`969-1130,"on2/3"}
+      INSTALL-ptn 1
+   )
+   "on3/2": (virtual "on3/4" in "`969-1130"
+      PUSH-ptn_"object"
+      ADD-mainpart `1455-1474 origin {}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`969-1130,"on3/4"}
+      INSTALL-ptn 2
+   )
+|
+)
+MainPart("`1375-1394"
+|
+   CALL {<-2,'child1/1'}
+   PUSH-obj {<-2,'child1/1'}
+   POP-objref {<-1,^`969-1130,'n/1'}
+   RESETFRAME
+)
+MainPart("`1415-1434"
+|
+   CALL {<-2,'child2/2'}
+   PUSH-obj {<-2,'child2/2'}
+   POP-objref {<-1,^`969-1130,'n/1'}
+   RESETFRAME
+)
+MainPart("`1455-1474"
+|
+   CALL {<-2,'child3/3'}
+   PUSH-obj {<-2,'child3/3'}
+   POP-objref {<-1,^`969-1130,'n/1'}
+   RESETFRAME
+)
+MainPart("`1522-1535"
+|
+)
+MainPart("`1565-1712"
+   "pr/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1572-1630 origin {}
+      INSTALL-ptn 0
+   )
+|
+   PUSH-ptn {"pr/0"}
+   NEW,_ptn->tmp 1
+   PUSH-objref {<-1,'child1/1'}
+   POP-objref {tmp(1),'n/0'}
+   CALL {tmp(1)}
+   RESETFRAME
+   PUSH-ptn {"pr/0"}
+   NEW,_ptn->tmp 1
+   PUSH-objref {<-1,'child2/2'}
+   POP-objref {tmp(1),'n/0'}
+   CALL {tmp(1)}
+   RESETFRAME
+   PUSH-ptn {"pr/0"}
+   NEW,_ptn->tmp 1
+   PUSH-objref {<-1,'child3/3'}
+   POP-objref {tmp(1),'n/0'}
+   CALL {tmp(1)}
+   RESETFRAME
+)
+MainPart("`1572-1630"
+   "n/0": (
+      PUSH-ptn {<-3,"node/6"}
+      INSTALL-qua-obj 0
+   )
+|
+   simpleIf(
+      PUSH-objref {'n/0'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-ptn {'n/0',^`827-2262,"printMe/12"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`1729-1749"
+|
+   PUSHI-boolean true
+   POP-boolean {<-1,"myMark/11"}
+   RESETFRAME
+)
+MainPart("`1768-1789"
+|
+   PUSHI-boolean false
+   POP-boolean {<-1,"myMark/11"}
+   RESETFRAME
+)
+MainPart("`1820-1991"
+   "n/0": (
+      PUSH-ptn {<-2,"node/6"}
+      INSTALL-qua-obj 0
+   )
+   "result/1": (
+      PUSH-ptn {<-3,"boolean/1"}
+      NEW,_ptn->obj
+      INSTALL-obj 1
+   )
+|
+   PUSHI-boolean true
+   POP-boolean {"result/1"}
+   RESETFRAME
+   simpleIf(
+      CALL {'n/0'}
+      PUSH-obj {'n/0'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-boolean {'n/0',^`827-2262,"myMark/11"}
+      POP-boolean {"result/1"}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`2027-2194"
+|
+   PUSH-ptn {<-2,"node/6"}
+   NEW,_ptn->tmp 1
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`827-2262,"init/7"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "a"
+   POP-string {tmp(2),^`827-2262,"id/6"}
+   PUSH-obj {tmp(2)}
+   POP-objref {<-1,'child1/1'}
+   RESETFRAME
+   PUSH-ptn {<-2,"node/6"}
+   NEW,_ptn->tmp 1
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`827-2262,"init/7"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "b"
+   POP-string {tmp(2),^`827-2262,"id/6"}
+   PUSH-obj {tmp(2)}
+   POP-objref {<-1,'child2/2'}
+   RESETFRAME
+   PUSH-ptn {<-2,"node/6"}
+   NEW,_ptn->tmp 1
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`827-2262,"init/7"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "c"
+   POP-string {tmp(2),^`827-2262,"id/6"}
+   PUSH-obj {tmp(2)}
+   POP-objref {<-1,'child3/3'}
+   RESETFRAME
+)
+MainPart("`2279-2416"
+   "n/0": (
+      PUSH-ptn {<-1,"node/6"}
+      INSTALL-qua-obj 0
+   )
+|
+   PUSH-ptn {'n/0',^`827-2262,"mark/10"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+   PUSH-ptn {'n/0',^`827-2262,"printMe/12"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   RESETFRAME
+   namedFor("i"
+      PUSHI-integer 3
+      RESETFRAME
+   |
+      simpleIf(
+         PUSH-ptn {<-1,'n/0',^`827-2262,"isMarked/8"}
+         NEW,_ptn->tmp 1
+         PUSH-ptn {<-1,'n/0',^`827-2262,"getChild/5"}
+         NEW,_ptn->tmp 2
+         PUSH-index {}
+         POP-integer {tmp(2),^`969-1130,"i/0"}
+         CALL {tmp(2)}
+         CALL {tmp(2),^`969-1130,'n/1'}
+         PUSH-obj {tmp(2),^`969-1130,'n/1'}
+         POP-objref {tmp(1),'n/0'}
+         CALL {tmp(1)}
+         PUSH-boolean {tmp(1),"result/1"}
+         RESETFRAME
+      |then
+         PUSH-ptn {<-1,'n/0',^`827-2262,"getChild/5"}
+         NEW,_ptn->tmp 1
+         PUSH-index {}
+         POP-integer {tmp(1),^`969-1130,"i/0"}
+         CALL {tmp(1)}
+         CALL {tmp(1),^`969-1130,'n/1'}
+         PUSH-ptn {<-2,"dfs/0"}
+         NEW,_ptn->tmp 2
+         PUSH-obj {tmp(1),^`969-1130,'n/1'}
+         POP-objref {tmp(2),'n/0'}
+         CALL {tmp(2)}
+         RESETFRAME
+      |else
+      )
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`2438-2826"
+   "nodeList/3": (
+      PUSH-ptn {<-1,"list/1"}
+      ADD-mainpart `2455-2473 origin {}
+      INSTALL-ptn 3
+   )
+   "depth/0": (
+      PUSH-ptn {<-2,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+   "listOld/2": (
+      PUSH-ptn {"nodeList/3"}
+      INSTALL-qua-obj 2
+   )
+   "listNew/1": (
+      PUSH-ptn {"nodeList/3"}
+      INSTALL-qua-obj 1
+   )
+|
+   PUSH-ptn {<-1,"node/6"}
+   NEW,_ptn->tmp 1
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`827-2262,"init/7"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "root "
+   POP-string {tmp(2),^`827-2262,"id/6"}
+   PUSH-obj {tmp(2)}
+   POP-objref {<-1,'root/7'}
+   PUSH-qual {'listOld/2'}
+   NEW,_ptn->tmp 4
+   PEEK-tmpref {'listOld/2'} 4
+   CALL {tmp(4)}
+   PUSH-obj {tmp(4)}
+   POP-obj,_PUSH-tmp 5
+   PUSH-ptn {tmp(5),^`43-809,"add/0"}
+   NEW,_ptn->tmp 6
+   PUSH-objref {<-1,'root/7'}
+   PUSH-qual {tmp(6),'c/0'}
+   NEW,_ptn->tmp 7
+   PEEK-tmpref {tmp(6),'c/0'} 7
+   CALL {tmp(7)}
+   PUSH-obj {tmp(7)}
+   POP-obj,_PUSH-tmp 8
+   POP-objref {tmp(8),^`675-724,'elm/0'}
+   CALL {tmp(6)}
+   RESETFRAME
+   namedFor("i"
+      PUSH-integer {<-1,"depth/0"}
+      RESETFRAME
+   |
+      PUSH-qual {<-1,'listNew/1'}
+      NEW,_ptn->tmp 1
+      PEEK-tmpref {<-1,'listNew/1'} 1
+      CALL {tmp(1)}
+      RESETFRAME
+      PUSH-ptn {<-1,'listOld/2',^`43-809,"scan/8"}
+      ADD-mainpart `2681-2723 origin {}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+      PUSH-ptn {<-1,'listOld/2',^`43-809,"makeEmpty/7"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+      CALL {<-1,'listNew/1'}
+      PUSH-obj {<-1,'listNew/1'}
+      POP-objref {<-1,'listOld/2'}
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`2455-2473"
+   "element/0": (virtual "element/3" in "`43-809"
+      PUSH-ptn {<-2,"node/6"}
+      MERGE-ptn
+      END_OF_GATHERVIRT_CODE
+      PUSH-ptn {^`43-809,"element/3"}
+      INSTALL-ptn 0
+   )
+|
+)
+MainPart("`2681-2723"
+|
+   PUSH-ptn {^`88-271,'current/1',^`827-2262,"makeChildren/9"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   PUSH-ptn {<-2,'listNew/1',^`43-809,"add3/1"}
+   NEW,_ptn->tmp 2
+   PUSH-ptn {<-2,'listNew/1',^`43-809,"add/0"}
+   NEW,_ptn->tmp 3
+   PUSH-ptn {<-2,'listNew/1',^`43-809,"add/0"}
+   NEW,_ptn->tmp 4
+   PUSH-ptn {<-2,'listNew/1',^`43-809,"add/0"}
+   NEW,_ptn->tmp 5
+   PUSH-objref {^`88-271,'current/1',^`827-2262,'child1/1'}
+   PUSH-qual {tmp(3),'c/0'}
+   NEW,_ptn->tmp 6
+   PEEK-tmpref {tmp(3),'c/0'} 6
+   CALL {tmp(6)}
+   PUSH-obj {tmp(6)}
+   POP-obj,_PUSH-tmp 7
+   POP-objref {tmp(7),^`675-724,'elm/0'}
+   CALL {tmp(3)}
+   PUSH-objref {^`88-271,'current/1',^`827-2262,'child2/2'}
+   PUSH-qual {tmp(4),'c/0'}
+   NEW,_ptn->tmp 8
+   PEEK-tmpref {tmp(4),'c/0'} 8
+   CALL {tmp(8)}
+   PUSH-obj {tmp(8)}
+   POP-obj,_PUSH-tmp 9
+   POP-objref {tmp(9),^`675-724,'elm/0'}
+   CALL {tmp(4)}
+   PUSH-objref {^`88-271,'current/1',^`827-2262,'child3/3'}
+   PUSH-qual {tmp(5),'c/0'}
+   NEW,_ptn->tmp 10
+   PEEK-tmpref {tmp(5),'c/0'} 10
+   CALL {tmp(10)}
+   PUSH-obj {tmp(10)}
+   POP-obj,_PUSH-tmp 11
+   POP-objref {tmp(11),^`675-724,'elm/0'}
+   CALL {tmp(5)}
+   RESETFRAME
+)

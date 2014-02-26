@@ -1,0 +1,101 @@
+-- betaenv:descriptor --
+(#
+   list:
+     (# element: node;
+        scan:
+          (# current: ^element; c: ^cell; listNew: ^list; 
+	  enter listNew[]
+          do head->c[];
+             (while c[]<>NONE do
+                    c.elm[]->current[]; 
+		    current.makeChildren->listNew.add3;		    
+	            c.next[]->c[]; 
+              while)
+          #);
+        add:
+          (# c: ^cell enter (&c).elm[]
+          do (if elements=0 then
+                 c->head[]->tail[]; 1->elements
+              else
+                 c->tail.next[]->tail[]; (elements+1)->elements
+             if)
+          #);
+        add3: (# enter (add,add,add) #);
+        makeEmpty: (# do 0->elements; tail[]->head[] #);
+        isEmpty: (# exit (elements=0) #);
+        cell: (# elm: ^element; next: ^cell exit this(cell)[] #);
+        head,tail: ^cell;
+        elements: @integer
+     exit this(list)[]
+     #);
+
+   node:
+     (# child1,child2,child3: ^node; id: @string; myMark: @boolean;
+        init: (# enter id exit this(node)[] #);
+        childMethod:
+          (# on1:< object; on2:< object; on3:< object;
+             n: ^node; i: @integer
+
+          #);
+        changeChildN: (# n: ^node; i: @integer;
+          enter (i, n[]) 
+	  do (if i //1 then n->child1[] //2 then n->child2[] //3 then n->child3[] if)
+          exit n
+          #);
+        getChild: (# n: ^node; i: @integer;
+          enter (i, n[]) 
+	  do (if i //1 then child1->n[] //2 then child2->n[] //3 then child3->n[] if)
+          exit n
+          #);
+        setId: (# enter id #);
+        printMe:
+          (# pr: (# n: ^node enter n[] do (if n[]<>NONE then n.printMe if)#)
+          do (*id->stdio;*) child1[]->pr; child2[]->pr; child3[]->pr
+          #);
+        mark: (# do true->myMark #);
+        unmark: (# do false->myMark #);
+        isMarked:
+          (# n: ^node; result: @boolean
+          enter getChild->n[]
+          do true->result;
+             (if n<>NONE then n.myMark->result if)
+          exit result
+          #);
+        makeChildren: 
+          (#
+          do 'a'->node.init->child1[];
+             'b'->node.init->child2[];
+             'c'->node.init->child3[]
+          exit (child1[],child2[],child3[])
+	  #)
+     do (*id->stdio;*)
+        INNER
+     exit this(node)[]
+     #);
+
+   dfs:
+     (# n: ^node enter n[]
+     do n.mark;
+        (* n.printMe; *)
+        (for i:3 repeat (if (i,n[])->n.isMarked then (i,n[])->n.getChild->dfs if)for)
+     #);
+
+   makeTree:
+     (# depth: @integer;
+        listOld,listNew: ^list
+     enter depth
+     do 'root '->node.init->root[]->(&listOld).add;
+        (for i:depth repeat
+             &listNew;
+             listNew[]->listOld.scan;
+             listOld.makeEmpty;
+             listNew->listOld[]
+        for)
+     exit root[]
+     #);
+
+   root,n1,n2,n3: ^node
+do
+   7->makeTree->root[];
+   (for i:10 repeat root->dfs; (*'\n'->stdio*) for)
+#)

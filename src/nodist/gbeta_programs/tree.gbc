@@ -1,0 +1,291 @@
+
+MainPart("`1500"
+   "changeSubTree1/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `146 origin {}
+      INSTALL-ptn 0
+   )
+   "node/5": (
+      PUSH-ptn_"object"
+      ADD-mainpart `1042 origin {}
+      INSTALL-ptn 5
+   )
+   "nd/4": (
+      PUSH-ptn {"node/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 4
+   )
+   "n1/1": (
+      PUSH-obj {"nd/4"}
+      POP-obj,_O-->P,_PUSH-ptn
+      INSTALL-qua-obj 1
+   )
+   "n2/2": (
+      PUSH-obj {"nd/4"}
+      POP-obj,_O-->P,_PUSH-ptn
+      INSTALL-qua-obj 2
+   )
+   "n3/3": (
+      PUSH-obj {"nd/4"}
+      POP-obj,_O-->P,_PUSH-ptn
+      INSTALL-qua-obj 3
+   )
+   "str/6": (
+      PUSH-ptn {<-1,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 6
+   )
+|
+   PUSH-ptn {"node/5"}
+   NEW,_ptn->tmp 1
+   CALL {tmp(1)}
+   PUSH-obj {tmp(1)}
+   POP-obj,_PUSH-tmp 2
+   PUSH-ptn {tmp(2),^`1042,"init/5"}
+   NEW,_ptn->tmp 3
+   PUSHI-string "root"
+   POP-string {tmp(2),^`1042,"id/4"}
+   CALL {tmp(3)}
+   PUSH-obj {tmp(2)}
+   POP-objref {'n1/1'}
+   RESETFRAME
+   namedFor("i"
+      PUSHI-integer 10000
+      RESETFRAME
+   |
+      PUSHI-string "b"
+      stdio/out
+      RESETFRAME
+      namedFor("i"
+         PUSHI-integer 3
+         RESETFRAME
+      |
+         PUSH-ptn {<-2,"node/5"}
+         NEW,_ptn->tmp 1
+         CALL {tmp(1)}
+         PUSH-obj {tmp(1)}
+         POP-obj,_PUSH-tmp 2
+         PUSH-ptn {tmp(2),^`1042,"init/5"}
+         NEW,_ptn->tmp 3
+         PUSHI-string "1"
+         POP-string {tmp(2),^`1042,"id/4"}
+         CALL {tmp(3)}
+         PUSH-ptn {<-2,'n1/1',^`1042,"changeChildN/0"}
+         NEW,_ptn->tmp 4
+         PUSH-index {}
+         POP-integer {tmp(4),"i/0"}
+         PUSH-obj {tmp(2)}
+         POP-objref {tmp(4),'tmpNode/1'}
+         CALL {tmp(4)}
+         RESETFRAME
+         PUSH-ptn {<-2,"node/5"}
+         NEW,_ptn->tmp 1
+         CALL {tmp(1)}
+         PUSH-obj {tmp(1)}
+         POP-obj,_PUSH-tmp 2
+         PUSH-ptn {tmp(2),^`1042,"init/5"}
+         NEW,_ptn->tmp 3
+         PUSHI-string "2"
+         POP-string {tmp(2),^`1042,"id/4"}
+         CALL {tmp(3)}
+         PUSH-obj {tmp(2)}
+         POP-objref {<-2,'n3/3'}
+         PUSH-ptn {<-2,'n1/1',^`1042,"changeChildN/0"}
+         NEW,_ptn->tmp 4
+         PUSH-index {}
+         POP-integer {tmp(4),"i/0"}
+         PUSH-objref {<-2,'n3/3'}
+         POP-objref {tmp(4),'tmpNode/1'}
+         CALL {tmp(4)}
+         RESETFRAME
+         PUSH-ptn {<-2,"node/5"}
+         NEW,_ptn->tmp 1
+         CALL {tmp(1)}
+         PUSH-obj {tmp(1)}
+         POP-obj,_PUSH-tmp 2
+         PUSH-ptn {tmp(2),^`1042,"init/5"}
+         NEW,_ptn->tmp 3
+         PUSHI-string "3"
+         POP-string {tmp(2),^`1042,"id/4"}
+         CALL {tmp(3)}
+         PUSH-ptn {<-2,'n1/1',^`1042,"changeChildN/0"}
+         NEW,_ptn->tmp 4
+         PUSH-index {}
+         POP-integer {tmp(4),"i/0"}
+         PUSH-obj {tmp(2)}
+         POP-objref {tmp(4),'tmpNode/1'}
+         CALL {tmp(4)}
+         RESETFRAME
+      )
+      RESETFRAME
+      PUSHI-string "a"
+      stdio/out
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`146"
+   "oldNodePtr/1": (
+      PUSH-ptn {<-1,"node/5"}
+      INSTALL-qua-obj 1
+   )
+   "newNodePtr/0": (
+      PUSH-ptn {<-1,"node/5"}
+      INSTALL-qua-obj 0
+   )
+|
+   PUSH-objref {'newNodePtr/0'}
+   POP-objref {'oldNodePtr/1',^`1042,'child1/1'}
+   RESETFRAME
+)
+MainPart("`1042"
+   "init/5": (
+      PUSH-ptn_"object"
+      ADD-mainpart `230 origin {}
+      INSTALL-ptn 5
+   )
+   "child1/1": (
+      PUSH-ptn {<-1,"node/5"}
+      INSTALL-qua-obj 1
+   )
+   "child2/2": (
+      PUSH-ptn {<-1,"node/5"}
+      INSTALL-qua-obj 2
+   )
+   "child3/3": (
+      PUSH-ptn {<-1,"node/5"}
+      INSTALL-qua-obj 3
+   )
+   "id/4": (
+      PUSH-ptn {<-2,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 4
+   )
+   "changeChildN/0": (
+      PUSH-ptn_"object"
+      ADD-mainpart `632 origin {}
+      INSTALL-ptn 0
+   )
+   "setId/7": (
+      PUSH-ptn_"object"
+      ADD-mainpart `736 origin {}
+      INSTALL-ptn 7
+   )
+   "printMe/6": (
+      PUSH-ptn_"object"
+      ADD-mainpart `962 origin {}
+      INSTALL-ptn 6
+   )
+|
+   PUSH-string {"id/4"}
+   stdio/out
+   RESETFRAME
+   INNER 0
+)
+MainPart("`230"
+|
+)
+MainPart("`632"
+   "tmpNode/1": (
+      PUSH-ptn {<-2,"node/5"}
+      INSTALL-qua-obj 1
+   )
+   "i/0": (
+      PUSH-ptn {<-3,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 1
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {'tmpNode/1'}
+      POP-objref {<-1,'child1/1'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 2
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {'tmpNode/1'}
+      POP-objref {<-1,'child2/2'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-integer {"i/0"}
+      PUSHI-integer 3
+      RELOP(_=_)_integer
+      RESETFRAME
+   |then
+      PUSH-objref {'tmpNode/1'}
+      POP-objref {<-1,'child3/3'}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)
+MainPart("`736"
+   "tmpId/0": (
+      PUSH-ptn {<-3,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   PUSH-string {"tmpId/0"}
+   POP-string {<-1,"id/4"}
+   RESETFRAME
+)
+MainPart("`962"
+|
+   PUSH-string {<-1,"id/4"}
+   stdio/out
+   RESETFRAME
+   simpleIf(
+      PUSH-objref {<-1,'child1/1'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-ptn {<-1,'child1/1',^`1042,"printMe/6"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-objref {<-1,'child2/2'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-ptn {<-1,'child2/2',^`1042,"printMe/6"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+   simpleIf(
+      PUSH-objref {<-1,'child3/3'}
+      PUSHI_NONE(obj)
+      RELOP(_<>_)_object reference
+      RESETFRAME
+   |then
+      PUSH-ptn {<-1,'child3/3',^`1042,"printMe/6"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   |else
+   )
+   RESETFRAME
+)

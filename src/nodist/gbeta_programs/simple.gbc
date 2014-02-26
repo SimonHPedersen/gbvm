@@ -1,0 +1,32 @@
+
+MainPart("`simple.gb:27-108"
+   "t/0": (
+      PUSH-ptn {<-1,"integer/3"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+   "x/1": (
+      PUSH-ptn_"object"
+      ADD-mainpart `simple.gb:48-63 origin {}
+      INSTALL-ptn 1
+   )
+|
+   simpleFor(
+      PUSHI-integer 1000
+      RESETFRAME
+   |
+      PUSH-ptn {"x/1"}
+      NEW,_ptn->tmp 1
+      CALL {tmp(1)}
+      RESETFRAME
+   )
+   RESETFRAME
+)
+MainPart("`simple.gb:48-63"
+|
+   PUSHI-integer 1
+   PUSHI-integer 1
+   ADDOP(_+_)_integer
+   POP-integer {<-1,"t/0"}
+   RESETFRAME
+)

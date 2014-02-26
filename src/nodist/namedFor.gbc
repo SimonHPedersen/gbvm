@@ -1,0 +1,12 @@
+MainPart("`54"
+|
+   namedFor("i"
+      PUSHI-integer 10
+      RESETFRAME
+   |
+      PUSHI-string "***** Hello World *****"
+      stdio/out
+      RESETFRAME
+   )
+   RESETFRAME
+)

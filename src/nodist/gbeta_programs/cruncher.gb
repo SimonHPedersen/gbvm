@@ -1,0 +1,124 @@
+-- betaenv:descriptor --
+(#
+   node: (# 
+            init: (# enter id exit this(node)[] #);
+            child1: ^node;
+            child2: ^node;
+            child3: ^node;
+            id: @string;
+	    myMark: @boolean;        
+           
+            changeChildN: (#   tmpNode: ^node;
+                             i: @integer; 	
+                          enter (i, tmpNode[])
+                          do 
+                             (if i=1 then tmpNode[]->child1[] if); 
+                             (if i=2 then tmpNode[]->child2[] if); 
+                             (if i=3 then tmpNode[]->child3[] if); 
+                          exit tmpNode
+                          #);
+
+            getChild: (#   tmpNode: ^node;
+                             i: @integer; 	
+                          enter (i)
+                          do
+                             (if i=1 then child1[]->tmpNode[] if); 
+                             (if i=2 then child2[]->tmpNode[] if); 
+                             (if i=3 then child3[]->tmpNode[] if); 
+                          exit tmpNode
+                          #);
+            setId: (# tmpId: @string;
+                   enter tmpId
+		            do
+                      tmpId->id;
+                   #);
+            printMe: (#
+                     do	id->stdio;
+                        (if child1[] <> NONE then child1.printMe; if);
+                        (if child2[] <> NONE then child2.printMe; if);
+                        (if child3[] <> NONE then child3.printMe; if);
+                     #);
+
+	    mark: (#
+		do
+		true -> myMark;
+		#);
+
+	    unmark: (#
+		do
+		false -> myMark;
+	    #);
+
+	    isMarked: (#
+		i: @integer;
+		tmpNode: ^node;
+		returnVal: @boolean;
+		enter i
+		do
+		  true->returnVal;
+		  i->getChild->tmpNode[];
+		  (if tmpNode <> NONE then tmpNode.myMark->returnVal; if);
+		exit returnVal
+	    #);
+           
+         do (*id->stdio;*) INNER
+
+         exit this(node)[]
+         #);
+
+	dfs : (#
+		v : ^node;
+		tmpBool : @boolean;
+		enter v[]
+		do
+		  v.mark;
+		  (for i:3 repeat
+		     i->v.isMarked->tmpBool;
+		     (if tmpBool then
+			i->v.getChild->dfs;
+		      if);  
+		  for);
+	#);
+   nd :@node;
+   root, n1, n2, n3 : ^nd;
+   str: @string;
+
+(* tree to be constructed:
+	root
+     /	|  \
+    1   2   3
+   /|\    / | \
+  4 5 6  7  8  9	
+          / | \  
+        10  11 12
+*)
+do 
+   'root'->node.init->root[];
+   (1,'1'->node.init)->root.changeChildN->n1[];
+   (2,'2'->node.init)->root.changeChildN->n2[];
+   (3,'3'->node.init)->root.changeChildN->n3[];
+   (1,'4'->node.init)->n1.changeChildN;
+   (2,'5'->node.init)->n1.changeChildN;
+   (3,'6'->node.init)->n1.changeChildN;
+   (1,'7'->node.init)->n3.changeChildN;
+   (2,'8'->node.init)->n3.changeChildN->n2[];
+   (3,'9'->node.init)->n3.changeChildN;
+   (1,'10'->node.init)->n2.changeChildN;
+   (2,'11'->node.init)->n2.changeChildN;
+   (3,'12'->node.init)->n2.changeChildN;
+   (for i:10000 repeat
+     root->dfs;
+   for);
+
+(* change tree
+   (for i:10000 repeat  
+    'b'->stdio;
+    (for i:3 repeat   
+   		(i,'1'->node.init)->n1.changeChildN;
+   		(i,'2'->node.init->n3[])->n1.changeChildN;
+   		(i,'3'->node.init)->n1.changeChildN;
+    for);
+    'a'->stdio;
+   for);
+*)
+#)

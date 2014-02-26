@@ -1,0 +1,149 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Relop.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Relop.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Relop.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#90>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>Instr_RelOpLT_t</A>
+<LI><A HREF=#12>Instr_RelOpLT_t</A>
+<LI><A HREF=#17>printOn</A>
+<LI><A HREF=#23>Instr_RelOpLTEQ_t</A>
+<LI><A HREF=#29>printOn</A>
+<LI><A HREF=#36>Instr_RelOpEQ_t</A>
+<LI><A HREF=#42>Instr_RelOpEQ_t</A>
+<LI><A HREF=#48>printOn</A>
+<LI><A HREF=#54>Instr_RelOpNEQ_t</A>
+<LI><A HREF=#60>printOn</A>
+<LI><A HREF=#67>Instr_RelOpGT_t</A>
+<LI><A HREF=#72>Instr_RelOpGT_t</A>
+<LI><A HREF=#78>printOn</A>
+<LI><A HREF=#84>Instr_RelOpGTEQ_t</A>
+<LI><A HREF=#90>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Instr_Relop.cc,v 1.6 2001/05/10 12:36:55 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// ----- Relop less than -----</FONT></I>
+
+<A NAME=7>Instr_RelOpLT_t::<A HREF=../R/83.html>Instr_RelOpLT_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#12>[&gt;]</A>[^]<A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPLT_ID;
+<A NAME=9>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=12>Instr_RelOpLT_t::<A HREF=../R/83.html>Instr_RelOpLT_t</A>(<B>int</B> _type)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#7>[&lt;]</A><A HREF=#17>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPLT_ID;
+  type = _type;
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=17><B>void</B> Instr_RelOpLT_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#12>[&lt;]</A><A HREF=#23>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_RelOpLT_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Relop less than equal -----</FONT></I>
+
+<A NAME=23>Instr_RelOpLTEQ_t::<A HREF=../S/44.html#978>Instr_RelOpLTEQ_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#17>[&lt;]</A><A HREF=#29>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPLTEQ_ID;
+<A NAME=25>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=29><B>void</B> Instr_RelOpLTEQ_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#23>[&lt;]</A><A HREF=#36>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_RelOpLTEQ_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ----- Relop equal -----</FONT></I>
+
+<A NAME=36>Instr_RelOpEQ_t::<A HREF=../R/79.html>Instr_RelOpEQ_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#29>[&lt;]</A><A HREF=#42>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPEQ_ID;
+<A NAME=38>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=42>Instr_RelOpEQ_t::<A HREF=../R/79.html>Instr_RelOpEQ_t</A>(<B>int</B> _type)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#36>[&lt;]</A><A HREF=#48>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPEQ_ID;
+  type = _type;
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=48><B>void</B> Instr_RelOpEQ_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#42>[&lt;]</A><A HREF=#54>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_RelOpEQ_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Relop not equal -----</FONT></I>
+
+<A NAME=54>Instr_RelOpNEQ_t::<A HREF=../S/44.html#986>Instr_RelOpNEQ_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#48>[&lt;]</A><A HREF=#60>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPNEQ_ID;
+<A NAME=56>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=60><B>void</B> Instr_RelOpNEQ_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#54>[&lt;]</A><A HREF=#67>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_RelOpNEQ_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ----- Relop greater than -----</FONT></I>
+
+<A NAME=67>Instr_RelOpGT_t::<A HREF=../S/44.html#990>Instr_RelOpGT_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#60>[&lt;]</A><A HREF=#72>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPGT_ID;
+<A NAME=69>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+<A NAME=72>Instr_RelOpGT_t::<A HREF=../S/44.html#990>Instr_RelOpGT_t</A>(<B>int</B> _type)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#67>[&lt;]</A><A HREF=#78>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPGT_ID;
+  type = _type;
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=78><B>void</B> Instr_RelOpGT_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#72>[&lt;]</A><A HREF=#84>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_RelOpGT_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Relop greater than equal -----</FONT></I>
+
+<A NAME=84>Instr_RelOpGTEQ_t::<A HREF=../S/44.html#994>Instr_RelOpGTEQ_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#78>[&lt;]</A><A HREF=#90>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = RELOPGTEQ_ID;
+<A NAME=86>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=90><B>void</B> Instr_RelOpGTEQ_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#84>[&lt;]</A>[&gt;]<A HREF=#7>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_RelOpGTEQ_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#90>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

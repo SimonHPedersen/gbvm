@@ -1,0 +1,257 @@
+<HTML>
+<HEAD>
+<TITLE>src/nodist/gbeta_programs/cruncher3.java</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/nodist/gbeta_programs/cruncher3.java'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/nodist/gbeta_programs/cruncher3.java</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#6>[^]</A><A HREF=#180>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#6>List</A>
+<LI><A HREF=#9>Cell</A>
+<LI><A HREF=#24>scan</A>
+<LI><A HREF=#34>add</A>
+<LI><A HREF=#48>add3</A>
+<LI><A HREF=#54>makeEmpty</A>
+<LI><A HREF=#59>isEmpty</A>
+<LI><A HREF=#68>Node</A>
+<LI><A HREF=#77>changeChildN</A>
+<LI><A HREF=#88>getChild</A>
+<LI><A HREF=#99>setId</A>
+<LI><A HREF=#103>printMe</A>
+<LI><A HREF=#118>mark</A>
+<LI><A HREF=#122>unMark</A>
+<LI><A HREF=#126>isMarked</A>
+<LI><A HREF=#136>makeChildren</A>
+<LI><A HREF=#144>Main</A>
+<LI><A HREF=#148>dfs</A>
+<LI><A HREF=#158>makeTree</A>
+<LI><A HREF=#173>start</A>
+<LI><A HREF=#180>main</A>
+</OL>
+<HR>
+<PRE>
+
+<I><FONT COLOR=green>/* List of Cells </FONT></I>
+<I><FONT COLOR=green> * head: front cell</FONT></I>
+<I><FONT COLOR=green> * tail: back cell</FONT></I>
+<I><FONT COLOR=green> */</FONT></I> 
+<A NAME=6><B>class</B> <A HREF=../R/91.html>List</A><FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#9>[&gt;]</A>[^]<A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+    <I><FONT COLOR=green>//inner classes</FONT></I>
+<A NAME=9>    <B>class</B> <A HREF=../S/42.html#35>Cell</A> <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#6>[&lt;]</A><A HREF=#24>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        <B>public</B> Node elm;
+        <B>public</B> Cell next;
+
+        <B>public</B> Cell()<FONT COLOR=blue>{</FONT>
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+
+    Cell head = <B>null</B>;
+    Cell tail = <B>null</B>;
+    <B>int</B> elements = 0;
+
+    Cell c = <B>null</B>;
+    Node current = <B>null</B>;
+
+<A NAME=24>    <B>public</B> <B>void</B> <A HREF=../S/42.html#166>scan</A>(List listNew)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#9>[&lt;]</A><A HREF=#34>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        c = head;
+            <B>while</B>(c != <B>null</B>)<FONT COLOR=blue>{</FONT>
+                current = c.elm;
+<A NAME=28>                current.<A HREF=../S/42.html#136>makeChildren</A>();
+<A NAME=29>                listNew.<A HREF=../S/42.html#48>add3</A>(current.child1, current.child2, current.child3);
+                c = c.next;
+            <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+
+<A NAME=34>    <B>public</B> <B>void</B> <A HREF=../R/117.html>add</A>(Node elm)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#24>[&lt;]</A><A HREF=#48>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=35>        Cell c = <B>new</B> <A HREF=../S/42.html#9>Cell</A>();
+        c.elm = elm;
+        <B>if</B>(elements == 0)<FONT COLOR=blue>{</FONT>
+            head = c;
+            tail = c;
+            elements = 1;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+            tail.next = c;
+            tail = tail.next;
+            elements++;
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    
+<A NAME=48>    <B>public</B> <B>void</B> <A HREF=../S/42.html#29>add3</A>(Node elm1, Node elm2, Node elm3)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#34>[&lt;]</A><A HREF=#54>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=49>        <A HREF=../S/42.html#34>add</A>(elm1);
+<A NAME=50>        <A HREF=../S/42.html#34>add</A>(elm2);
+<A NAME=51>        <A HREF=../S/42.html#34>add</A>(elm3);
+    <FONT COLOR=blue>}</FONT>
+    
+<A NAME=54>    <B>public</B> <B>void</B> <A HREF=../S/42.html#167>makeEmpty</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#48>[&lt;]</A><A HREF=#59>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        elements = 0;
+        tail = head;
+    <FONT COLOR=blue>}</FONT>
+    
+<A NAME=59>    <B>public</B> <B>boolean</B> isEmpty()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#54>[&lt;]</A><A HREF=#68>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        <B>if</B>(elements==0)<FONT COLOR=blue>{</FONT>
+            <B>return</B> <B>true</B>;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+            <B>return</B> <B>false</B>;
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=68><B>class</B> <A HREF=../R/97.html>Node</A><FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#59>[&lt;]</A><A HREF=#77>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+    Node child1,child2,child3;
+    String id;
+    <B>boolean</B> myMark;
+    
+    <B>public</B> Node(String str)<FONT COLOR=blue>{</FONT>
+        id = str;
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=77>    <B>public</B> Node changeChildN(<B>int</B> i, Node n)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#68>[&lt;]</A><A HREF=#88>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        <B>if</B> (i == 1)<FONT COLOR=blue>{</FONT>
+            child1 = n;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(i == 2) <FONT COLOR=blue>{</FONT>
+            child2 = n;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(i == 3) <FONT COLOR=blue>{</FONT>
+            child3 = n;
+        <FONT COLOR=blue>}</FONT>
+        <B>return</B> n;
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=88>    <B>public</B> Node <A HREF=../R/168.html>getChild</A>(<B>int</B> i)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#77>[&lt;]</A><A HREF=#99>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        <B>if</B> (i == 1)<FONT COLOR=blue>{</FONT>
+            <B>return</B> child1;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(i == 2) <FONT COLOR=blue>{</FONT>
+            <B>return</B> child2;
+        <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(i == 3) <FONT COLOR=blue>{</FONT>
+            <B>return</B> child3;
+        <FONT COLOR=blue>}</FONT>
+        <B>return</B> <B>null</B>;
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=99>    <B>public</B> <B>void</B> setId(String _id)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#88>[&lt;]</A><A HREF=#103>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        id = _id;
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=103>    <B>public</B> <B>void</B> <A HREF=../R/274.html>printMe</A>(Node n)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#99>[&lt;]</A><A HREF=#118>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        <B>if</B>(n != <B>null</B>)<FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//System.out.println(id);</FONT></I>
+            <B>if</B>(child1 != <B>null</B>)<FONT COLOR=blue>{</FONT>
+<A NAME=107>                child1.<A HREF=../S/42.html#103>printMe</A>(child1);
+            <FONT COLOR=blue>}</FONT>
+            <B>if</B>(child2 != <B>null</B>)<FONT COLOR=blue>{</FONT>
+<A NAME=110>                child2.<A HREF=../S/42.html#103>printMe</A>(child2);
+            <FONT COLOR=blue>}</FONT>
+            <B>if</B>(child3 != <B>null</B>)<FONT COLOR=blue>{</FONT>
+<A NAME=113>                child3.<A HREF=../S/42.html#103>printMe</A>(child3);
+            <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=118>    <B>public</B> <B>void</B> <A HREF=../R/242.html>mark</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#103>[&lt;]</A><A HREF=#122>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        myMark = <B>true</B>;
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=122>    <B>public</B> <B>void</B> unMark()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#118>[&lt;]</A><A HREF=#126>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        myMark = <B>false</B>;
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=126>    <B>public</B> <B>boolean</B> <A HREF=../S/42.html#152>isMarked</A>(<B>int</B> i)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#122>[&lt;]</A><A HREF=#136>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=127>        Node n = <A HREF=../S/42.html#88>getChild</A>(i);
+        <B>boolean</B> result;
+        result = <B>true</B>;
+        <B>if</B>(n != <B>null</B>)<FONT COLOR=blue>{</FONT>
+            result = n.myMark;
+        <FONT COLOR=blue>}</FONT> 
+        <B>return</B> result;
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=136>    <B>public</B> Node <A HREF=../S/42.html#28>makeChildren</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#126>[&lt;]</A><A HREF=#144>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=137>        child1 = <B>new</B> <A HREF=../S/42.html#68>Node</A>("a");
+<A NAME=138>        child2 = <B>new</B> <A HREF=../S/42.html#68>Node</A>("b");
+<A NAME=139>        child3 = <B>new</B> <A HREF=../S/42.html#68>Node</A>("c");
+        <B>return</B> <B>this</B>;
+    <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=144><B>class</B> <A HREF=../S/42.html#181>Main</A><FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#136>[&lt;]</A><A HREF=#148>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+    Node root, n1, n2, n3;
+
+<A NAME=148>    <B>public</B> <B>void</B> <A HREF=../R/144.html>dfs</A>(Node n)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#144>[&lt;]</A><A HREF=#158>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=149>        n.<A HREF=../D/275.html>mark</A>();
+        <I><FONT COLOR=green>//n.printMe(n);</FONT></I>
+        <B>for</B>(<B>int</B> i = 1; i &lt; 4; i++)<FONT COLOR=blue>{</FONT>
+<A NAME=152>            <B>if</B>(n.<A HREF=../S/42.html#126>isMarked</A>(i))<FONT COLOR=blue>{</FONT>
+<A NAME=153>                <A HREF=../S/42.html#148>dfs</A>(n.<A HREF=../S/42.html#88>getChild</A>(i));
+            <FONT COLOR=blue>}</FONT>
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    
+<A NAME=158>    <B>public</B> Node <A HREF=../S/42.html#174>makeTree</A>(<B>int</B> depth)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#148>[&lt;]</A><A HREF=#173>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+        <I><FONT COLOR=green>//List nodeList = new List();</FONT></I>
+<A NAME=160>        List listOld = <B>new</B> <A HREF=../S/42.html#6>List</A>();
+        List listNew;
+<A NAME=162>        Node root = <B>new</B> <A HREF=../S/42.html#68>Node</A>("root ");
+<A NAME=163>        listOld.<A HREF=../S/42.html#34>add</A>(root);
+        <B>for</B>(<B>int</B> i = 1; i &lt; depth ; i++)<FONT COLOR=blue>{</FONT>
+<A NAME=165>            listNew = <B>new</B> <A HREF=../S/42.html#6>List</A>();
+<A NAME=166>            listOld.<A HREF=../S/42.html#24>scan</A>(listNew);
+<A NAME=167>            listOld.<A HREF=../S/42.html#54>makeEmpty</A>();
+            listOld = listNew;
+        <FONT COLOR=blue>}</FONT>
+        <B>return</B> root;   
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=173>    <B>public</B> <B>void</B> <A HREF=../S/42.html#182>start</A>()<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#158>[&lt;]</A><A HREF=#180>[&gt;]</A><A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=174>        root = <A HREF=../S/42.html#158>makeTree</A>(7);
+        <B>for</B>(<B>int</B> i = 1; i&lt;11; i++)<FONT COLOR=blue>{</FONT>
+<A NAME=176>            <A HREF=../S/42.html#148>dfs</A>(root);
+        <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=180>    <B>public</B> <B>static</B> <B>void</B> main(String args[])<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#173>[&lt;]</A>[&gt;]<A HREF=#6>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=181>        Main m = <B>new</B> <A HREF=../S/42.html#144>Main</A>();
+<A NAME=182>        m.<A HREF=../S/42.html#173>start</A>();
+    <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#6>[^]</A><A HREF=#180>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

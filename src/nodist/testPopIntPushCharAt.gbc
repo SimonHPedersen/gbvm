@@ -1,0 +1,12 @@
+MainPart("`42424242"
+   "mystring/0": (
+      PUSH-ptn {<-1,"string/5"}
+      NEW,_ptn->obj
+      INSTALL-obj 0
+   )
+|
+   PUSHI-string "abcde"
+   POP-string {"mystring/0"}
+   PUSHI-integer 3
+   POP-int,_PUSH-char-at-inx {"mystring/0"}
+)

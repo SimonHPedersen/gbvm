@@ -1,0 +1,48 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Stacks.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Stacks.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Stacks.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#9>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#9>getStackObjDesc</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Stacks.cc,v 1.7 2001/05/10 12:37:00 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Thread.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "Stacks.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+
+<A NAME=9>ObjectDescriptor_t *<A HREF=../R/214.html>getStackObjDesc</A>(<B>unsigned</B> <B>int</B> size, <B>unsigned</B> <B>int</B> maskValue)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=10>  ObjectDescriptor_t *objDesc = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(size, maskValue);
+  <B>return</B> objDesc;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//IMPLEMENTATION OF TEMPLATE CLASSES (STACKS) GOES IN HEADER FILE</FONT></I>
+
+
+
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#9>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

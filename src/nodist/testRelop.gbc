@@ -1,0 +1,85 @@
+MainPart("'250"
+|
+   PUSHI-char `A'
+   PUSHI-char `ÿ'
+   RELOP(_<_)_char
+   PUSHI-char `2'
+   PUSHI-char `2'
+   RELOP(_<=_)_char
+   PUSHI-char `2'
+   PUSHI-char `2'
+   RELOP(_=_)_char
+   PUSHI-char `2'
+   PUSHI-char `3'
+   RELOP(_<>_)_char
+   PUSHI-char `2'
+   PUSHI-char `3'
+   RELOP(_>_)_char
+   PUSHI-char `2'
+   PUSHI-char `2'
+   RELOP(_>=_)_char
+   PUSHI-boolean true
+   PUSHI-boolean false
+   RELOP(_<_)_boolean
+   PUSHI-boolean true
+   PUSHI-boolean true
+   RELOP(_<=_)_boolean
+   PUSHI-boolean true
+   PUSHI-boolean true
+   RELOP(_=_)_boolean
+   PUSHI-boolean true
+   PUSHI-boolean false
+   RELOP(_<>_)_boolean
+   PUSHI-boolean true
+   PUSHI-boolean false
+   RELOP(_>_)_boolean
+   PUSHI-boolean true
+   PUSHI-boolean true
+   RELOP(_>=_)_boolean
+   PUSHI-integer 2
+   PUSHI-integer 3
+   RELOP(_<_)_integer
+   PUSHI-integer 2
+   PUSHI-integer 2
+   RELOP(_<=_)_integer
+   PUSHI-integer 2
+   PUSHI-integer 3
+   RELOP(_<>_)_integer
+   PUSHI-integer 2
+   PUSHI-integer 3
+   RELOP(_>_)_integer
+   PUSHI-integer 2
+   PUSHI-integer 2
+   RELOP(_>=_)_integer
+   PUSHI-real 2.5
+   PUSHI-real 3.5
+   RELOP(_<_)_real
+   PUSHI-real 2.5
+   PUSHI-real 2.5
+   RELOP(_<=_)_real
+   PUSHI-real 2.5
+   PUSHI-real 3.5
+   RELOP(_<>_)_real
+   PUSHI-real 2.5
+   PUSHI-real 3.5
+   RELOP(_>_)_real
+   PUSHI-real 2.5
+   PUSHI-real 2.5
+   RELOP(_>=_)_real
+   PUSH-ptn_"object"
+   PUSH-ptn_"object"
+   RELOP(_<=_)_pattern reference
+   PUSH-ptn_"object"
+   PUSH-ptn_"object"
+   RELOP(_=_)_pattern reference
+   PUSH-ptn_"object"
+   PUSH-ptn_"object"
+   RELOP(_<>_)_pattern reference
+   PUSH-ptn_"object"
+   PUSH-ptn_"object"
+   RELOP(_>=_)_pattern reference
+   PUSH-ptn_"object"
+   PUSH-ptn_"object"
+   RELOP(_>_)_pattern reference
+)
+

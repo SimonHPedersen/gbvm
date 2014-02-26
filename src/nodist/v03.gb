@@ -1,0 +1,13 @@
+(* Skal udføre:
+ *   init-intro  (=> gathervirt)
+ *     gv-intro
+ *     gv-added
+ *   init-added  (init af omgivende objekt)
+ *)
+
+-- betaenv:descriptor --
+(#
+   a: (# v:< object #);
+   b: a(# v::< (# do INNER #) exit this(b)[] #)
+do b.v
+#)

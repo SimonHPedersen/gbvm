@@ -1,0 +1,428 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Push.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Push.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Push.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#10>[^]</A><A HREF=#319>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#10>Instr_PushBool_t</A>
+<LI><A HREF=#17>printOn</A>
+<LI><A HREF=#24>Instr_PushChar_t</A>
+<LI><A HREF=#31>printOn</A>
+<LI><A HREF=#38>Instr_PushIndex_t</A>
+<LI><A HREF=#45>printOn</A>
+<LI><A HREF=#53>Instr_PushInt_t</A>
+<LI><A HREF=#60>printOn</A>
+<LI><A HREF=#67>Instr_PushObj_t</A>
+<LI><A HREF=#74>printOn</A>
+<LI><A HREF=#82>Instr_PushPtn_t</A>
+<LI><A HREF=#89>printOn</A>
+<LI><A HREF=#96>printOn</A>
+<LI><A HREF=#102>Instr_PushQual_t</A>
+<LI><A HREF=#109>printOn</A>
+<LI><A HREF=#116>Instr_PushReal_t</A>
+<LI><A HREF=#123>printOn</A>
+<LI><A HREF=#130>Instr_PushStrLen_t</A>
+<LI><A HREF=#137>printOn</A>
+<LI><A HREF=#145>Instr_PushStr_t</A>
+<LI><A HREF=#152>printOn</A>
+<LI><A HREF=#160>Instr_PushTmpObj_t</A>
+<LI><A HREF=#167>printOn</A>
+<LI><A HREF=#174>Instr_PushTmpObjRef_t</A>
+<LI><A HREF=#181>printOn</A>
+<LI><A HREF=#189>Instr_PushiNoneObj_t</A>
+<LI><A HREF=#193>printOn</A>
+<LI><A HREF=#199>Instr_PushiNonePtn_t</A>
+<LI><A HREF=#203>printOn</A>
+<LI><A HREF=#210>Instr_PushiBoolLit_t</A>
+<LI><A HREF=#224>printOn</A>
+<LI><A HREF=#230>Instr_PushiCharLit_t</A>
+<LI><A HREF=#246>printOn</A>
+<LI><A HREF=#252>Instr_PushiIntLit_t</A>
+<LI><A HREF=#262>Instr_PushiIntLit_t</A>
+<LI><A HREF=#267>printOn</A>
+<LI><A HREF=#273>Instr_PushiRealLit_t</A>
+<LI><A HREF=#283>printOn</A>
+<LI><A HREF=#289>Instr_PushiStrLit_t</A>
+<LI><A HREF=#319>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Instr_Push.cc,v 1.20 2001/05/28 12:56:25 ilsoe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Thread.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "Instr_Push.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// ----- Push Bool where -----</FONT></I>
+
+<A NAME=10>Instr_PushBool_t::<A HREF=../S/44.html#886>Instr_PushBool_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#17>[&gt;]</A>[^]<A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHBOOL_ID;
+<A NAME=13>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=17><B>void</B> Instr_PushBool_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#10>[&lt;]</A><A HREF=#24>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushBool_t: rtp = ";
+<A NAME=19>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Push Char where -----</FONT></I>
+
+<A NAME=24>Instr_PushChar_t::<A HREF=../S/44.html#890>Instr_PushChar_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#17>[&lt;]</A><A HREF=#31>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHCHAR_ID;
+<A NAME=27>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=31><B>void</B> Instr_PushChar_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#24>[&lt;]</A><A HREF=#38>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushChar_t: rtp = ";
+<A NAME=33>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Push Index -----</FONT></I>
+
+<A NAME=38>Instr_PushIndex_t::<A HREF=../S/44.html#894>Instr_PushIndex_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#31>[&lt;]</A><A HREF=#45>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHINDEX_ID;
+<A NAME=41>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45><B>void</B> Instr_PushIndex_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#38>[&lt;]</A><A HREF=#53>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushIndex_t: rtp = ";
+<A NAME=47>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ----- Push Integer where -----</FONT></I>
+
+<A NAME=53>Instr_PushInt_t::<A HREF=../R/63.html>Instr_PushInt_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#60>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHINT_ID;
+<A NAME=56>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=60><B>void</B> Instr_PushInt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#53>[&lt;]</A><A HREF=#67>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushInt_t: rtp = ";
+<A NAME=62>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Push Object where / Push ObjectReference where -----</FONT></I>
+
+<A NAME=67>Instr_PushObj_t::<A HREF=../R/64.html>Instr_PushObj_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#60>[&lt;]</A><A HREF=#74>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHOBJ_ID;
+<A NAME=70>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=74><B>void</B> Instr_PushObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#67>[&lt;]</A><A HREF=#82>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushObj_t: rtp = ";
+<A NAME=76>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ----- Push Pattern where / Push PatternReference where -----</FONT></I>
+
+<A NAME=82>Instr_PushPtn_t::<A HREF=../R/65.html>Instr_PushPtn_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#74>[&lt;]</A><A HREF=#89>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHPTN_ID;
+<A NAME=85>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=89><B>void</B> Instr_PushPtn_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#82>[&lt;]</A><A HREF=#96>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushPtn_t: rtp = ";
+<A NAME=91>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- PushPtn "object" ---</FONT></I>
+
+<A NAME=96><B>void</B> Instr_PushPtnObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#89>[&lt;]</A><A HREF=#102>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushPtnObj_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Push Qual where -----------------</FONT></I>
+
+<A NAME=102>Instr_PushQual_t::<A HREF=../S/44.html#922>Instr_PushQual_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#96>[&lt;]</A><A HREF=#109>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHQUAL_ID;
+<A NAME=105>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=109><B>void</B> Instr_PushQual_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#102>[&lt;]</A><A HREF=#116>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushQual_t: rtp = ";
+<A NAME=111>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Push Real where -----</FONT></I>
+
+<A NAME=116>Instr_PushReal_t::<A HREF=../S/44.html#926>Instr_PushReal_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#109>[&lt;]</A><A HREF=#123>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHREAL_ID;
+<A NAME=119>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=123><B>void</B> Instr_PushReal_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#116>[&lt;]</A><A HREF=#130>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushReal_t: rtp = ";
+<A NAME=125>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Push str-len where -----</FONT></I>
+
+<A NAME=130>Instr_PushStrLen_t::<A HREF=../S/44.html#930>Instr_PushStrLen_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#123>[&lt;]</A><A HREF=#137>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHSTRLEN_ID;
+<A NAME=133>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=137><B>void</B> Instr_PushStrLen_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#130>[&lt;]</A><A HREF=#145>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushStrLen_t: rtp = ";
+<A NAME=139>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ----- Push String where -----</FONT></I>
+
+<A NAME=145>Instr_PushStr_t::<A HREF=../S/44.html#934>Instr_PushStr_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#137>[&lt;]</A><A HREF=#152>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHSTR_ID;
+<A NAME=148>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=152><B>void</B> Instr_PushStr_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#145>[&lt;]</A><A HREF=#160>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushStr_t: rtp = ";
+<A NAME=154>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ----- Push Tmpobj where -----</FONT></I>
+
+<A NAME=160>Instr_PushTmpObj_t::<A HREF=../S/44.html#942>Instr_PushTmpObj_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#152>[&lt;]</A><A HREF=#167>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHTMPOBJ_ID;
+<A NAME=163>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=167><B>void</B> Instr_PushTmpObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#160>[&lt;]</A><A HREF=#174>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushTmpObj_t: rtp = ";
+<A NAME=169>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Push Tmpobjref where -----</FONT></I>
+
+<A NAME=174>Instr_PushTmpObjRef_t::<A HREF=../S/44.html#938>Instr_PushTmpObjRef_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#167>[&lt;]</A><A HREF=#181>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = PUSHTMPOBJREF_ID;
+<A NAME=177>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=181><B>void</B> Instr_PushTmpObjRef_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#174>[&lt;]</A><A HREF=#189>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushTmpObjRef_t: rtp = ";
+<A NAME=183>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>//--- Pushi NONE(obj) ---</FONT></I>
+
+<A NAME=189>Instr_PushiNoneObj_t::<A HREF=../S/44.html#946>Instr_PushiNoneObj_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#181>[&lt;]</A><A HREF=#193>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = PUSHINONEOBJ_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=193><B>void</B> Instr_PushiNoneObj_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#189>[&lt;]</A><A HREF=#199>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushiNoneObj";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- Pushi NONE(ptn) ---</FONT></I>
+
+<A NAME=199>Instr_PushiNonePtn_t::<A HREF=../S/44.html#950>Instr_PushiNonePtn_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#193>[&lt;]</A><A HREF=#203>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = PUSHINONEPTN_ID;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=203><B>void</B> Instr_PushiNonePtn_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#199>[&lt;]</A><A HREF=#210>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushiNonePtn";
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>//--- Pushi boolean ---</FONT></I>
+
+<A NAME=210>Instr_PushiBoolLit_t::<A HREF=../S/44.html#954>Instr_PushiBoolLit_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#203>[&lt;]</A><A HREF=#224>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = PUSHIBOOLLIT_ID;
+  <B>if</B>(strcmp(pc, "true") == 0) <FONT COLOR=blue>{</FONT>
+    literal = 1;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B> (strcmp(pc, "false") == 0) <FONT COLOR=blue>{</FONT>
+    literal = 0;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_PushiBool_t::Instr_PushiBool_t(): parse error - " 
+         &lt;&lt;  "could not parse bool "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=224><B>void</B> Instr_PushiBoolLit_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#210>[&lt;]</A><A HREF=#230>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushiBoolLit with literal: " &lt;&lt; literal;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- Pushi character ---</FONT></I>
+
+<A NAME=230>Instr_PushiCharLit_t::<A HREF=../S/44.html#958>Instr_PushiCharLit_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#224>[&lt;]</A><A HREF=#246>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = PUSHICHARLIT_ID;
+  <B>if</B>(sscanf(pc,"%c",&amp;literal) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_PushiChar_t::Instr_PushiChar_t(): parse error - " 
+         &lt;&lt; "could not parse char "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT> 
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>else</B> <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "Instr_PushiCharLit_t::Instr_PushiCharLit_t(): parsed: " 
+         &lt;&lt; literal &lt;&lt; endl;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT> 
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=246><B>void</B> Instr_PushiCharLit_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#230>[&lt;]</A><A HREF=#252>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushiCharLit with literal: " &lt;&lt; literal;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- Pushi integer ---</FONT></I>
+
+<A NAME=252>Instr_PushiIntLit_t::<A HREF=../R/74.html>Instr_PushiIntLit_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#246>[&lt;]</A><A HREF=#262>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = PUSHIINTLIT_ID;
+  <B>if</B>(sscanf(pc,"%i",&amp;literal) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_PushiInt_t::Instr_PushiInt_t(): parse error - " 
+         &lt;&lt; "could not parse int "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=262>Instr_PushiIntLit_t::<A HREF=../R/74.html>Instr_PushiIntLit_t</A>(<B>int</B> lit) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#252>[&lt;]</A><A HREF=#267>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = PUSHIINTLIT_ID;
+  literal = lit;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=267><B>void</B> Instr_PushiIntLit_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#262>[&lt;]</A><A HREF=#273>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushiIntLit with literal: " &lt;&lt; literal;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- Pushi real ---</FONT></I>
+
+<A NAME=273>Instr_PushiRealLit_t::<A HREF=../S/44.html#966>Instr_PushiRealLit_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#267>[&lt;]</A><A HREF=#283>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = PUSHIREALLIT_ID;
+  <B>if</B>(sscanf(pc,"%f",&amp;literal) != 1) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt;  "Instr_PushiReal_t::Instr_PushiReal_t(): parse error - " 
+         &lt;&lt; "could not parse real "
+         &lt;&lt; pc &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=283><B>void</B> Instr_PushiRealLit_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#273>[&lt;]</A><A HREF=#289>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushiRealLit with literal: " &lt;&lt; literal;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//--- Pushi string ---</FONT></I>
+
+<A NAME=289>Instr_PushiStrLit_t::<A HREF=../S/44.html#970>Instr_PushiStrLit_t</A>(<B>char</B>* pc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#283>[&lt;]</A><A HREF=#319>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+  id = PUSHISTRLIT_ID;
+  <B>unsigned</B> <B>int</B> i = 0; <I><FONT COLOR=green>//input string</FONT></I>
+  <B>unsigned</B> <B>int</B> j = 0; <I><FONT COLOR=green>//output/"parsed" string</FONT></I>
+
+  <B>char</B> tmpStr[MAX_INPUTSTRING_SIZE*<B>sizeof</B>(<B>char</B>)];
+  <B>for</B>( ; pc[i] != '"' ; i++, j++)<FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//check for newline chars</FONT></I>
+    <B>if</B>(pc[i] == '\\')<FONT COLOR=blue>{</FONT> 
+      <B>if</B>(pc[i + 1] == 'n')<FONT COLOR=blue>{</FONT> 
+        tmpStr[j] = '\n';
+        i = i + 1;
+      <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(pc[i + 1] == '0' &amp;&amp; pc[i + 2] == '1' &amp;&amp; pc[i + 3] == '2')<FONT COLOR=blue>{</FONT>
+        tmpStr[j] = '\n';
+        i = i + 3;
+      <FONT COLOR=blue>}</FONT> 
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      tmpStr[j] = pc[i];
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> NEW_STYLE_GC
+<A NAME=311>  literal = (<B>char</B>*)allocateRootVM_NT(<A HREF=../S/68.html#44>getStrObjectDescriptor</A>(j + 1));
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  literal = (<B>char</B>*)allocateRootVM(getStrObjectDescriptor(j + 1));
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//NEW_STYLE_GC</FONT></I>
+  memcpy(literal, tmpStr, j);
+  literal[j] = 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=319><B>void</B> Instr_PushiStrLit_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#289>[&lt;]</A>[&gt;]<A HREF=#10>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PushiStrLit with literal: " &lt;&lt; literal;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#10>[^]</A><A HREF=#319>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,1452 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/ByteCodeLoader.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/ByteCodeLoader.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/ByteCodeLoader.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#18>[^]</A><A HREF=#1318>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#18>ind</A>
+<LI><A HREF=#23>indent</A>
+<LI><A HREF=#24>outdent</A>
+<LI><A HREF=#29>setId</A>
+<LI><A HREF=#33>setObjectDescriptor</A>
+<LI><A HREF=#37>getObjectDescriptor</A>
+<LI><A HREF=#41>setNumberOfAttributes</A>
+<LI><A HREF=#45>getNumberOfAttributes</A>
+<LI><A HREF=#49>getInstructionListPtr</A>
+<LI><A HREF=#53>getMPAttrsInstrPtr</A>
+<LI><A HREF=#68>getAttrInstrPtr</A>
+<LI><A HREF=#73>getVirtAttr</A>
+<LI><A HREF=#120>getAttributePtr</A>
+<LI><A HREF=#129>setAttributeArray</A>
+<LI><A HREF=#134>getAttributeArray</A>
+<LI><A HREF=#138>getAttributeList</A>
+<LI><A HREF=#143>printOn</A>
+<LI><A HREF=#155>printOn</A>
+<LI><A HREF=#181>checkMatch</A>
+<LI><A HREF=#196>printOn</A>
+<LI><A HREF=#236>parse</A>
+<LI><A HREF=#253>nextline</A>
+<LI><A HREF=#264>parseLabel</A>
+<LI><A HREF=#278>parseSimpleFor</A>
+<LI><A HREF=#327>parseNamedFor</A>
+<LI><A HREF=#389>parseSimpleIf</A>
+<LI><A HREF=#427>parseLocatedSimpleIf</A>
+<LI><A HREF=#459>parseSelection</A>
+<LI><A HREF=#472>parseGeneralIf</A>
+<LI><A HREF=#580>parseWhile</A>
+<LI><A HREF=#609>parseWhenAlternative</A>
+<LI><A HREF=#627>parseWhen</A>
+<LI><A HREF=#682>parseSingleInstruction</A>
+<LI><A HREF=#1016>parseRuntimePath</A>
+<LI><A HREF=#1051>printRuntimePath</A>
+<LI><A HREF=#1064>parseInstruction</A>
+<LI><A HREF=#1100>parseAttribute</A>
+<LI><A HREF=#1216>parseMainPart</A>
+<LI><A HREF=#1302>stop</A>
+<LI><A HREF=#1318>empty</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: ByteCodeLoader.cc,v 1.82 2001/06/13 18:01:00 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<B>static</B> bool empty(<B>char</B>* line);
+<I><FONT COLOR=green>// ----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Output, debug</FONT></I>
+
+<FONT COLOR=darkred>#define</FONT> OUT (cout &lt;&lt; "Snapshot: " &lt;&lt; line &lt;&lt; endl, 0)
+<A NAME=10><FONT COLOR=darkred>#define</FONT> TELL(it) (cout &lt;&lt; "Tell: " &lt;&lt; it &lt;&lt; endl, 0)
+
+<I><FONT COLOR=green>// NB: everything about indentation is an ugly but easy hack,</FONT></I>
+<I><FONT COLOR=green>// introduced to make output more readable</FONT></I>
+
+<B>static</B> <B>int</B> indentation = 0;
+<B>static</B> const <B>int</B> indent_step = 3;
+
+<A NAME=18>ostream&amp; ind(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#23>[&gt;]</A>[^]<A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>for</B> (<B>int</B> i=0; i&lt;indentation; i++) dest.put(' ');
+  <B>return</B> dest;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=23><B>void</B> <A HREF=../R/228.html>indent</A>() <FONT COLOR=blue>{</FONT> indentation += indent_step; <FONT COLOR=blue>}</FONT>
+<I><FONT COLOR=green>/* <A HREF=#18>[&lt;]</A><A HREF=#24>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=24><B>void</B> <A HREF=../R/253.html>outdent</A>() <FONT COLOR=blue>{</FONT> <B>if</B> (indentation) indentation -= indent_step; <FONT COLOR=blue>}</FONT>
+<I><FONT COLOR=green>/* <A HREF=#23>[&lt;]</A><A HREF=#29>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+
+<I><FONT COLOR=green>// ----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Methods</FONT></I>
+
+<A NAME=29><B>void</B> MainPart::setId(<B>char</B>* id)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#24>[&lt;]</A><A HREF=#33>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>this</B>-&gt;id = strdup(id);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=33><B>void</B> MainPart::<A HREF=../R/298.html>setObjectDescriptor</A>(ObjectDescriptor_t *objDesc_) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#29>[&lt;]</A><A HREF=#37>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  objDesc = objDesc_;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=37>ObjectDescriptor_t *MainPart::<A HREF=../R/199.html>getObjectDescriptor</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#33>[&lt;]</A><A HREF=#41>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> objDesc;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=41><B>void</B> MainPart::<A HREF=../R/297.html>setNumberOfAttributes</A>(<B>unsigned</B> <B>int</B> nofAttr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#37>[&lt;]</A><A HREF=#45>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  nofAttributes = nofAttr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=45><B>unsigned</B> <B>int</B> MainPart::<A HREF=../R/195.html>getNumberOfAttributes</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#41>[&lt;]</A><A HREF=#49>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> nofAttributes;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=49>Lst&lt;Instruction&gt;* MainPart::<A HREF=../R/182.html>getInstructionListPtr</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#45>[&lt;]</A><A HREF=#53>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> &amp;doPart;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=53>Lst&lt;Instruction&gt;* MainPart::<A HREF=../R/187.html>getMPAttrsInstrPtr</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#49>[&lt;]</A><A HREF=#68>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//has the instruction list been created? (there should at leat be an</FONT></I>
+  <I><FONT COLOR=green>//Instr_ReturnMPAttrInit instruction...)</FONT></I>
+  <B>if</B>(!(attrInitInstrs.first())) <FONT COLOR=blue>{</FONT>
+    Attribute *attr = attrs.first();
+    <B>while</B>(attr) <FONT COLOR=blue>{</FONT>
+<A NAME=59>      attrInitInstrs.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../S/56.html#67>Instr_JumpSubNPPO_t</A>
+<A NAME=60>                         (attr-&gt;<A HREF=../D/202.html>getInstructionListPtr</A>()-&gt;first()));
+      attr = attr-&gt;next();
+    <FONT COLOR=blue>}</FONT>
+<A NAME=63>    attrInitInstrs.<A HREF=../S/42.html#34>add</A>(<B>new</B> <A HREF=../S/56.html#28>Instr_ReturnMPAttrInit_t</A>());
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> &amp;attrInitInstrs;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=68>Lst&lt;Instruction&gt;* MainPart::<A HREF=../R/158.html>getAttrInstrPtr</A>(<B>unsigned</B> <B>int</B> index) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#53>[&lt;]</A><A HREF=#73>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//find attribute at index</FONT></I>
+<A NAME=70>  <B>return</B> <A HREF=../S/44.html#120>getAttributePtr</A>(index)-&gt;<A HREF=../D/202.html>getInstructionListPtr</A>();
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=73>AttributeVirtual* MainPart::<A HREF=../S/61.html#186>getVirtAttr</A>(<B>char</B> *parentAttrName,
+<I><FONT COLOR=green>/* <A HREF=#68>[&lt;]</A><A HREF=#120>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                        <B>int</B> parentAttrIndex,
+                                        <B>char</B> *parentMainPartID) <FONT COLOR=blue>{</FONT>
+
+  DB_INDENT;
+  DB_OUT(vm_iexe_spec, "MainPart::getVirtAttr(): searching for virtual"
+         &lt;&lt; " attribute: (\"" &lt;&lt; parentAttrName &lt;&lt; "/" &lt;&lt; parentAttrIndex
+         &lt;&lt; "\" in \"" &lt;&lt; parentMainPartID &lt;&lt; "\") in mainpart: " &lt;&lt; id
+         &lt;&lt; endl);
+  <I><FONT COLOR=green>//check if this is the mainpart with the introducing binding</FONT></I>
+  <B>if</B>(!strcmp(parentMainPartID, id)) <FONT COLOR=blue>{</FONT>
+<A NAME=84>    Attribute *attr = <A HREF=../S/44.html#120>getAttributePtr</A>(parentAttrIndex);
+    AttributeVirtual *attrv = dynamic_cast&lt;AttributeVirtual*&gt;(attr);
+    <B>if</B>(attrv) <FONT COLOR=blue>{</FONT>
+      DB_OUTDENT;
+      DB_OUT(vm_iexe_spec, "MainPart::getVirtAttr(): found introducing virt binding\n");
+      <B>return</B> attrv;
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      cerr &lt;&lt; "MainPart::getVirtAttrGVInstr(): error, expected virtual"
+        " attribute at index " &lt;&lt; parentAttrIndex &lt;&lt; " in mainpart "
+           &lt;&lt; <B>this</B> &lt;&lt; endl;
+      exit(1);
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>//A further binding. We have to find a virtual attribute with the parameters</FONT></I>
+  <I><FONT COLOR=green>//given to this function...</FONT></I>
+
+  Attribute *attr = 0;
+  AttributeVirtual *attrv = 0;
+<A NAME=103>  <B>unsigned</B> <B>int</B> num_attrs = <A HREF=../S/44.html#45>getNumberOfAttributes</A>();
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; num_attrs; i++) <FONT COLOR=blue>{</FONT>
+<A NAME=105>    attr = <A HREF=../S/44.html#120>getAttributePtr</A>(i);
+    attrv = dynamic_cast&lt;AttributeVirtual*&gt;(attr);
+    <B>if</B>(attrv) <FONT COLOR=blue>{</FONT>
+<A NAME=108>      <B>if</B>(attrv-&gt;<A HREF=../S/44.html#181>checkMatch</A>(parentAttrName, parentAttrIndex, parentMainPartID)) <FONT COLOR=blue>{</FONT>
+        DB_OUT(vm_iexe_spec, "MainPart::getVirtAttr(): virtual attr matched");
+        DB_OUTDENT;
+        <B>return</B> attrv;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>       
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//could not find requested virtual attribute, which is probably ok...</FONT></I>
+  DB_OUTDENT;
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=120>Attribute *MainPart::<A HREF=../R/162.html>getAttributePtr</A>(<B>unsigned</B> <B>int</B> index) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#73>[&lt;]</A><A HREF=#129>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>if</B>(index &gt;= nofAttributes)<FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "MainPart::getAttributePtr() this mainpart: " &lt;&lt; <B>this</B>
+         &lt;&lt; "does not have that many attributes:" &lt;&lt; index &lt;&lt; endl;
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> attributeArray[index];
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=129><B>void</B> MainPart::<A HREF=../S/44.html#1269>setAttributeArray</A>(Attribute** array)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#120>[&lt;]</A><A HREF=#134>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  attributeArray = array;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=134>Attribute** MainPart::<A HREF=../S/44.html#1271>getAttributeArray</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#129>[&lt;]</A><A HREF=#138>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> attributeArray;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=138>Lst&lt;Attribute&gt; MainPart::<A HREF=../S/44.html#1276>getAttributeList</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#134>[&lt;]</A><A HREF=#143>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>return</B> attrs;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=143><B>void</B> Attribute::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#138>[&lt;]</A><A HREF=#155>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; '"' &lt;&lt; name &lt;&lt; '/' &lt;&lt; index &lt;&lt; "\": (" &lt;&lt; endl;
+  Instruction* instr=instrs.first();
+<A NAME=146>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (instr) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind &lt;&lt; instr &lt;&lt; endl;
+    instr = instr-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=151>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=155><B>void</B> AttributeVirtual::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#143>[&lt;]</A><A HREF=#181>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; '"' &lt;&lt; name &lt;&lt; '/' &lt;&lt; index &lt;&lt; "\": (" &lt;&lt; endl;
+<A NAME=157>  <A HREF=../S/44.html#23>indent</A>();
+  dest &lt;&lt; ind &lt;&lt; "virtual attribute: " &lt;&lt; parentAttrName &lt;&lt; "/" &lt;&lt;
+    parentAttrIndex &lt;&lt; " in " &lt;&lt; parentMainPartID &lt;&lt; endl;
+  dest &lt;&lt; ind &lt;&lt; "gather virtual instructions (" &lt;&lt; endl;
+  Instruction* instr=gvInstrs.first();
+<A NAME=162>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (instr) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind &lt;&lt; instr &lt;&lt; endl;
+    instr = instr-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=167>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ") normal instructions (" &lt;&lt; endl;
+<A NAME=169>  <A HREF=../S/44.html#23>indent</A>();
+  instr = instrs.first();
+  <B>while</B> (instr) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind &lt;&lt; instr &lt;&lt; endl;
+    instr = instr-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=175>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;  
+<A NAME=177>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ')' &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=181><B>int</B> AttributeVirtual::<A HREF=../S/44.html#108>checkMatch</A>(<B>char</B> *pAttrName, 
+<I><FONT COLOR=green>/* <A HREF=#155>[&lt;]</A><A HREF=#196>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+                                 <B>int</B> pAttrIndex, 
+                                 <B>char</B> *pMainPartID) <FONT COLOR=blue>{</FONT>
+  <I><FONT COLOR=green>//check if this is called on an introducing binding</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  <B>if</B>(!parentAttrName) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "AttributeVirtual::checkMatch(): invoked on introducing binding.\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+  <B>return</B> (        pAttrIndex  == parentAttrIndex  &amp;&amp;
+          !strcmp(pAttrName,     parentAttrName)  &amp;&amp;
+          !strcmp(pMainPartID,   parentMainPartID)) ? 1 : 0;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=196><B>void</B> MainPart::<A HREF=../R/275.html>printOn</A>(ostream&amp; dest) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#181>[&lt;]</A><A HREF=#236>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  dest &lt;&lt; ind &lt;&lt; "MainPart(\"" &lt;&lt; id &lt;&lt; '"' &lt;&lt; endl;
+  Attribute* attr=attrs.first();
+<A NAME=199>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (attr) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind &lt;&lt; attr &lt;&lt; endl;
+    attr = attr-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=204>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; "|" &lt;&lt; endl;
+  Instruction* instr = doPart.first();
+<A NAME=207>  <A HREF=../S/44.html#23>indent</A>();
+  <B>while</B> (instr) <FONT COLOR=blue>{</FONT>
+    dest &lt;&lt; ind &lt;&lt; instr &lt;&lt; endl;
+    instr = instr-&gt;next();
+  <FONT COLOR=blue>}</FONT>
+<A NAME=212>  <A HREF=../S/44.html#24>outdent</A>();
+  dest &lt;&lt; ind &lt;&lt; ")" &lt;&lt; endl;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Parsing functions</FONT></I>
+
+<I><FONT COLOR=green>// Generally, the members are used like this:</FONT></I>
+<I><FONT COLOR=green>//</FONT></I>
+<I><FONT COLOR=green>//   src: this stream delivers the rest of the program being parsed</FONT></I>
+<I><FONT COLOR=green>//   line: this is a one-line lookahead on 'src'</FONT></I>
+<I><FONT COLOR=green>//</FONT></I>
+<I><FONT COLOR=green>// This means that it is an invariant for 'src' and 'line' that</FONT></I>
+<I><FONT COLOR=green>// "line+rsc" is the part of the source code which has not yet been</FONT></I>
+<I><FONT COLOR=green>// parsed into entities.</FONT></I>
+<I><FONT COLOR=green>//</FONT></I>
+<I><FONT COLOR=green>// Every parsing function should look at 'line' and decide what</FONT></I>
+<I><FONT COLOR=green>// to do.  Whenever the current 'line' has been parsed, 'nextline()'</FONT></I>
+<I><FONT COLOR=green>// should be used to get the next line.  The reason why we need 'line'</FONT></I>
+<I><FONT COLOR=green>// at all is that some parsing functions need to look at the next line</FONT></I>
+<I><FONT COLOR=green>// before they know that their piece of syntax has been seen and</FONT></I>
+<I><FONT COLOR=green>// something new has started - i.e. it's just an ordinary parser</FONT></I>
+<I><FONT COLOR=green>// look-ahead.</FONT></I>
+
+<A NAME=236>Lst&lt;MainPart&gt;* InstructionParser::<A HREF=../S/65.html#40>parse</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#196>[&lt;]</A><A HREF=#253>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//check if file exists, and is readable...</FONT></I>
+  <B>if</B>(src.bad()) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "InstructionParser::parse(): unable to load input file,"
+      " bailing out\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  Lst&lt;MainPart&gt;* pmps = <B>new</B> Lst&lt;MainPart&gt;;
+  MainPart* pmp;
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=246>    <B>if</B> (!(pmp=<A HREF=../S/44.html#1216>parseMainPart</A>())) <B>break</B>;
+<A NAME=247>    pmps-&gt;<A HREF=../S/42.html#34>add</A>(pmp);
+  <FONT COLOR=blue>}</FONT>
+  src.close();
+  <B>return</B> pmps;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=253><B>void</B> InstructionParser::<A HREF=../R/252.html>nextline</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#236>[&lt;]</A><A HREF=#264>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  src.getline(line,linelen);
+  <I><FONT COLOR=green>//skip line if "#....</FONT></I>
+  <B>if</B>(line[0] == '#') <FONT COLOR=blue>{</FONT>
+<A NAME=257>    <A HREF=../S/44.html#253>nextline</A>();
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  linenumber++;
+<FONT COLOR=darkred>#endif</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=264>Instruction* InstructionParser::<A HREF=../S/44.html#1082>parseLabel</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#253>[&lt;]</A><A HREF=#278>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instr_Label_t* l_instr = <B>new</B> Instr_Label_t;
+  Instruction* sub_instr;
+
+<A NAME=268>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "label(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read the body of the labelledImp instruction</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=271>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    l_instr-&gt;addInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=274>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+  <B>return</B> l_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=278>Instruction* InstructionParser::<A HREF=../S/44.html#1083>parseSimpleFor</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#264>[&lt;]</A><A HREF=#327>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instr_SimpleFor* nf_instr = <B>new</B> Instr_SimpleFor;
+  Instruction* sub_instr;
+
+<A NAME=282>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "simpleFor(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read evaluation</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=285>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    nf_instr-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=288>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip '|'</FONT></I>
+  <I><FONT COLOR=green>// read body</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=291>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    nf_instr-&gt;addBodyInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=294>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+
+  <I><FONT COLOR=green>//we need to be able to refer to these instructions before they are inserted</FONT></I>
+<A NAME=297>  Instruction *cleanupStartInstr = <B>new</B> <A HREF=../S/48.html#88>Instr_Discard_t</A>(INTEGER_ID);
+
+  <I><FONT COLOR=green>//To make sure empty instruction lists in the body don't crash us,</FONT></I>
+  <I><FONT COLOR=green>//we insert the first of the extra body instructions now, so the</FONT></I>
+  <I><FONT COLOR=green>//list will not be empty</FONT></I>
+<A NAME=302>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../D/76.html>Instr_PushiIntLit_t</A>(1));
+
+  <I><FONT COLOR=green>//the evaluation gives an integer N on top of the integer stack, </FONT></I>
+  <I><FONT COLOR=green>//add index i too</FONT></I>
+<A NAME=306>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../D/76.html>Instr_PushiIntLit_t</A>(0));
+  nf_instr-&gt;addEvalInstr(<B>new</B> Instr_CopyTop2_t(INTEGER_ID));
+<A NAME=308>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../D/81.html>Instr_RelOpEQ_t</A>(INTEGER_ID));
+<A NAME=309>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#56>Instr_JumpTrueNPPO_t</A>(cleanupStartInstr));
+<A NAME=310>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(nf_instr-&gt;getFirstBodyInstr()));
+
+  <I><FONT COLOR=green>//cleanup: pop N and i off the integer stack and return</FONT></I>
+  nf_instr-&gt;addEvalInstr(cleanupStartInstr);
+<A NAME=314>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/48.html#88>Instr_Discard_t</A>(INTEGER_ID));
+<A NAME=315>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+
+  <I><FONT COLOR=green>//add increment and check at end of body</FONT></I>
+<A NAME=318>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../D/14.html>Instr_AddOpPlus_t</A>(INTEGER_ID));
+  nf_instr-&gt;addBodyInstr(<B>new</B> Instr_CopyTop2_t(INTEGER_ID));
+<A NAME=320>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../D/81.html>Instr_RelOpEQ_t</A>(INTEGER_ID));
+<A NAME=321>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../S/56.html#56>Instr_JumpTrueNPPO_t</A>(cleanupStartInstr));
+<A NAME=322>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(nf_instr-&gt;getFirstBodyInstr()));
+
+  <B>return</B> nf_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=327>Instruction* InstructionParser::<A HREF=../S/44.html#1084>parseNamedFor</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#278>[&lt;]</A><A HREF=#389>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>// first cut off the index name</FONT></I>
+  <B>char</B> *pc = line, *pc2;
+  <B>while</B> (*pc != 'n') pc++;
+  pc += 10; pc2 = pc; <I><FONT COLOR=green>// pc and pc2 now at beginning of inxname</FONT></I>
+  <B>while</B> (*pc2 &amp;&amp; *pc2 != '"') pc2++;
+  *pc2 = 0;
+
+  Instr_NamedFor* nf_instr = <B>new</B> Instr_NamedFor(pc);
+  Instruction* sub_instr;
+
+<A NAME=338>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "namedFor(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read evaluation</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=341>    <B>if</B> (!(sub_instr = <A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    nf_instr-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=344>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip '|'</FONT></I>
+
+  <I><FONT COLOR=green>// read body</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=348>    <B>if</B> (!(sub_instr = <A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    nf_instr-&gt;addBodyInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=351>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+
+  <I><FONT COLOR=green>//add control instructions</FONT></I>
+
+  <I><FONT COLOR=green>//we need to be able to refer to this instruction before it is inserted</FONT></I>
+<A NAME=356>  Instruction *cleanupStartInstr = <B>new</B> <A HREF=../S/48.html#88>Instr_Discard_t</A>(INTEGER_ID);
+  
+  <I><FONT COLOR=green>//To make sure empty instruction lists in the body don't crash us,</FONT></I>
+  <I><FONT COLOR=green>//we insert the first of the extra body instructions now, so the</FONT></I>
+  <I><FONT COLOR=green>//list will not be empty</FONT></I>
+  nf_instr-&gt;addBodyInstr(<B>new</B> Instr_CopyTop_t(INTEGER_ID));   <I><FONT COLOR=green>//copy N</FONT></I>
+
+
+  nf_instr-&gt;addEvalInstr(<B>new</B> Instr_CopyTop_t(INTEGER_ID)); <I><FONT COLOR=green>//copy N</FONT></I>
+<A NAME=365>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/53.html#53>Instr_PushInt_t</A>("{}"));       <I><FONT COLOR=green>//get index</FONT></I>
+<A NAME=366>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../D/85.html>Instr_RelOpLT_t</A>(INTEGER_ID));
+<A NAME=367>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#56>Instr_JumpTrueNPPO_t</A>(cleanupStartInstr));
+<A NAME=368>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(nf_instr-&gt;getFirstBodyInstr()));
+
+  <I><FONT COLOR=green>//cleanup: pop N and i off the integer stack and return</FONT></I>
+  nf_instr-&gt;addEvalInstr(cleanupStartInstr);
+<A NAME=372>  nf_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#7>Instr_Return_t</A>());
+
+  <I><FONT COLOR=green>//add increment and check at end of body</FONT></I>
+<A NAME=375>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../S/53.html#53>Instr_PushInt_t</A>("{}"));        <I><FONT COLOR=green>//get index</FONT></I>
+<A NAME=376>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../D/76.html>Instr_PushiIntLit_t</A>(1));
+<A NAME=377>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../D/14.html>Instr_AddOpPlus_t</A>(INTEGER_ID)); <I><FONT COLOR=green>//updated index</FONT></I>
+
+  nf_instr-&gt;addBodyInstr(<B>new</B> Instr_CopyTop_t(INTEGER_ID));   <I><FONT COLOR=green>//copy index</FONT></I>
+<A NAME=380>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../S/52.html#71>Instr_PopInt_t</A>("{}"));
+
+<A NAME=382>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../D/85.html>Instr_RelOpLT_t</A>(INTEGER_ID));
+<A NAME=383>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../S/56.html#56>Instr_JumpTrueNPPO_t</A>(cleanupStartInstr));
+<A NAME=384>  nf_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(nf_instr-&gt;getFirstBodyInstr()));
+
+  <B>return</B> nf_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=389>Instruction* InstructionParser::<A HREF=../S/44.html#1085>parseSimpleIf</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#327>[&lt;]</A><A HREF=#427>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instr_SimpleIf* if_instr = <B>new</B> Instr_SimpleIf;
+  Instruction* sub_instr;
+
+<A NAME=393>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "simpleIf(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read evaluation</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=396>    <B>if</B> (!(sub_instr = <A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    if_instr-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+
+<A NAME=400>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip '|then'</FONT></I>
+  <I><FONT COLOR=green>// read then part</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=403>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    if_instr-&gt;addThenInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>// add return (no pop po)</FONT></I>
+<A NAME=407>  if_instr-&gt;addThenInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+
+<A NAME=409>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip '|else'</FONT></I>
+  <I><FONT COLOR=green>// read else part</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=412>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    if_instr-&gt;addElseInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>// add return (no pop po)</FONT></I>
+<A NAME=416>  if_instr-&gt;addElseInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+
+  <I><FONT COLOR=green>// add control structure to eval block</FONT></I>
+<A NAME=419>  if_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#56>Instr_JumpTrueNPPO_t</A>
+                               (if_instr-&gt;getFirstThenInstr()));
+<A NAME=421>  if_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>
+                               (if_instr-&gt;getFirstElseInstr()));
+<A NAME=423>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+  <B>return</B> if_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=427>Instruction* InstructionParser::<A HREF=../S/44.html#1087>parseLocatedSimpleIf</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#389>[&lt;]</A><A HREF=#459>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instr_LocatedSimpleIf* lif_instr = <B>new</B> Instr_LocatedSimpleIf;
+  Instruction* sub_instr;
+  <B>char</B>* pc;
+
+  pc=line;
+  <B>while</B> (*pc &amp;&amp; *pc!=':') pc++;
+  pc++; <I><FONT COLOR=green>// skip ' '; pc now at beginning of run-time path</FONT></I>
+  lif_instr-&gt;where_txt=strdup(pc);
+
+<A NAME=437>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "locatedSimpleIf(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read evaluation</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=440>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    lif_instr-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=443>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip '|then'</FONT></I>
+  <I><FONT COLOR=green>// read then part</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=446>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    lif_instr-&gt;addThenInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=449>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip '|else'</FONT></I>
+  <I><FONT COLOR=green>// read else part</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=452>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    lif_instr-&gt;addElseInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=455>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+  <B>return</B> lif_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=459>Selection* InstructionParser::<A HREF=../S/44.html#510>parseSelection</A>(<B>unsigned</B> <B>int</B> type) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#427>[&lt;]</A><A HREF=#472>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Selection* sel = <B>new</B> Selection;
+  Instruction* sub_instr;
+  
+  sel-&gt;addInstr(<B>new</B> Instr_CopyTop_t(type));
+
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=466>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    sel-&gt;addInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> sel;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=472>Instruction* InstructionParser::<A HREF=../S/44.html#1088>parseGeneralIf</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#459>[&lt;]</A><A HREF=#580>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instr_GeneralIf* gif_instr = <B>new</B> Instr_GeneralIf;
+  Instruction* sub_instr;
+  bool done;
+  Alternative* alt=0;
+
+<A NAME=478>  gif_instr-&gt;<A HREF=../S/57.html#13>parseType</A>(&amp;pc[GENERALIF_TLEN]);
+
+  <B>char</B> ch;
+
+<A NAME=482>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "generalIf(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read evaluation</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=485>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    gif_instr-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>// each alternative is on the form "&lt;selection&gt;+ &lt;thenpart&gt;",</FONT></I>
+  <I><FONT COLOR=green>// &lt;selection&gt; is "|case &lt;instr&gt;*", and &lt;thenpart&gt; is "|then &lt;instr&gt;*"</FONT></I>
+  done = false;
+  <B>do</B> <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//char ch,*pc=line;</FONT></I>
+    pc = line;
+    <I><FONT COLOR=green>// skip white-space in 'line'</FONT></I>
+    <B>while</B> (*pc &amp;&amp; isspace(*pc)) pc++;
+    <B>if</B> (!*pc) <FONT COLOR=blue>{</FONT>
+<A NAME=497>      <B>if</B> (!src) <A HREF=../S/44.html#1302>stop</A>("Alternative expected (\"|case\")");
+<A NAME=498>      <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// line was blank, try next line</FONT></I>
+      <B>continue</B>;
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>// pc is now at first non-blank</FONT></I>
+<A NAME=502>    <B>if</B> (*pc != '|') <A HREF=../S/44.html#1302>stop</A>("Separator in generalIf expected (\"|...\")");
+    ch = *(++pc);
+<A NAME=504>    <B>if</B>(!src) <A HREF=../S/44.html#1302>stop</A>("Separator in generalIf expected (\"|...\")");
+<A NAME=505>    <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip "|case", "|then", or "|else"</FONT></I>
+    <B>switch</B> (ch) <FONT COLOR=blue>{</FONT>
+    <B>case</B> 'c': <I><FONT COLOR=green>// found a selection: "|case"</FONT></I>
+      DB_OUT(vm_parse_multi, "genIf: parsing case...\n");
+      <B>if</B> (!alt) alt = <B>new</B> Alternative;
+<A NAME=510>      alt-&gt;addSel(<A HREF=../S/44.html#459>parseSelection</A>(gif_instr-&gt;type));
+      <B>break</B>;
+    <B>case</B> 't': <I><FONT COLOR=green>// found a then part: "|then"</FONT></I>
+      DB_OUT(vm_parse_multi, "genIf: parsing then...\n");
+      <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=515>        <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+        alt-&gt;addInstr(sub_instr);
+      <FONT COLOR=blue>}</FONT>
+<A NAME=518>      alt-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+      gif_instr-&gt;addAlt(alt);
+      alt = 0;
+      <B>break</B>;
+    <B>case</B> 'e': <I><FONT COLOR=green>// found an else part</FONT></I>
+      DB_OUT(vm_parse_multi, "genIf: parsing else...\n");
+      done = true;
+      <B>break</B>;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>while</B> (!done);
+  <I><FONT COLOR=green>// read else part</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=530>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    gif_instr-&gt;addElseInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=533>  gif_instr-&gt;addElseInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+<A NAME=534>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+
+  DB_OUT(vm_parse_multi, "genIf: linking parts together...\n");
+
+  <I><FONT COLOR=green>//link instruction lists together...</FONT></I>
+  alt = gif_instr-&gt;getFirstAlternative();
+  Selection *sel = 0;
+  Selection *sel2 = 0;
+  Instruction* instr = 0;
+
+  <B>if</B>(alt) <FONT COLOR=blue>{</FONT>
+    sel   = alt-&gt;getFirstSelection();
+    instr = alt-&gt;getFirstInstruction();
+<A NAME=547>    gif_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#67>Instr_JumpSubNPPO_t</A>
+                            (sel-&gt;getFirstInstruction()));
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=550>    gif_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#67>Instr_JumpSubNPPO_t</A>
+                            (gif_instr-&gt;getFirstElseInstr()));
+  <FONT COLOR=blue>}</FONT>
+<A NAME=553>  gif_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/48.html#88>Instr_Discard_t</A>(gif_instr-&gt;type));
+<A NAME=554>  gif_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+
+  <B>while</B>(sel) <FONT COLOR=blue>{</FONT>
+<A NAME=557>    sel-&gt;addInstr(<B>new</B> <A HREF=../D/81.html>Instr_RelOpEQ_t</A>(gif_instr-&gt;type));
+<A NAME=558>    sel-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#56>Instr_JumpTrueNPPO_t</A>(instr));
+    <I><FONT COLOR=green>//find out where we have to go if condition is not met...</FONT></I>
+    <B>if</B>((sel2 = sel-&gt;next())) <FONT COLOR=blue>{</FONT>
+<A NAME=561>      sel-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(sel2-&gt;getFirstInstruction()));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <B>if</B>((alt = alt-&gt;next())) <FONT COLOR=blue>{</FONT>
+        <I><FONT COLOR=green>//goto next alternative</FONT></I>
+        <B>if</B>((sel2 = alt-&gt;getFirstSelection())) <FONT COLOR=blue>{</FONT>
+          instr = alt-&gt;getFirstInstruction();
+<A NAME=567>          sel-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(sel2-&gt;getFirstInstruction()));
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+        <I><FONT COLOR=green>//no more alternatives, link to else part</FONT></I>
+<A NAME=571>        sel-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(gif_instr-&gt;getFirstElseInstr()));
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    sel = sel2;
+  <FONT COLOR=blue>}</FONT>
+
+  <B>return</B> gif_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=580>Instruction* InstructionParser::<A HREF=../S/44.html#1089>parseWhile</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#472>[&lt;]</A><A HREF=#609>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instr_While* wh_instr = <B>new</B> Instr_While;
+  Instruction* sub_instr;
+
+<A NAME=584>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "while(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read evaluation</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=587>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    wh_instr-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=590>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip '|'</FONT></I>
+  <I><FONT COLOR=green>// read body</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=593>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    wh_instr-&gt;addBodyInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=596>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+
+  <I><FONT COLOR=green>//add control structure to while evaluation</FONT></I>
+<A NAME=599>  wh_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#56>Instr_JumpTrueNPPO_t</A>(wh_instr-&gt;
+                                                  getFirstBodyInstr()));
+<A NAME=601>  wh_instr-&gt;addEvalInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+
+  <I><FONT COLOR=green>//make body return to a new evaluation</FONT></I>
+<A NAME=604>  wh_instr-&gt;addBodyInstr(<B>new</B> <A HREF=../S/56.html#45>Instr_JumpNPPO_t</A>(wh_instr-&gt;getFirstEvalInstr()));
+
+  <B>return</B> wh_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=609>WhenAlternative* InstructionParser::<A HREF=../R/269.html>parseWhenAlternative</A>(bool exact) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#580>[&lt;]</A><A HREF=#627>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  WhenAlternative* walt = <B>new</B> WhenAlternative(exact);
+  Instruction* sub_instr;
+
+  <I><FONT COLOR=green>// read the code to get hold of the pattern to compare with</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=615>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    walt-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=618>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip "|then"</FONT></I>
+  <I><FONT COLOR=green>// read the body</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=621>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    walt-&gt;addBodyInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> walt;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=627>Instruction* InstructionParser::<A HREF=../S/44.html#1090>parseWhen</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#609>[&lt;]</A><A HREF=#682>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  Instr_When* wn_instr = <B>new</B> Instr_When;
+  Instruction* sub_instr;
+  bool done;
+
+<A NAME=632>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used "when(" line, fetch next line</FONT></I>
+  <I><FONT COLOR=green>// read evaluation</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=635>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    wn_instr-&gt;addEvalInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>// each whenalternative is on the form "&lt;evalpart&gt; &lt;thenpart&gt;",</FONT></I>
+  <I><FONT COLOR=green>// &lt;evalpart&gt; is "|case &lt;instr&gt;*", or "|=case &lt;instr&gt;*"</FONT></I>
+  <I><FONT COLOR=green>// and &lt;thenpart&gt; is "|then &lt;instr&gt;*"</FONT></I>
+  done = false;
+  <B>do</B> <FONT COLOR=blue>{</FONT>
+    <B>char</B> ch,*pc=line;
+    <I><FONT COLOR=green>// skip white-space in 'line'</FONT></I>
+    <B>while</B> (*pc &amp;&amp; isspace(*pc)) pc++;
+    <B>if</B> (!*pc) <FONT COLOR=blue>{</FONT>
+
+<A NAME=648>      <B>if</B> (!src) <A HREF=../S/44.html#1302>stop</A>("WhenAlternative expected (\"|case\" or \"|=case\")");
+<A NAME=649>      <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// line was blank, try next line</FONT></I>
+      <B>continue</B>;
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>// pc is now at first non-blank</FONT></I>
+<A NAME=653>    <B>if</B> (*pc!='|') <A HREF=../S/44.html#1302>stop</A>("Separator in when expected (\"|...\")");
+    ch=*(++pc);
+<A NAME=655>    <B>if</B> (!src) <A HREF=../S/44.html#1302>stop</A>("Separator in when expected (\"|...\")");
+<A NAME=656>    <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip "|case", "|=case", "|then", or "|else"</FONT></I>
+    <B>switch</B> (ch) <FONT COLOR=blue>{</FONT>
+    <B>case</B> 'c': <I><FONT COLOR=green>// found a normal whenAlternative: "|case"</FONT></I>
+<A NAME=659>      wn_instr-&gt;addWAlt(<A HREF=../S/44.html#609>parseWhenAlternative</A>(false));
+      <B>break</B>;
+    <B>case</B> '=': <I><FONT COLOR=green>// found an exact whenAlternative: "|=case"</FONT></I>
+<A NAME=662>      wn_instr-&gt;addWAlt(<A HREF=../S/44.html#609>parseWhenAlternative</A>(true));
+      <B>break</B>;
+    <B>case</B> 't': <I><FONT COLOR=green>// found a then part: "|then"</FONT></I>
+<A NAME=665>      <A HREF=../S/44.html#1302>stop</A>("Extra \"|then\" encountered in when instruction");
+      <B>break</B>; <I><FONT COLOR=green>// well, break looks nice anyway</FONT></I>
+    <B>case</B> 'e': <I><FONT COLOR=green>// found an else part</FONT></I>
+      done=true;
+      <B>break</B>;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT> <B>while</B> (!done);
+  <I><FONT COLOR=green>// read else part</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=674>    <B>if</B> (!(sub_instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+    wn_instr-&gt;addElseInstr(sub_instr);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=677>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+
+  <B>return</B> wn_instr;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=682>Instruction* InstructionParser::<A HREF=../S/44.html#1093>parseSingleInstruction</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#627>[&lt;]</A><A HREF=#1016>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  DB_OUT(vm_parse, "parseSingleInstruction() line " &lt;&lt; linenumber &lt;&lt;
+         ": " &lt;&lt; pc &lt;&lt; endl);
+<FONT COLOR=darkred>#endif</FONT>
+  <B>if</B>(!strncmp(pc, ADDMP_TOK, ADDMP_TLEN))<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=690>    <B>return</B> <B>new</B> <A HREF=../S/48.html#17>Instr_AddMP_t</A>(pc = pc + ADDMP_TLEN + 1); <I><FONT COLOR=green>//skipping ` </FONT></I>
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(!strncmp(pc, ADDOPPLUS_TOK, ADDOPPLUS_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=694>    <B>return</B> <B>new</B> <A HREF=../D/14.html>Instr_AddOpPlus_t</A>(pc = pc + ADDOPPLUS_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, ADDOPMINUS_TOK, ADDOPMINUS_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=698>    <B>return</B> <B>new</B> <A HREF=../S/46.html#26>Instr_AddOpMinus_t</A>(pc = pc + ADDOPMINUS_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, ADDOPOR_TOK, ADDOPOR_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=702>    <B>return</B> <B>new</B> <A HREF=../S/46.html#38>Instr_AddOpOr_t</A>(pc = pc + ADDOPOR_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, ADDOPXOR_TOK, ADDOPXOR_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=706>    <B>return</B> <B>new</B> <A HREF=../S/46.html#50>Instr_AddOpXor_t</A>(pc = pc + ADDOPXOR_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, CALL_TOK, CALL_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=710>    <B>return</B> <B>new</B> <A HREF=../S/48.html#43>Instr_Call_t</A>(pc = pc + CALL_TLEN); 
+  <FONT COLOR=blue>}</FONT> 
+  <B>else</B> <B>if</B>(!strncmp(pc, CHKNONE_TOK, CHKNONE_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=714>    <B>return</B> <B>new</B> <A HREF=../S/48.html#57>Instr_ChkNone_t</A>(); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, CHKPTNNONE_TOK, CHKPTNNONE_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=718>    <B>return</B> <B>new</B> <A HREF=../S/48.html#67>Instr_ChkPtnNone_t</A>(); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, CHKQUALOBJ_TOK, CHKQUALOBJ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=722>    <B>return</B> <B>new</B> <A HREF=../S/48.html#77>Instr_ChkQualObj_t</A>(pc = pc + CHKQUALOBJ_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, DISCARD_TOK, DISCARD_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=726>    <B>return</B> <B>new</B> <A HREF=../S/48.html#88>Instr_Discard_t</A>(pc = pc + DISCARD_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, ENDGVIRT_TOK, ENDGVIRT_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+    <B>return</B> 0; <I><FONT COLOR=green>//this is not an instruction!</FONT></I>
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, GATHERVIRT_TOK, GATHERVIRT_TLEN))<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=734>    <B>return</B> <B>new</B> <A HREF=../S/48.html#95>Instr_GatherVirt_t</A>(pc = pc + GATHERVIRT_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, MERGE_TOK, MERGE_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=738>    <B>return</B> <B>new</B> <A HREF=../S/48.html#157>Instr_Merge_t</A>(); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, NEGINT_TOK, NEGINT_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=742>    <B>return</B> <B>new</B> <A HREF=../S/48.html#167>Instr_NegInt_t</A>(); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, NEGREAL_TOK, NEGREAL_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=746>    <B>return</B> <B>new</B> <A HREF=../S/48.html#177>Instr_NegReal_t</A>(); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, INNER_TOK, INNER_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=750>    <B>return</B> <B>new</B> <A HREF=../S/48.html#142>Instr_Inner_t</A>(pc = pc + INNER_TLEN + 1); 
+  <FONT COLOR=blue>}</FONT>  
+  <B>else</B> <B>if</B>(!strncmp(pc, INSTALLPTN_TOK, INSTALLPTN_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=754>    <B>return</B> <B>new</B> <A HREF=../S/47.html#8>Instr_InstallPtn_t</A>(pc = pc + INSTALLPTN_TLEN + 1); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, INSTALLOBJ_TOK, INSTALLOBJ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=758>    <B>return</B> <B>new</B> <A HREF=../S/47.html#22>Instr_InstallObj_t</A>(pc = pc + INSTALLOBJ_TLEN + 1); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, INSTALLQUALPTN_TOK, INSTALLQUALPTN_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=762>    <B>return</B> <B>new</B> <A HREF=../S/47.html#36>Instr_InstallQualPtn_t</A>(pc = pc + INSTALLQUALPTN_TLEN + 1); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, INSTALLQUALOBJ_TOK, INSTALLQUALOBJ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=766>    <B>return</B> <B>new</B> <A HREF=../S/47.html#50>Instr_InstallQualObj_t</A>(pc = pc + INSTALLQUALOBJ_TLEN + 1); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, MULOPMUL_TOK, MULOPMUL_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=770>    <B>return</B> <B>new</B> <A HREF=../S/49.html#10>Instr_MulOpMul_t</A>(pc = pc + MULOPMUL_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, MULOPDIV_TOK, MULOPDIV_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=774>    <B>return</B> <B>new</B> <A HREF=../S/49.html#23>Instr_MulOpDiv_t</A>(pc = pc + MULOPDIV_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, MULOPAND_TOK, MULOPAND_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=778>    <B>return</B> <B>new</B> <A HREF=../S/49.html#36>Instr_MulOpAnd_t</A>(pc = pc + MULOPAND_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, MULOPDIVINT_TOK, MULOPDIVINT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=782>    <B>return</B> <B>new</B> <A HREF=../S/49.html#49>Instr_MulOpDivInt_t</A>(pc = pc + MULOPDIVINT_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, MULOPMOD_TOK, MULOPMOD_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=786>    <B>return</B> <B>new</B> <A HREF=../S/49.html#62>Instr_MulOpMod_t</A>(pc = pc + MULOPMOD_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, NEWPTNOBJ_TOK, NEWPTNOBJ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=790>    <B>return</B> <B>new</B> <A HREF=../S/48.html#183>Instr_NewPtnObj_t</A>(); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, NEWPTNTMP_TOK, NEWPTNTMP_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=794>    <B>return</B> <B>new</B> <A HREF=../S/48.html#193>Instr_NewPtnTmp_t</A>(pc = pc + NEWPTNTMP_TLEN + 1); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, NOT_TOK, NOT_TLEN))<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=798>    <B>return</B> <B>new</B> <A HREF=../S/48.html#214>Instr_Not_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PEEKOBJREF_TOK, PEEKOBJREF_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=802>    <B>return</B> <B>new</B> <A HREF=../S/51.html#10>Instr_PeekObjRef_t</A>(pc = pc + PEEKOBJREF_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PEEKTMPREF_TOK, PEEKTMPREF_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=806>    <B>return</B> <B>new</B> <A HREF=../S/51.html#24>Instr_PeekTmpRef_t</A>(pc = pc + PEEKTMPREF_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPBOOL_TOK, POPBOOL_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=810>    <B>return</B> <B>new</B> <A HREF=../S/52.html#7>Instr_PopBool_t</A>(pc = pc + POPBOOL_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPCHARPUSHINT_TOK, POPCHARPUSHINT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=814>    <B>return</B> <B>new</B> <A HREF=../S/52.html#35>Instr_PopCharPushInt_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPCHARPUSHREAL_TOK, POPCHARPUSHREAL_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=818>    <B>return</B> <B>new</B> <A HREF=../S/52.html#47>Instr_PopCharPushReal_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPCHARPUSHSTR_TOK, POPCHARPUSHSTR_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=822>    <B>return</B> <B>new</B> <A HREF=../S/52.html#59>Instr_PopCharPushStr_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPCHAR_TOK, POPCHAR_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=826>    <B>return</B> <B>new</B> <A HREF=../S/52.html#21>Instr_PopChar_t</A>(pc = pc + POPCHAR_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPINTPUSHCHARAT_TOK, POPINTPUSHCHARAT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=830>    <B>return</B> <B>new</B> <A HREF=../S/52.html#85>Instr_PopIntPushCharAt_t</A>(pc = pc + POPINTPUSHCHARAT_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPINTPUSHCHAR_TOK, POPINTPUSHCHAR_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=834>    <B>return</B> <B>new</B> <A HREF=../S/52.html#99>Instr_PopIntPushChar_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPINTPUSHREAL_TOK, POPINTPUSHREAL_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=838>    <B>return</B> <B>new</B> <A HREF=../S/52.html#111>Instr_PopIntPushReal_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPINT_TOK, POPINT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=842>    <B>return</B> <B>new</B> <A HREF=../S/52.html#71>Instr_PopInt_t</A>(pc = pc + POPINT_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPOBJPUSHPTN_TOK, POPOBJPUSHPTN_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=846>    <B>return</B> <B>new</B> <A HREF=../S/52.html#123>Instr_PopObjPushPtn_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPOBJPUSHTMP_TOK, POPOBJPUSHTMP_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=850>    <B>return</B> <B>new</B> <A HREF=../S/52.html#135>Instr_PopObjPushTmp_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPOBJREF_TOK, POPOBJREF_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=854>    <B>return</B> <B>new</B> <A HREF=../S/52.html#147>Instr_PopObjRef_t</A>(pc = pc + POPOBJREF_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPPTNREF_TOK, POPPTNREF_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=858>    <B>return</B> <B>new</B> <A HREF=../S/52.html#161>Instr_PopPtnRef_t</A>(pc = pc + POPPTNREF_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPREALPUSHINT_TOK, POPREALPUSHINT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=862>    <B>return</B> <B>new</B> <A HREF=../S/52.html#189>Instr_PopRealPushInt_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPREAL_TOK, POPREAL_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=866>    <B>return</B> <B>new</B> <A HREF=../S/52.html#175>Instr_PopReal_t</A>(pc = pc + POPREAL_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPSTRPUSHCHAR_TOK, POPSTRPUSHCHAR_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=870>    <B>return</B> <B>new</B> <A HREF=../S/52.html#216>Instr_PopStrPushChar_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPSTRPUSHINT_TOK, POPSTRPUSHINT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=874>    <B>return</B> <B>new</B> <A HREF=../S/52.html#228>Instr_PopStrPushInt_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPSTRPUSHREAL_TOK, POPSTRPUSHREAL_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=878>    <B>return</B> <B>new</B> <A HREF=../S/52.html#240>Instr_PopStrPushReal_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, POPSTR_TOK, POPSTR_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=882>    <B>return</B> <B>new</B> <A HREF=../S/52.html#201>Instr_PopStr_t</A>(pc = pc + POPSTR_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHBOOL_TOK, PUSHBOOL_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=886>    <B>return</B> <B>new</B> <A HREF=../S/53.html#10>Instr_PushBool_t</A>(pc = pc + PUSHBOOL_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHCHAR_TOK, PUSHCHAR_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=890>    <B>return</B> <B>new</B> <A HREF=../S/53.html#24>Instr_PushChar_t</A>(pc = pc + PUSHCHAR_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHINDEX_TOK, PUSHINDEX_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=894>    <B>return</B> <B>new</B> <A HREF=../S/53.html#38>Instr_PushIndex_t</A>(pc = pc + PUSHINDEX_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHINT_TOK, PUSHINT_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=898>    <B>return</B> <B>new</B> <A HREF=../S/53.html#53>Instr_PushInt_t</A>(pc = pc + PUSHINT_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHOBJREF_TOK, PUSHOBJREF_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=902>    <B>return</B> <B>new</B> <A HREF=../S/53.html#67>Instr_PushObj_t</A>(pc = pc + PUSHOBJREF_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHOBJ_TOK, PUSHOBJ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=906>    <B>return</B> <B>new</B> <A HREF=../S/53.html#67>Instr_PushObj_t</A>(pc = pc + PUSHOBJ_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHPTNREF_TOK, PUSHPTNREF_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=910>    <B>return</B> <B>new</B> <A HREF=../S/53.html#82>Instr_PushPtn_t</A>(pc = pc + PUSHPTNREF_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHPTNOBJ_TOK, PUSHPTNOBJ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+    <B>return</B> <B>new</B> Instr_PushPtnObj_t();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHPTN_TOK, PUSHPTN_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=918>    <B>return</B> <B>new</B> <A HREF=../S/53.html#82>Instr_PushPtn_t</A>(pc = pc + PUSHPTN_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHQUAL_TOK, PUSHQUAL_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=922>    <B>return</B> <B>new</B> <A HREF=../S/53.html#102>Instr_PushQual_t</A>(pc = pc + PUSHQUAL_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHREAL_TOK, PUSHREAL_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=926>    <B>return</B> <B>new</B> <A HREF=../S/53.html#116>Instr_PushReal_t</A>(pc = pc + PUSHREAL_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHSTRLEN_TOK, PUSHSTRLEN_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=930>    <B>return</B> <B>new</B> <A HREF=../S/53.html#130>Instr_PushStrLen_t</A>(pc = pc + PUSHSTRLEN_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHSTR_TOK, PUSHSTR_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=934>    <B>return</B> <B>new</B> <A HREF=../S/53.html#145>Instr_PushStr_t</A>(pc = pc + PUSHSTR_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHTMPOBJREF_TOK, PUSHTMPOBJREF_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=938>    <B>return</B> <B>new</B> <A HREF=../S/53.html#174>Instr_PushTmpObjRef_t</A>(pc = pc + PUSHTMPOBJREF_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHTMPOBJ_TOK, PUSHTMPOBJ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=942>    <B>return</B> <B>new</B> <A HREF=../S/53.html#160>Instr_PushTmpObj_t</A>(pc = pc + PUSHTMPOBJ_TLEN);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHINONEOBJ_TOK, PUSHINONEOBJ_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=946>    <B>return</B> <B>new</B> <A HREF=../S/53.html#189>Instr_PushiNoneObj_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHINONEPTN_TOK, PUSHINONEPTN_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=950>    <B>return</B> <B>new</B> <A HREF=../S/53.html#199>Instr_PushiNonePtn_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHIBOOLLIT_TOK, PUSHIBOOLLIT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=954>    <B>return</B> <B>new</B> <A HREF=../S/53.html#210>Instr_PushiBoolLit_t</A>(pc = pc + PUSHIBOOLLIT_TLEN + 1);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHICHARLIT_TOK, PUSHICHARLIT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=958>    <B>return</B> <B>new</B> <A HREF=../S/53.html#230>Instr_PushiCharLit_t</A>(pc = pc + PUSHICHARLIT_TLEN + 2);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHIINTLIT_TOK, PUSHIINTLIT_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=962>    <B>return</B> <B>new</B> <A HREF=../D/76.html>Instr_PushiIntLit_t</A>(pc = pc + PUSHIINTLIT_TLEN + 1);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHIREALLIT_TOK, PUSHIREALLIT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=966>    <B>return</B> <B>new</B> <A HREF=../S/53.html#273>Instr_PushiRealLit_t</A>(pc = pc + PUSHIREALLIT_TLEN + 1);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, PUSHISTRLIT_TOK, PUSHISTRLIT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=970>    <B>return</B> <B>new</B> <A HREF=../S/53.html#289>Instr_PushiStrLit_t</A>(pc = pc + PUSHISTRLIT_TLEN + 2);
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, RELOPLT_TOK, RELOPLT_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=974>    <B>return</B> <B>new</B> <A HREF=../D/85.html>Instr_RelOpLT_t</A>(pc = pc + RELOPLT_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, RELOPLTEQ_TOK, RELOPLTEQ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=978>    <B>return</B> <B>new</B> <A HREF=../S/54.html#23>Instr_RelOpLTEQ_t</A>(pc = pc + RELOPLTEQ_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, RELOPEQ_TOK, RELOPEQ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=982>    <B>return</B> <B>new</B> <A HREF=../D/81.html>Instr_RelOpEQ_t</A>(pc = pc + RELOPEQ_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, RELOPNEQ_TOK, RELOPNEQ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=986>    <B>return</B> <B>new</B> <A HREF=../S/54.html#54>Instr_RelOpNEQ_t</A>(pc = pc + RELOPNEQ_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, RELOPGT_TOK, RELOPGT_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=990>    <B>return</B> <B>new</B> <A HREF=../D/83.html>Instr_RelOpGT_t</A>(pc = pc + RELOPGT_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, RELOPGTEQ_TOK, RELOPGTEQ_TLEN))<FONT COLOR=blue>{</FONT> 
+    DB_OUTDENT;
+<A NAME=994>    <B>return</B> <B>new</B> <A HREF=../S/54.html#84>Instr_RelOpGTEQ_t</A>(pc = pc + RELOPGTEQ_TLEN); 
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, RESETFRAME_TOK, RESETFRAME_TLEN))<FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=998>    <B>return</B> <B>new</B> <A HREF=../S/48.html#224>Instr_Resetframe_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, STDIOOUT_TOK, STDIOOUT_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=1002>    <B>return</B> <B>new</B> <A HREF=../S/48.html#230>Instr_StdioOut_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <B>if</B>(!strncmp(pc, STDIOIN_TOK, STDIOIN_TLEN)) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+<A NAME=1006>    <B>return</B> <B>new</B> <A HREF=../S/48.html#240>Instr_StdioIn_t</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>else</B> <FONT COLOR=blue>{</FONT>
+    DB_OUT(vm_bcl,  "InstructionParser::parseSingleInstruction() instruction: " 
+           &lt;&lt; pc &lt;&lt; " not implemented yet\n");
+    DB_OUTDENT;
+    <B>return</B> <B>new</B> Instr_Unsupported_t(pc);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=1016><B>void</B> <A HREF=../R/262.html>parseRuntimePath</A>(<B>char</B>* pc, SingleInstructionWRTP* inst)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#682>[&lt;]</A><A HREF=#1051>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  pc++;  <I><FONT COLOR=green>//skip space</FONT></I>
+  pc++; <I><FONT COLOR=green>//skip start brace</FONT></I>
+  <B>while</B>(*pc!='}')<FONT COLOR=blue>{</FONT>
+    <B>if</B>(*pc=='&lt;')<FONT COLOR=blue>{</FONT>
+<A NAME=1022>      inst-&gt;addStep(<B>new</B> <A HREF=../S/64.html#171>OutStep</A>(&amp;pc));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(*pc=='^')<FONT COLOR=blue>{</FONT>
+<A NAME=1024>      inst-&gt;addStep(<B>new</B> <A HREF=../S/64.html#30>UpStep</A>(&amp;pc));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(*pc=='v')<FONT COLOR=blue>{</FONT>
+<A NAME=1026>      inst-&gt;addStep(<B>new</B> <A HREF=../S/64.html#102>DownStep</A>(&amp;pc));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(*pc=='"')<FONT COLOR=blue>{</FONT>
+      <I><FONT COLOR=green>//TO BE REMOVED</FONT></I>
+      <B>if</B>(!strncmp(pc, "\"length/-1", 10) || !strncmp(pc, "\"at/-1", 6))<FONT COLOR=blue>{</FONT>
+        DB_OUT(vm_bcl_rtp, "parseRuntimePath:" &lt;&lt;
+               "length/-1 or at/-1 found skipping rest of rtp\n");
+        <I><FONT COLOR=green>//skipping last part not needed (will be removed)</FONT></I>
+        <B>break</B>;
+      <FONT COLOR=blue>}</FONT>
+<A NAME=1035>      inst-&gt;addStep(<B>new</B> <A HREF=../S/64.html#231>LookupStep</A>(&amp;pc));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(*pc=='\'')<FONT COLOR=blue>{</FONT>
+<A NAME=1037>      inst-&gt;addStep(<B>new</B> <A HREF=../S/64.html#304>IndirectLookupStep</A>(&amp;pc));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <B>if</B>(*pc=='t')<FONT COLOR=blue>{</FONT>
+<A NAME=1039>      inst-&gt;addStep(<B>new</B> <A HREF=../S/64.html#403>TmpStep</A>(&amp;pc));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      <B>break</B>;
+    <FONT COLOR=blue>}</FONT>
+    <B>if</B>(*pc==',')<FONT COLOR=blue>{</FONT>
+      pc++;
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+    DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=1051><B>void</B> <A HREF=../R/276.html>printRuntimePath</A>(RuntimeStep *step, ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#1016>[&lt;]</A><A HREF=#1064>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "{";
+  <B>if</B>(step) <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; step;
+    step = step-&gt;next();
+    <B>while</B>(step)<FONT COLOR=blue>{</FONT>
+      stream &lt;&lt; "," &lt;&lt; step;
+      step = step-&gt;next();
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  stream &lt;&lt; "}";
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=1064>Instruction* InstructionParser::<A HREF=../R/257.html>parseInstruction</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#1051>[&lt;]</A><A HREF=#1100>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>char</B>* pc = line;
+  
+  <I><FONT COLOR=green>// skip white-space</FONT></I>
+  <B>while</B> (*pc &amp;&amp; isspace(*pc)) pc++;
+  <B>if</B> (!*pc) <FONT COLOR=blue>{</FONT>
+<A NAME=1070>    <B>if</B> (!src) <A HREF=../S/44.html#1302>stop</A>("Instruction expected");
+<A NAME=1071>    <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// this line was empty, try the next one</FONT></I>
+<A NAME=1072>    <B>return</B> <A HREF=../S/44.html#1064>parseInstruction</A>();
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>// line is non-empty, pc is at first non-blank char</FONT></I>
+  <B>if</B> (*pc == '"' || *pc == '|' || *pc == ')') <B>return</B> 0; <I><FONT COLOR=green>// not an instruction</FONT></I>
+  <B>char</B>* pc2 = pc; <I><FONT COLOR=green>// pc and pc2 now at beginning of instr. name</FONT></I>
+  <B>while</B> (*pc2 &amp;&amp; !isspace(*pc2)) pc2++; <I><FONT COLOR=green>// pc2 after instr. name</FONT></I>
+  *pc2 = 0;
+
+  <I><FONT COLOR=green>// if composite instruction - read more lines</FONT></I>
+<A NAME=1082>  <B>if</B> (!strncmp(pc,"label(",6)) <B>return</B> <A HREF=../S/44.html#264>parseLabel</A>();
+<A NAME=1083>  <B>else</B> <B>if</B> (!strncmp(pc,SIMPFOR_TOK,SIMPFOR_TLEN)) <B>return</B> <A HREF=../S/44.html#278>parseSimpleFor</A>();
+<A NAME=1084>  <B>else</B> <B>if</B> (!strncmp(pc,NAMEDFOR_TOK,NAMEDFOR_TLEN)) <B>return</B> <A HREF=../S/44.html#327>parseNamedFor</A>();
+<A NAME=1085>  <B>else</B> <B>if</B> (!strncmp(pc,SIMPIF_TOK,SIMPIF_TLEN)) <B>return</B> <A HREF=../S/44.html#389>parseSimpleIf</A>();
+  <B>else</B> <B>if</B> (!strncmp(pc,LOCSIMPIF_TOK,LOCSIMPIF_TLEN)) 
+<A NAME=1087>    <B>return</B> <A HREF=../S/44.html#427>parseLocatedSimpleIf</A>();
+<A NAME=1088>  <B>else</B> <B>if</B> (!strncmp(pc,GENERALIF_TOK,GENERALIF_TLEN)) <B>return</B> <A HREF=../S/44.html#472>parseGeneralIf</A>(pc);
+<A NAME=1089>  <B>else</B> <B>if</B> (!strncmp(pc,WHILE_TOK,WHILE_TLEN)) <B>return</B> <A HREF=../S/44.html#580>parseWhile</A>();
+<A NAME=1090>  <B>else</B> <B>if</B> (!strncmp(pc,WHEN_TOK,WHEN_TLEN)) <B>return</B> <A HREF=../S/44.html#627>parseWhen</A>();
+  <B>else</B> <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>// a simple, single line instruction</FONT></I>
+<A NAME=1093>    Instruction* instr = <A HREF=../S/44.html#682>parseSingleInstruction</A>(pc);
+<A NAME=1094>    <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used that line, fetch next line</FONT></I>
+    <B>return</B> instr;
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> 0; <I><FONT COLOR=green>// dummy return, to avoid warning from g++</FONT></I>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=1100>Attribute* InstructionParser::<A HREF=../S/44.html#1253>parseAttribute</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#1064>[&lt;]</A><A HREF=#1216>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//Attribute *attr = new Attribute;</FONT></I>
+
+  <B>char</B> *attrName;
+  <B>int</B>   attrIndex;
+
+  <I><FONT COLOR=green>// check for end of attributes</FONT></I>
+  <B>char</B>* pc = line;
+  <B>while</B> (*pc &amp;&amp; *pc == ' ') pc++;
+  <B>if</B> (!*pc || *pc == '|') <FONT COLOR=blue>{</FONT>
+<A NAME=1110>    <B>if</B> (*pc) <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// used that line, fetch next</FONT></I>
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>// read name and index</FONT></I>
+<A NAME=1115>  <B>if</B> (*pc != '"') <A HREF=../S/44.html#1302>stop</A>("Attribute name expected");
+  pc++; <I><FONT COLOR=green>// pc now at 1st char of name</FONT></I>
+  <B>char</B>* pc2 = pc;
+  <B>while</B> (*pc2 &amp;&amp; *pc2 != '/') pc2++; <I><FONT COLOR=green>// pc2 now after end of name</FONT></I>
+  *pc2 = 0;
+  <I><FONT COLOR=green>//attr-&gt;name = strdup(pc);</FONT></I>
+  attrName = strdup(pc);
+  pc2++; <I><FONT COLOR=green>// pc2 now at beginning of index</FONT></I>
+  <I><FONT COLOR=green>//attr-&gt;index = atoi(pc2);</FONT></I>
+  attrIndex = atoi(pc2);
+
+  <I><FONT COLOR=green>//skip to end of number</FONT></I>
+  <B>while</B> (*pc2 != '"' &amp;&amp; *pc2 != 0) pc2++;
+  <I><FONT COLOR=green>//skip "\": ("</FONT></I>
+  pc2 = &amp;pc2[4];
+
+  <I><FONT COLOR=green>//is this a virtual attribute?</FONT></I>
+  <B>if</B>(*pc2 == 'v') <FONT COLOR=blue>{</FONT>
+    AttributeVirtual *attrv = <B>new</B> AttributeVirtual();
+    attrv-&gt;name = attrName;
+    attrv-&gt;index = attrIndex;
+    
+    <B>int</B> introducingBinding = 0;
+    <B>if</B>(pc2[7] == ' ' &amp;&amp; pc2[8] == '"') <FONT COLOR=blue>{</FONT>
+      introducingBinding = 1;
+
+      pc = pc2 = &amp;pc2[9];  <I><FONT COLOR=green>// pc, pc2 now at 1st char of name</FONT></I>
+      <B>while</B> (*pc2 != '/' &amp;&amp; *pc2) pc2++; <I><FONT COLOR=green>// pc2 now after end of name</FONT></I>
+      *pc2 = 0;
+      attrv-&gt;parentAttrName = strdup(pc);
+
+      pc2++; <I><FONT COLOR=green>// pc2 now at beginning of index</FONT></I>
+      attrv-&gt;parentAttrIndex = atoi(pc2);
+
+      <I><FONT COLOR=green>//skip to end of number</FONT></I>
+      <B>while</B> (*pc2 != '"' &amp;&amp; *pc2) pc2++;
+
+      <I><FONT COLOR=green>//goto start of mainpart id</FONT></I>
+      pc2 = &amp;pc2[6];
+<A NAME=1154>      <B>if</B>(*pc2 != '`') <A HREF=../S/44.html#1302>stop</A>("mainpart name expected");
+      <I><FONT COLOR=green>//pc = ++pc2;</FONT></I>
+      pc = pc2; <I><FONT COLOR=green>//don't skip backquote</FONT></I>
+      <I><FONT COLOR=green>//find end of string</FONT></I>
+      <B>for</B>(pc2 = pc; *pc2 != '"' &amp;&amp; *pc2; pc2++);
+      *pc2 = 0;
+      attrv-&gt;parentMainPartID = strdup(pc);
+    <FONT COLOR=blue>}</FONT>
+
+    <I><FONT COLOR=green>// read gather virtual instructions</FONT></I>
+    Instruction* instr;
+<A NAME=1165>    <A HREF=../S/44.html#253>nextline</A>();
+    <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=1167>      <B>if</B> (!(instr = <A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+      attrv-&gt;addGVInstr(instr);
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//continue after "END_OF_GATHERVIRT_CODE".(parseInstruction(END_OF_GATHER..)</FONT></I>
+    <I><FONT COLOR=green>//returns 0 and the line is advanced, so we do not have to do anything.</FONT></I>
+
+    <I><FONT COLOR=green>// read initialization instructions</FONT></I>
+    <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=1175>      <B>if</B> (!(instr = <A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+      attrv-&gt;addInstr(instr);
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=1179>    <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+
+    <I><FONT COLOR=green>//insert interesting instructions here...</FONT></I>
+
+    <B>if</B>(introducingBinding) <FONT COLOR=blue>{</FONT>
+      attrv-&gt;addGVInstr(<B>new</B> Instr_ContGatherVirt_t(attrv-&gt;parentAttrName,
+                                                   attrv-&gt;parentAttrIndex,
+                                                   attrv-&gt;parentMainPartID));
+    <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+      attrv-&gt;addGVInstr(<B>new</B> Instr_ContGatherVirt_t(attrv-&gt;name, 
+                                                   attrv-&gt;index, 
+                                                   currentMainPart));
+    <FONT COLOR=blue>}</FONT>
+
+<A NAME=1193>    attrv-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+
+    <B>return</B> attrv;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    Attribute *attr = <B>new</B> Attribute;
+
+    attr-&gt;name = attrName;
+    attr-&gt;index = attrIndex;
+
+    <I><FONT COLOR=green>// read initialization instructions</FONT></I>
+    Instruction* instr;
+<A NAME=1204>    <A HREF=../S/44.html#253>nextline</A>();
+    <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=1206>      <B>if</B> (!(instr = <A HREF=../S/44.html#1064>parseInstruction</A>())) <B>break</B>;
+      attr-&gt;addInstr(instr);
+    <FONT COLOR=blue>}</FONT>
+<A NAME=1209>    <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip ')'</FONT></I>
+    <I><FONT COLOR=green>//add return</FONT></I>
+<A NAME=1211>    attr-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#18>Instr_ReturnNPPO_t</A>());
+    <B>return</B> attr;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=1216>MainPart* InstructionParser::<A HREF=../S/44.html#246>parseMainPart</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#1100>[&lt;]</A><A HREF=#1302>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  MainPart* pmp = <B>new</B> MainPart; <I><FONT COLOR=green>// result</FONT></I>
+
+  <I><FONT COLOR=green>// skip empty lines</FONT></I>
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=1221>    <A HREF=../S/44.html#253>nextline</A>();
+<A NAME=1222>    <B>if</B> (<A HREF=../D/160.html>empty</A>(line)) <FONT COLOR=blue>{</FONT> <B>if</B> (src.eof()) <B>return</B> 0; <FONT COLOR=blue>}</FONT>
+    <B>else</B> <B>break</B>;
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(!strncmp(line, Pattern_tok, Pattern_tlen)) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//we have reached end of the interesting part of the file</FONT></I>
+    <B>delete</B> pmp;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <B>if</B>(!strncmp(line, Object_tok, Object_tlen)) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//we have reached end of the interesting part of the file</FONT></I>
+    <B>delete</B> pmp;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>// read beginning of MainPart</FONT></I>
+  <B>if</B> (strncmp(line, MainPart_tok, MainPart_tlen)) <FONT COLOR=blue>{</FONT>
+<A NAME=1239>    <A HREF=../S/44.html#1302>stop</A>("MainPart expected");
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>// extract the MainPart ID string</FONT></I>
+  <B>char</B>* pc=line+MainPart_tlen; <I><FONT COLOR=green>// pc now at beg. of ID</FONT></I>
+  <B>char</B>* pc2=pc;
+  <B>while</B> (*pc2 &amp;&amp; *pc2!='"') pc2++; <I><FONT COLOR=green>// pc2 now at '"' after end of ID</FONT></I>
+  *pc2=0; <I><FONT COLOR=green>// terminate ID string just before '"'</FONT></I>
+  currentMainPart = pmp-&gt;id = strdup(pc);
+
+<A NAME=1249>  <A HREF=../S/44.html#253>nextline</A>(); <I><FONT COLOR=green>// skip the "MainPart(" line</FONT></I>
+  <I><FONT COLOR=green>// read attributes; invariant: see parseAttribute</FONT></I>
+  Attribute* attr;
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=1253>    <B>if</B> (!(attr=<A HREF=../S/44.html#1100>parseAttribute</A>())) <B>break</B>;
+    pmp-&gt;addAttr(attr);
+  <FONT COLOR=blue>}</FONT>
+
+<A NAME=1257>  pmp-&gt;<A HREF=../S/44.html#41>setNumberOfAttributes</A>(pmp-&gt;attrs.getCount());
+  <I><FONT COLOR=green>//create object descriptor</FONT></I>
+<A NAME=1259>  <B>unsigned</B> <B>int</B> numAttributes = pmp-&gt;<A HREF=../S/44.html#45>getNumberOfAttributes</A>();
+<A NAME=1260>  ObjectDescriptor_t *objDes = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(UserPartObject_t) +
+                                                      (numAttributes-1)*
+                                                      <B>sizeof</B>(<B>void</B>*), 0);
+
+<A NAME=1264>  free(<B>new</B>(malloc(<B>sizeof</B>(UserPartObject_t))) <A HREF=../D/119.html>UserPartObject_t</A>(objDes));
+  <I><FONT COLOR=green>//objDes-&gt;print();</FONT></I>
+<A NAME=1266>  pmp-&gt;<A HREF=../S/44.html#33>setObjectDescriptor</A>(objDes); 
+
+  <I><FONT COLOR=green>//make Attribute array (sort attributes)</FONT></I>
+<A NAME=1269>  pmp-&gt;<A HREF=../S/44.html#129>setAttributeArray</A>((Attribute**)malloc(<B>sizeof</B>(Attribute*)*numAttributes));
+
+<A NAME=1271>  Attribute** attrArray = pmp-&gt;<A HREF=../S/44.html#134>getAttributeArray</A>();
+
+  <I><FONT COLOR=green>//sort attributes</FONT></I>
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; numAttributes ; i++)<FONT COLOR=blue>{</FONT>
+<A NAME=1276>    <B>for</B>(Attribute* attr = pmp-&gt;<A HREF=../S/44.html#138>getAttributeList</A>().first(); 
+        attr != NULL ; 
+        attr = attr-&gt;next())<FONT COLOR=blue>{</FONT>
+<A NAME=1279>      <B>if</B>(attr-&gt;<A HREF=../D/201.html>getIndex</A>() == i)<FONT COLOR=blue>{</FONT>
+        attrArray[i] = attr;
+        <B>break</B>;
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+  <I><FONT COLOR=green>// read dopart</FONT></I>
+  Instruction* instr;
+  <B>while</B> (src) <FONT COLOR=blue>{</FONT>
+<A NAME=1289>    <B>if</B> (!(instr=<A HREF=../S/44.html#1064>parseInstruction</A>())) <FONT COLOR=blue>{</FONT>
+      DB_OUT(vm_parse, "InstructionParser::parseMainPart():" &lt;&lt;
+             " no more instr in mp\n");
+      <B>break</B>;
+    <FONT COLOR=blue>}</FONT>
+    pmp-&gt;addInstr(instr);
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>// add return instruction at the end</FONT></I>
+<A NAME=1297>  pmp-&gt;addInstr(<B>new</B> <A HREF=../S/56.html#7>Instr_Return_t</A>());
+
+  <B>return</B> pmp;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=1302><B>void</B> InstructionParser::<A HREF=../R/304.html>stop</A>(<B>char</B>* msg) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#1216>[&lt;]</A><A HREF=#1318>[&gt;]</A><A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cerr &lt;&lt; "ERROR: " &lt;&lt; msg;
+  cerr &lt;&lt; " (looking at \"" &lt;&lt; line;
+  cerr &lt;&lt; "\", line "
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+       &lt;&lt; linenumber
+<FONT COLOR=darkred>#else</FONT>
+       &lt;&lt; " (no line number available in non-debug build) "
+<FONT COLOR=darkred>#endif</FONT>
+       &lt;&lt; ')' &lt;&lt; endl;
+  exit(1);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Aux functions</FONT></I>
+
+<A NAME=1318>bool <A HREF=../R/149.html>empty</A>(<B>char</B>* line) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#1302>[&lt;]</A>[&gt;]<A HREF=#18>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>while</B> (*line) <FONT COLOR=blue>{</FONT>
+    <B>if</B> (!isspace(*line)) <B>return</B> false;
+    line++;
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> true;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----------------------------------------------------------------------</FONT></I>
+<I><FONT COLOR=green>// Printing of run-time entities</FONT></I>
+
+ostream&amp; <B>operator</B>&lt;&lt;(ostream&amp; dest, Attribute* attr) <FONT COLOR=blue>{</FONT>
+<A NAME=1330>  attr-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+  <B>return</B> dest;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B>&lt;&lt;(ostream&amp; dest, Attribute&amp; attr) <FONT COLOR=blue>{</FONT>
+  <B>return</B> dest &lt;&lt; &amp;attr;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B>&lt;&lt;(ostream&amp; dest, MainPart* mp) <FONT COLOR=blue>{</FONT>
+<A NAME=1339>  mp-&gt;<A HREF=../D/309.html>printOn</A>(dest);
+  <B>return</B> dest;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B>&lt;&lt;(ostream&amp; dest, MainPart&amp; mp) <FONT COLOR=blue>{</FONT>
+  <B>return</B> dest &lt;&lt; &amp;mp;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#18>[^]</A><A HREF=#1318>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

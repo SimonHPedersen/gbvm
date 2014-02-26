@@ -1,0 +1,132 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/RemSetHash.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/RemSetHash.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/RemSetHash.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#31>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#31>main</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: RemSetHash.cc,v 1.5 2001/05/21 11:42:44 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG_MAIN
+<FONT COLOR=darkred># include</FONT> "RemSetHash.hpp"
+<FONT COLOR=darkred>#else</FONT> <I><FONT COLOR=green>//DEBUG_MAIN</FONT></I>
+<FONT COLOR=darkred># include</FONT> "gc_new.hpp"
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG_MAIN</FONT></I>
+
+<I><FONT COLOR=green>/*</FONT></I>
+<I><FONT COLOR=green>  NOTES ABOUT ITERATORS:</FONT></I>
+<I><FONT COLOR=green>  1. Never instantiate an iterator directly - go through the HashMap_t</FONT></I>
+<I><FONT COLOR=green>  2. Never insert in a hashmap where you are using an iterator and use</FONT></I>
+<I><FONT COLOR=green>     the iterator afterwards - the map may be resized and the pointer</FONT></I>
+<I><FONT COLOR=green>     in the iterator will become invalid.</FONT></I>
+<I><FONT COLOR=green>*/</FONT></I>
+
+<I><FONT COLOR=green>//prime list taken from stl_hashtable.h</FONT></I>
+<I><FONT COLOR=green>//const int num_primes = 28;</FONT></I>
+const <B>unsigned</B> <B>long</B> prime_list[num_primes] =
+<FONT COLOR=blue>{</FONT>
+  53ul,         97ul,         193ul,       389ul,       769ul,
+  1543ul,       3079ul,       6151ul,      12289ul,     24593ul,
+  49157ul,      98317ul,      196613ul,    393241ul,    786433ul,
+  1572869ul,    3145739ul,    6291469ul,   12582917ul,  25165843ul,
+  50331653ul,   100663319ul,  201326611ul, 402653189ul, 805306457ul, 
+  1610612741ul, 3221225473ul, 4294967291ul
+<FONT COLOR=blue>}</FONT>;
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG_MAIN
+
+<A NAME=31><B>int</B> main(<B>int</B> argc, <B>char</B> **argv) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>char</B> c1 = '1';
+  <B>char</B> c2 = '2';
+  <B>char</B> ca[100];
+
+  HashMap_t&lt;<B>char</B>*&gt; map;
+<A NAME=37>  map.<A HREF=../D/260.html>insert</A>(&amp;c1);
+<A NAME=38>  map.<A HREF=../D/260.html>insert</A>(&amp;c1);
+<A NAME=39>  map.<A HREF=../D/260.html>insert</A>(&amp;c2);
+  <B>for</B>(<B>int</B> i = 0; i &lt; 100; i++) <FONT COLOR=blue>{</FONT>
+    ca[i] = 'a';
+<A NAME=42>    map.<A HREF=../D/260.html>insert</A>(&amp;ca[i]);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=44>  cout &lt;&lt; "element " &lt;&lt; *map.<A HREF=../D/269.html>lookup</A>(&amp;c1) &lt;&lt; endl;
+
+  <I><FONT COLOR=green>/* This crashes since iterators pointer is not properly initialized</FONT></I>
+<I><FONT COLOR=green>     instead you should use member functions on HashMap_t to obtain</FONT></I>
+<I><FONT COLOR=green>     properly initialized iterators.</FONT></I>
+<I><FONT COLOR=green></FONT></I>
+<I><FONT COLOR=green>     Iterator_t&lt;char*&gt; it(&amp;map);</FONT></I>
+<I><FONT COLOR=green>     cout &lt;&lt; "main 1\n";</FONT></I>
+<I><FONT COLOR=green>     it++;</FONT></I>
+<I><FONT COLOR=green>     cout &lt;&lt; "main 1\n";</FONT></I>
+<I><FONT COLOR=green>     ++it;</FONT></I>
+<I><FONT COLOR=green>     cout &lt;&lt; "main 1\n";</FONT></I>
+<I><FONT COLOR=green>     *it;</FONT></I>
+<I><FONT COLOR=green>     cout &lt;&lt; "main 1\n";</FONT></I>
+<I><FONT COLOR=green>  */</FONT></I>
+
+<A NAME=60>  Iterator_t&lt;<B>char</B>*&gt; it2 = map.<A HREF=../D/203.html>getIterator</A>();
+<A NAME=61>  Iterator_t&lt;<B>char</B>*&gt; endit = map.<A HREF=../D/191.html>getEndIterator</A>();
+  <B>int</B> i = 1;
+  <B>while</B>(it2 != endit) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "element " &lt;&lt; i++ &lt;&lt; ": " &lt;&lt; **it2 &lt;&lt; endl;
+    ++it2;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//delete it2;</FONT></I>
+<A NAME=68>  <B>if</B>(map.<A HREF=../D/160.html>empty</A>()) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: map reported empty, when this is clearly not the case!\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=72>  map.<A HREF=../D/148.html>clear</A>();
+<A NAME=73>  <B>if</B>(!(map.<A HREF=../D/160.html>empty</A>())) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: map reported non-empty, when it should be empty!\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+<A NAME=77>  it2 = map.<A HREF=../D/203.html>getIterator</A>();
+<A NAME=78>  endit = map.<A HREF=../D/191.html>getEndIterator</A>();
+  <B>if</B>(*it2 != *endit) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: empty map end iterator error 1!\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(it2 != endit) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: empty map end iterator error 2!\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(!(it2 == endit)) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: empty map end iterator error 3!\n";
+  <FONT COLOR=blue>}</FONT>
+
+  ++it2;
+  <B>if</B>(*it2 != *endit) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: empty map end iterator error 4!\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(it2 != endit) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: empty map end iterator error 5!\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>if</B>(!(it2 == endit)) <FONT COLOR=blue>{</FONT>
+    cout &lt;&lt; "ERROR: empty map end iterator error 6!\n";
+  <FONT COLOR=blue>}</FONT>
+
+  <B>return</B> 0;
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG_MAIN</FONT></I>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#31>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

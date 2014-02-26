@@ -1,0 +1,175 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc_new/VMObject.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc_new/VMObject.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc_new/VMObject.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#44>[^]</A><A HREF=#100>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#44>VMObject_t</A>
+<LI><A HREF=#65>mark</A>
+<LI><A HREF=#100>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: VMObject.cc,v 1.14 2001/05/21 11:42:46 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "VMObject.hpp"</FONT></I>
+<FONT COLOR=darkred>#include</FONT> "gc_new.hpp"
+
+<I><FONT COLOR=green>// ----- initialization -----</FONT></I>
+
+<FONT COLOR=darkred>#ifdef</FONT> OBJ_HAS_ID
+<B>unsigned</B> <B>int</B> VMObject_t::nextID = 1;
+<FONT COLOR=darkred>#endif</FONT>
+
+<I><FONT COLOR=green>// ----- operators -----</FONT></I>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, VMObject_t* vmo) <FONT COLOR=blue>{</FONT>
+  <B>if</B>(vmo) <FONT COLOR=blue>{</FONT>
+<A NAME=16>    vmo-&gt;<A HREF=../D/309.html>printOn</A>(stream);
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; "*** tried to print a null-vmo ***\n";
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+ostream&amp; <B>operator</B> &lt;&lt; (ostream&amp; stream, VMObject_t&amp; vmo) <FONT COLOR=blue>{</FONT>
+<A NAME=24>  vmo.<A HREF=../D/309.html>printOn</A>(stream);
+  <B>return</B> stream;
+<FONT COLOR=blue>}</FONT>
+
+<B>void</B>* VMObject_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B> *freePointer,
+                               ObjectDescriptor_t *objDescriptor) <FONT COLOR=blue>{</FONT>
+  DB_INDENT;
+  <B>if</B>(!objDescriptor) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_vmo, "VMObject_t::operator new: *** object descriptor is null! ***\n");
+  <FONT COLOR=blue>}</FONT>
+<A NAME=34>  ((VMObject_t*)freePointer)-&gt;<A HREF=../S/44.html#33>setObjectDescriptor</A>(objDescriptor);
+  DB_OUT(gc_vmo, "Memory allocation subsystem: allocated VMObject_t at size: 0x" &lt;&lt;
+<A NAME=36>         hex &lt;&lt; ((size_t)size - <B>sizeof</B>(<B>void</B>*) + objDescriptor-&gt;<A HREF=../S/22.html#78>getObjLengthBytes</A>())
+         &lt;&lt; " begin: 0x" &lt;&lt; (<B>int</B>)freePointer &lt;&lt; dec &lt;&lt; endl);
+  DB_OUTDENT;
+  <B>return</B> freePointer;
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- member functions -----</FONT></I>
+
+<A NAME=44>VMObject_t::<A HREF=../R/116.html>VMObject_t</A>(<B>void</B>):
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#65>[&gt;]</A>[^]<A HREF=#100>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<FONT COLOR=darkred>#ifdef</FONT> OBJ_HAS_ID
+ id(nextID++),
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//OBJ_HAS_ID</FONT></I>
+ forward(0) <FONT COLOR=blue>{</FONT>
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=50>  <B>if</B>(!<A HREF=../D/220.html>getObjectDescriptor</A>()) <FONT COLOR=blue>{</FONT>
+    cerr &lt;&lt; "VMObject_t(): object has been created without (valid)"
+      "object descriptor\n";
+    exit(1);
+  <FONT COLOR=blue>}</FONT>
+  DB_INDENT;
+<A NAME=56>  DB_OUT(gc_vmo_id, "VMObject_t::VMObject_t(void) with id: " &lt;&lt; <A HREF=../S/13.html#440>getID</A>() &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//DEBUG</FONT></I>
+  <I><FONT COLOR=green>//clear references</FONT></I>
+  memset(data, 0, getObjectDescriptor()-&gt;getObjLengthBytes());
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> LIVESTAT
+
+<A NAME=65><B>void</B> VMObject_t::<A HREF=../R/242.html>mark</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#44>[&lt;]</A><A HREF=#100>[&gt;]</A><A HREF=#44>[^]</A><A HREF=#100>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//hack - uses forward bit for mark-bit</FONT></I>
+  <B>if</B>(isForward()) <FONT COLOR=blue>{</FONT>
+    <B>return</B>;
+  <FONT COLOR=blue>}</FONT>
+  setForwardBit(true);
+<A NAME=71>  ObjectDescriptor_t *_objDesc = <A HREF=../D/220.html>getObjectDescriptor</A>();
+<A NAME=72>  <B>unsigned</B> <B>int</B> *refMask = _objDesc-&gt;<A HREF=../S/22.html#86>getReferenceMask</A>();
+<A NAME=73>  <B>unsigned</B> <B>int</B> refsInObject = _objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+  <B>unsigned</B> <B>int</B> intsInMask = (refsInObject/(<B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8))+1;
+  <B>int</B> bits2Check = <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+  <B>void</B> *objRef;
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; intsInMask; ++i)<FONT COLOR=blue>{</FONT>
+    <B>int</B> mask = refMask[i];
+    <B>if</B>(mask) <FONT COLOR=blue>{</FONT>
+      <B>if</B>(i == (intsInMask -1)) <FONT COLOR=blue>{</FONT>
+        bits2Check = refsInObject - (intsInMask - 1) * <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+      <FONT COLOR=blue>}</FONT>
+      <B>for</B>(<B>int</B> j = 0; j &lt; bits2Check; ++j)<FONT COLOR=blue>{</FONT>
+        <B>if</B>((1&lt;&lt;j) &amp; mask)<FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//we've got a reference, let's find it</FONT></I>
+          objRef = data[i * <B>sizeof</B>(<B>int</B>) * 8 + j];
+          <B>if</B>(objRef) <FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//ok, now let's mark it</FONT></I>
+<A NAME=90>            VMO_FROM_VOIDP(objRef)-&gt;<A HREF=../D/275.html>mark</A>();
+          <FONT COLOR=blue>}</FONT> <I><FONT COLOR=green>//we allow null-references to be ignored</FONT></I>
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>    
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#endif</FONT> <I><FONT COLOR=green>//LIVESTAT</FONT></I>
+
+<A NAME=100><B>void</B> VMObject_t::<A HREF=../R/275.html>printOn</A>(ostream&amp; stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#65>[&lt;]</A>[&gt;]<A HREF=#44>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_INS_INDT(stream);
+<A NAME=103>  stream &lt;&lt; "- VMObject " &lt;&lt; <A HREF=../S/13.html#440>getID</A>() &lt;&lt; " at " &lt;&lt; (<B>void</B>*)<B>this</B> &lt;&lt; " with car at " 
+         &lt;&lt; (<B>void</B>*)Car_t::getCar(((<B>void</B>*)<B>this</B>));
+  <B>if</B>(forward)<FONT COLOR=blue>{</FONT>
+    stream &lt;&lt; " WARNING: forwardPtr is set:" &lt;&lt; forward;
+  <FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  DB_INDENT;
+  <I><FONT COLOR=green>//print references...</FONT></I>
+<A NAME=112>  ObjectDescriptor_t *_objDesc = <A HREF=../D/220.html>getObjectDescriptor</A>();
+<A NAME=113>  <B>unsigned</B> <B>int</B> *refMask = _objDesc-&gt;<A HREF=../S/22.html#86>getReferenceMask</A>();
+<A NAME=114>  <B>unsigned</B> <B>int</B> refsInObject = _objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+  <B>unsigned</B> <B>int</B> intsInMask = (refsInObject/(<B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8))+1;
+  <B>int</B> bits2Check = <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+  <B>void</B> *objRef;
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; intsInMask; ++i)<FONT COLOR=blue>{</FONT>
+    <B>int</B> mask = refMask[i];
+    <B>if</B>(mask) <FONT COLOR=blue>{</FONT>
+      <B>if</B>(i == (intsInMask -1)) <FONT COLOR=blue>{</FONT>
+        bits2Check = refsInObject - (intsInMask - 1) * <B>sizeof</B>(<B>unsigned</B> <B>int</B>)*8;
+      <FONT COLOR=blue>}</FONT>
+      <B>for</B>(<B>int</B> j = 0; j &lt; bits2Check; ++j)<FONT COLOR=blue>{</FONT>
+        <B>if</B>((1&lt;&lt;j) &amp; mask)<FONT COLOR=blue>{</FONT>
+          <I><FONT COLOR=green>//we've got a reference, let's find it</FONT></I>
+          objRef = data[i * <B>sizeof</B>(<B>int</B>) * 8 + j];
+          <B>if</B>(objRef) <FONT COLOR=blue>{</FONT>
+            <I><FONT COLOR=green>//ok, now let's print it</FONT></I>
+            DB_OUT(gc_vmo_dump_refs, endl);
+<A NAME=132>            DB_OUT(gc_vmo_dump_refs, "-&gt; " &lt;&lt; VMO_FROM_VOIDP(objRef)-&gt;<A HREF=../S/13.html#440>getID</A>() &lt;&lt; ", "
+                   &lt;&lt; (<B>void</B>*)VMO_FROM_VOIDP(objRef));
+          <FONT COLOR=blue>}</FONT> <I><FONT COLOR=green>//we allow null-references to be ignored</FONT></I>
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>  
+  DB_OUTDENT;
+<FONT COLOR=darkred>#endif</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#44>[^]</A><A HREF=#100>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

@@ -1,0 +1,113 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Pattern.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Pattern.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Pattern.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#9>[^]</A><A HREF=#71>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#9>Pattern_t</A>
+<LI><A HREF=#29>addMixin</A>
+<LI><A HREF=#39>instantiate</A>
+<LI><A HREF=#66>addMixin</A>
+<LI><A HREF=#71>instantiate</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Pattern.cc,v 1.18 2001/05/21 11:42:51 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<B>void</B>* Pattern_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B>* location)<FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=9>Pattern_t::<A HREF=../R/103.html>Pattern_t</A>(ObjectDescriptor_t *objDesc)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#29>[&gt;]</A>[^]<A HREF=#71>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//one of the mixins is within the Pattern so the number of mixins is </FONT></I>
+  <I><FONT COLOR=green>//the complete length from object descriptor minus the size used for </FONT></I>
+  <I><FONT COLOR=green>//the Pattern_t object + 1</FONT></I>
+<A NAME=14>  length = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>() - <B>sizeof</B>(Pattern_t)/<B>sizeof</B>(<B>void</B>*) + 1;
+  <I><FONT COLOR=green>//clear mixin array (FIRST)</FONT></I>
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; length; i++)<FONT COLOR=blue>{</FONT>
+    mixins[i] = 0;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//mark mixin refs in objdesc (for gc)</FONT></I>
+<A NAME=20>  <B>unsigned</B> <B>int</B> patternLengthInRefs = objDesc-&gt;<A HREF=../S/22.html#82>getObjLengthRefs</A>();
+  <B>unsigned</B> <B>int</B> mixinsStart = ((<B>unsigned</B> <B>int</B>)&amp;mixins - (<B>unsigned</B> <B>int</B>)<B>this</B>)/<B>sizeof</B>(<B>void</B>*);
+  DB_OUT(vm_ptn, "Pattern_t::Pattern_t() mixinStart: " &lt;&lt; mixinsStart &lt;&lt; endl);
+  <B>for</B>(<B>unsigned</B> <B>int</B> mixinRef = mixinsStart; mixinRef &lt; patternLengthInRefs; mixinRef++) <FONT COLOR=blue>{</FONT>
+<A NAME=24>    objDesc-&gt;<A HREF=../S/22.html#90>setReferenceAt</A>(mixinRef);
+  <FONT COLOR=blue>}</FONT>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=29><B>void</B> Pattern_t::<A HREF=../R/121.html>addMixin</A>(<B>unsigned</B> <B>int</B> index, Mixin_t* mixinPtr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#9>[&lt;]</A><A HREF=#39>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#71>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <I><FONT COLOR=green>//doing: mixins[index] = mixinPtr;</FONT></I>
+  DB_INDENT;
+  <B>if</B>(mixinPtr)<FONT COLOR=blue>{</FONT>
+<A NAME=33>    <A HREF=../D/339.html>setVMReference</A>(<B>this</B>, (<B>void</B>**)&amp;mixins[index], mixinPtr); 
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(vm_ptn, "Pattern_t::addMixin(): added mixin: " &lt;&lt; mixins[index] &lt;&lt; " mixinPtr: " &lt;&lt; mixinPtr &lt;&lt; endl);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+        
+<A NAME=39>Object_t* Pattern_t::<A HREF=../R/232.html>instantiate</A>(Thread_t *myThread)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#29>[&lt;]</A><A HREF=#66>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#71>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>void</B> *obj = allocateVM(objectDesc);
+<A NAME=42>  Object_t *theObject = <B>new</B>(obj) <A HREF=../D/103.html>Object_t</A>(<B>this</B>);
+
+  <B>for</B>(<B>unsigned</B> <B>int</B> i = 0; i &lt; length; i++)<FONT COLOR=blue>{</FONT>
+    <B>if</B>(mixins[i])<FONT COLOR=blue>{</FONT>
+      DB_OUT(vm_ptn, "Pattern_t::instantiate(): before " &lt;&lt; i 
+           &lt;&lt; "th instantiation mixins[i] " &lt;&lt; mixins[i] &lt;&lt; endl);
+<A NAME=48>      PartObject_t* po = mixins[i]-&gt;<A HREF=../D/261.html>instantiate</A>(theObject);
+      DB_OUT(vm_ptn, "Pattern_t::instantiate() mixin instantiated \n");
+<A NAME=50>      theObject-&gt;<A HREF=../S/42.html#34>add</A>(po, obj);
+      DB_OUT(vm_ptn, "Pattern_t::instantiate() part object added to object \n");
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//initialize attributes in partobjects of object DEPRECATED !!!!!!!!!</FONT></I>
+  <I><FONT COLOR=green>//theObject-&gt;initPartObjects(myThread);</FONT></I>
+  DB_OUTDENT;
+  <B>return</B> theObject;
+<FONT COLOR=blue>}</FONT>
+
+ <I><FONT COLOR=green>// --- EmptyPattern ---</FONT></I>
+  
+<B>void</B>* EmptyPattern_t::<B>operator</B> <B>new</B>(size_t size, <B>void</B>* location)<FONT COLOR=blue>{</FONT>
+  <B>return</B> location;
+<FONT COLOR=blue>}</FONT>
+  
+<A NAME=66><B>void</B> EmptyPattern_t::<A HREF=../R/121.html>addMixin</A>(<B>unsigned</B> <B>int</B> index, Mixin_t* mixinPtr)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#39>[&lt;]</A><A HREF=#71>[&gt;]</A><A HREF=#9>[^]</A><A HREF=#71>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  cerr &lt;&lt; "EmptyPattern_t::addMixin(): IDIOT" &lt;&lt; endl;
+  exit(1);
+<FONT COLOR=blue>}</FONT>
+        
+<A NAME=71>Object_t* EmptyPattern_t::<A HREF=../R/232.html>instantiate</A>(Thread_t *myThread)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#66>[&lt;]</A>[&gt;]<A HREF=#9>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+<A NAME=73>  Object_t *theObject = <B>new</B>(allocateVM(objectDesc)) <A HREF=../D/103.html>Object_t</A>(<B>this</B>);
+  DB_OUTDENT;
+  <B>return</B> theObject;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#9>[^]</A><A HREF=#71>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

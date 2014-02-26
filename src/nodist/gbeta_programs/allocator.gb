@@ -1,0 +1,14 @@
+-- betaenv:descriptor --
+(#
+t: @integer;
+x: (# do 1+1->t; #);
+y: ^x;
+do
+  (for 800 repeat
+ 	&x[]->y[];
+  	(for 200 repeat 
+		y[]; 
+		x;
+  	for);
+   for);
+#)

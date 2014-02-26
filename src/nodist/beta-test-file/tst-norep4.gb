@@ -1,0 +1,2380 @@
+------------BETAENV: descriptor--------------
+(# program:
+     (#
+     do (for 10 repeat
+(*
+	'Hello world!'->stdio;*)
+        'Real'->newl;
+        TstReal;
+(*      'DoPart'->newl;
+        TstDoPart;
+        'MainPart'->newl;
+        TstMainPart;*)
+(*      'CompRef'->newl;
+        TstCompRef;
+        'CompRem2'->newl;
+        TstCompRem2; 
+        'LVRA'->newl;
+        TstLVRA; *)
+(*        'BigObject'->newl; 
+        TstBigObject;*)
+        (* 'CProc'->newl;   
+         * TstCProc; *)
+(*        'GeneralRep'->newl; tstgeneralrep; *)
+	for)
+     #);
+   
+   (*EE-begin*)
+   fill: 
+     (# ch: @char 
+     enter ch
+     do ch->put;
+	'TEST OK'->PutText;
+     #);	
+(* first attempt
+     do (for ch:'z' repeat 
+		(if ('a'<=ch) and (ch<='z') then ch->put; ch+1->ch; restart L if)
+	for);
+        (if ch-1='z' then '0'->ch if);
+        (for ch:'9' repeat 
+		(if ('0'<=ch) and (ch<='9') then ch->put; ch+1->ch; restart L if)	      for);
+     #);
+*)
+(* original do-part hempe
+     do L: (if ('a'<=ch) and (ch<='z') then ch->put; ch+1->ch; restart L if);
+        (if ch-1='z' then '0'->ch if);
+        L: (if ('0'<=ch) and (ch<='9') then ch->put; ch+1->ch; restart L if);
+     #);
+*)
+   chkBool:
+     (# b1,b2: @boolean;
+        ch: @char;
+     enter (b1,b2,ch) 
+     do (if b1=b2 then ch->put if)
+     #);
+   chk:
+     (# i1,i2: @integer;
+        ch: @char;
+     enter (i1,i2,ch)
+     do (if i1=i2 then ch->put if)
+     #);
+   external: (# do INNER #);
+   (*EE-end*)
+     
+   put:
+     (# ch: @char
+     enter ch
+     do ch->stdio 
+     #);
+   newline: (# do '\n'->put #);
+   PutText:
+     (# T: @string
+     enter T
+     do (for i: T.length repeat i->T.at->put for)
+     #);
+   PutText2:
+     (# T: ^Text;
+     enter T[]
+     do (for i:T.T.length repeat i->T.T.at-> put for)
+     #);
+   putLine:
+     (# T: ^Text
+     enter T[] do T->PutText; newline
+     #);
+   putInt:
+     (# n: @integer
+     enter n
+     do (if n
+         // 0 then '0'->stdio
+         // 1 then '1'->stdio
+         // 2 then '2'->stdio
+         // 3 then '3'->stdio
+         // 4 then '4'->stdio
+         // 5 then '5'->stdio
+         // 6 then '6'->stdio
+         // 7 then '7'->stdio
+         // 8 then '8'->stdio
+         // 9 then '9'->stdio
+        else '<anInteger>'->stdio
+        if)
+     #);
+   Text: (# T: @string enter T exit T #);
+
+   indent: @integer;
+   newl: @
+     (# Prompt: @string
+     enter Prompt
+     do '.'->put; newline; Prompt->PutText;
+	(* i den næste namedfor går det ned! *)
+        (for i: 10-Prompt.length repeat ' ' ->put for);
+        ':' -> put;
+        (for i: 1 (*indent*) repeat ' ' -> put for);
+        indent+1 -> indent
+     #);
+   charValue: (# value: @char do INNER exit value #);
+   (* BOOLEAN: (# #); *)
+   (* FALSE: BOOLEAN(# #); *)
+   (* TRUE: BOOLEAN(# #); *)
+   int8: (# #);
+   (* CHAR: (# #); *) int8u: (# #);
+   int16: (# #);
+   int16u: (# #); shortInt: (# (*EE*) value: @integer enter value exit value #);
+   int32: (# #); (* INTEGER: (# #); *)
+   int32u: (# #);
+   int64: (# #);
+   int64u: (# #);
+   (* real: (# x,y: @integer enter(x,y) exit(x,y) {* realdesc *} #); *)
+   IntegerValue: (# value: @integer do INNER exit value #);
+   IntegerObject: IntegerValue(# enter value do INNER #);
+   Data: (# #);
+   ErrorName: (# #);
+   (* Object:
+    *  (# Struc: (# R: ##Object do TOS'ThisS'->R## exit R## #);
+    *  do INNER
+    *  #);
+    *)
+   repetition:
+      (* pattern describing repetitions.
+       * Do NOT use as superpattern!!!
+       *)
+      (# range: (* exit the range of THIS(rep) *)
+	   (# n: @ integer exit n #);
+         new:
+	   (* allocate a new repetition of N elements
+	    * the current elements in THIS(rep) becomes inaccessible
+            *)
+	   (# n: @integer enter n #);
+         extend: (* extend THIS(rep) by N elements *)
+	   (# N: @integer enter N #);
+      #);
+
+   (* ----- from included fragment groups ----- *)
+
+   tstComp:
+     (# x,y,z: @char;
+        C1: @ |
+          (# P: (# ch: @char; N: @integer
+                enter(ch,N)
+                do (ch+1)->put; SUSPEND;
+                   (if N// 4 then else N+1->N; (ch+1)->ch; (ch,N)->&P if)
+                #);
+             dum: @P;
+             ch1,ch2: @char
+          enter(ch1,ch2)
+          do ch1->put; SUSPEND; ch2->put;
+             (ch2,1)->&P ;
+          #);
+
+        CP:
+          (# M: @(#do y->put; SUSPEND; z->put #);
+          do x->put; SUSPEND; M
+          #);
+
+        rC: ^ | CP;
+
+        C2: @ |
+          (# a,b: @char; q: @ (# c: @char #)
+          do a->put; SUSPEND; q.c-> put; 'm'->put; 'n'->b
+          #);
+        C3,C4: @ |
+          (# x,y: @char
+          enter(x,y)
+          do SUSPEND
+          exit(x,y)
+          #);
+        x1,x2: @char;
+
+        CQ: (# ch1,ch2: @char enter(ch1,ch2) do ch1->put; ch2->put #);
+        rCQ: ^| CQ; rCQI: ^CQ;
+        CQQ: (# ch1: @char enter ch1 do ch1->put exit ch1 #);
+        rCQQ: ^| CQQ; rCQQI: ^CQQ
+     do 'Q'->C1.ch1;
+        ('a','b')-> C1;
+        (for i:4 repeat C1; for);
+        'g'->x;
+        &|CP;
+        &|CP[]->rC[];
+        'h'->x; 'i'->y; 'j'->z;
+        rC; rC; rC;
+        'k'->C2.a; C2;
+        'l'->C2.q.c; C2;
+        C2.b->put;
+        ('o','p')->C3->C4->(x1,x2);
+        x1->put; x2->put;
+        (# qCP: @ |
+          (# do 'q'->x; CP (* test that CP also can generate an item*)#)
+        do qCP
+        #);
+        &|CQ[]->rCQ[]; ('r','s')->rCQ;
+        &CQ[]->rCQI[]; ('t','u')->rCQI; (* CQ as item *)
+
+        &|CQQ[]->rCQQ[]; 'v'->rCQQ->x;
+        (if x//'v' then 'w'->put else '!'->put if);
+        &CQQ[]->rCQQI[]; 'x'->rCQQI->x;  (* CQQ as item *)
+        (if x//'x' then 'y'->put else '!'->put if);
+
+        'z0123456789'->PutText
+     #);
+
+   TstRef:
+     (# foo:
+          (# x,y: @char
+          enter x
+          do y->put; x->put; INNER
+          #);
+        bar: foo(# z: @char do z->put; inner #);
+
+        X: @foo; (* p.g.a. checker-fejl skal der vaere en statisk instans*)
+        Y: @bar; (* af alle ptn der genereres dynamisk!! *)
+        R1,R2: ^foo;
+        R3: ^bar; R4: ^foo;
+        QQ: (# do NONE->R3[] exit R3[] #);
+        tstQua:
+          (# ch: @char; V:< object; R: ^foo; S: ^bar; T: ^V
+          enter ch
+          do &bar[]->R[];
+             R[]->S[];
+             ch->R.x;
+             S[]->T[];
+             inner
+          #);
+        tstQua2: tstQua
+          (# V:: bar
+          do R.x->T.y; T.y->put
+          #);
+        noNone:
+          (# s: ^Text;
+             foo: (# q: ^Text enter q[] #);
+             bar: (# t: ^Text exit t[] #);
+          do bar -> s[] -> foo; (* an error once gave ref.is.none here *)
+          #)
+
+     do 'a'->X.y; 'b'->X;
+        &foo[]->R1[]; 'c'->R1.y; 'd'->R1;
+        R1[]->R2[]; 'e'->R2.y; 'f'->R2;
+        &bar[]->R3[]; 'g'->R3.y; 'i'->R3.z; 'h'->R3;
+        R3[]->R1[]; 'j'->R1.y; 'l'->R3.z; 'k'->R1;
+        Y[]->R2[]; 'm'->R2.y; 'o'->Y.z; 'n'->R2;
+
+        R1[]->R2[]; (R1[]=R2[],true ,'p')->chkBool;
+        X[] ->R4[]; (R1[]=R4[],false,'q')->chkBool;
+        (X[] =X[] ,true, 'r')->chkBool;
+        (* (X[] =Y[] ,false,'s')->chkBool; compile-time error*)
+        (Y[] = Y[],true,'s')->chkBool;
+        X[]->R1[];  (X[] =R1[],true ,'t')->chkBool;
+        Y[]->R1[];  (X[] =R1[],false,'u')->chkBool;
+
+        R1[]->R2[]; (if R1[]//R2[] then 'v'->put else '!'->put if);
+        X[]->R2[];  (if R1[]//R2[] then '!'->put else 'w'->put if);
+        (if X[]//X[] then 'x'->put else '!'->put if);
+        (*  (if X[]//Y[] then '!'->put else 'y'->put if); compile-time error *)
+        (if Y[]//R2[] then '!'->put else 'y'->put if);
+        X[]->R1[];  (if X[]//R1[] then 'z'->put else '!'->put if);
+        (if R1[]//X[] then '0'->put else '!'->put if);
+
+        NONE->R1[]; (R1[]=NONE,true,'1')->chkBool; (* etc *)
+       (X[]=NONE,false,'2')->chkBool; (* etc *)
+       (*!!!! X[]=NONE is always true; this is pure luck
+        * since cmp would otherwise not work *)
+        (if R1[] // NONE then '3'->put else '!'->put if);
+        (if NONE // R1[] then '4'->put else '!'->put if);
+        (if X[] // NONE then '!'->put else '5'->put if);
+        (if NONE // X[] then '!'->put else '6'->put if);
+        (if NONE // NONE then '7'->put else '!'->put if);
+        (if (QQ=NONE)//true then '8'->put else '!'->put if);
+        '9'->tstQua2;
+        noNone;
+     #);
+   TstRelOp:
+     (# x,y: @integer; b: @boolean; ch,c1,c2: @char;
+        qqq: (# do exit x #);
+        putCh: @(# do (if b then ch+1->put else ch->put if)#);;
+        tstRelLog:
+          (#
+             IfNum:
+               (# T: @Text; n: @integer; boo: @boolean; ch: @char
+               enter T
+               do true->boo;
+                  (for i: T.T.length repeat
+                       i->T.T.at->ch;
+                       n+1->n;
+                       (if ((ch<'0') or ('9'<ch)) (* is not a digit*)
+                           and
+                           ((n>1) or
+                           not ((ch='-') or (ch='+'))) (* and not the sign *)
+                           then false->boo
+                  if)for)
+               exit boo
+               #);
+             T: ^Text
+          do (if '123'->IfNum then 'p'->put else '!'->put if);
+             (if '-123'->IfNum then 'q'->put else '!'->put if);
+             (if '12x3'->IfNum then '!'->put else 'r'->put if);
+             (if '12-3'->IfNum then '!'->put else 's'->put if);
+             (if 'abe'->IfNum then '!'->put else 't'->put if);
+          #);
+     do 'a'->ch;
+        333->x; 1011->y; (x=y)->b; putCh; (* 'a' *)
+        333->y; (x=y)->b; putCh; (* 'b' *)
+        ch+2->ch;
+        (x=111)->b; putCh; (* 'c' *)
+        (x=333)->b; putCh; (* 'd' *)
+        ch+2->ch;
+        111->y; (x<y)->b; putCh; (* 'e' *)
+        555->y; (x<y)->b; putCh; (* 'f' *)
+
+        (x=y) and (y=x)->b; (b,false,'g')->chkBool;
+        (if ((x=x) and (y=y))// true then 'h'->put else '!'->put if);
+        (if true
+         // (x=y) and (y=x) then '?'->put
+         // (x<>y) and (y<>x) then 'i'->put
+         // (x+y) = (y-x) then '?'->put
+         // (x-y) = (y+x) then '?'->put
+         else '!'->put
+        if);
+
+        999->x; (x=qqq,true,'j')->chkBool; (qqq=x,true,'k')->chkBool;
+        ((x-14)<qqq,true,'l')->chkBool; (qqq>(x-15),true,'m')->chkBool;
+
+        65->c1; 255->c2;
+        (if (c1 < c2) // true then 'n'->put else '!'->put if);
+        (for i: 255 repeat
+             i-1->c1;
+             (if c1<c2 // true then else '!'->put if);
+             (if c2>c1 // true then else '!'->put if);
+             i->c1;
+             (if c1<=c2 // true then else '!'->put if);
+             (if c2>=c1 // true then 'o'->ch else '!'->put if);
+        for);
+        ch->put;
+        tstRelLog;
+        'uvwxyz0123456789'->PutText
+     #);
+   TstBool:
+     (# chk:
+	  (# v,r: @boolean; ch: @char
+	  enter(v,r,ch)
+          do (if v//r then ch->put else '!'->put if)
+          #);
+        B1,B2,B3: @boolean;
+        a,b: @integer;
+        XT: (# B: @boolean do true->B exit B #);
+        XF: (# B: @boolean do false->B exit B #);
+        Q: (# exit a=b #);
+        F: (# b1,b2,R1,bo1,bo2: @boolean; ch: @char;
+              FF: (# b: @boolean enter b do exit b #)
+           enter(b1,b2,ch)
+           do (b1->FF) and (b2->FF) ->R1;
+              (b1->FF)->bo1; (b2->FF)->bo2;
+              (R1,(bo1 and bo2),ch)->chk
+           #);
+     do false->B1; true->B2;
+        (if B1//true then '!'->put else 'a'->put if);
+        (if B2//true then 'b'->put else '!'->put if);
+        B1 or B2->B3;  (B3,true,'c')->chk;
+        B1 and B2->B3; (B3,false,'d')->chk;
+        NOT B2 ->B3;   (B3,false,'e')->chk;
+        (false or XT, true,'f')->chk;
+        (true and XT, true,'g')->chk;
+        (XT or false, true,'h')->chk;
+        (XT and true, true,'i')->chk;
+        (B1 or XT, true,'j')->chk;
+        (XT or B1, true,'k')->chk;
+        (B2 and XT, true,'l')->chk;
+        (B1 and XT, false,'m')->chk;
+         111->a; 222->b;
+        (not (a=b),true,'n')->chk;
+        (not Q,true,'o')->chk;
+        (not XT,false,'p')->chk;
+        (true,true,'q')->F;
+        (true,false,'r')->F;
+        (false,true,'s')->F;
+        (false,false,'t')->F;
+        (false xor false,false,'u')->chk;
+        (false xor true,true,'v')->chk;
+        false->B1;
+        (B1 xor true,true,'w')->chk;
+        (B1 xor false,false,'x')->chk;
+        true->B1;
+        (false xor B1, true,'y')->chk;
+        (XF xor XT,true,'z')->chk;
+        true->B1; false->B2;
+        (false or B1,true,'0')->chk;
+        (false or B2,false,'1')->chk;
+        (false or false, false,'2')->chk;
+        (false or true, true,'3')->chk;
+        (true or B1,true,'4')->chk;
+        (false and B1, false,'5')->chk;
+        (true and B1,true,'6')->chk;
+        (true and B2,false,'7')->chk;
+        (true and false,false,'8')->chk;
+        (true and true,true,'9')->chk;
+     #);
+   TstArith:
+     (# XX: @ (# V: @integer do 999->V exit V #);
+        a,b,c: @integer; ch: @char
+     do 5->a; 12->b; 2->c;
+
+        (111+222,333,'a')->chk;
+        (111+a  ,116,'b')->chk;
+        (a+b    , 17,'c')->chk;
+        ((a+b)+c, 19,'d')->chk;
+        (b+222  ,234,'e')->chk;
+        (a+(b+c), 19,'f')->chk;
+        (XX+1   ,1000,'g')->chk;
+        (2+XX   ,1001,'h')->chk;
+        (XX+a,   1004,'i')->chk;
+        (b+XX,   1011,'j')->chk;
+        'k'->fill; newl;
+
+        (111-222,-111,'\141')->chk;
+        (111-a  , 106,'\142')->chk;
+        (a-b    ,  -7,'c')->chk;
+        ((a-b)-c,  -9,'d')->chk;
+        (b-222  ,-210,'e')->chk;
+        (a-(b-c),  -5,'f')->chk;
+        'g\150\151j'->PutText; 'k'->fill; newl;
+
+        (-3,-3,'a')->chk;
+        (-a,-5,'b')->chk;
+        (-(a+b),-17,'c')->chk;
+        (if -(a+b)// -17 then 'd'->put else '!'-> put if);
+
+        900->a; 90->b; 57->ch;
+        ((a+b)+ch,1047,'e')->chk;
+        ((a+b)-ch,933 ,'f')->chk;
+        (ch+(a+b),1047,'g')->chk;
+        (ch-(a+b),-933,'h')->chk;
+        10->ch;
+        ((a+b)*ch,9900,'i')->chk;
+        (ch*(a+b),9900,'j')->chk;
+        (1000-ch,990,'k')->chk;
+        200->ch;
+        (ch+ch,400,'l')->chk;
+        ('a'-a,-803,'m')->chk;
+        'n'->fill;
+
+        'Multiply' -> newl;
+        5->a;  12->b; 2->c;
+        (3*a,15,'a')->chk;
+        (a*b,60,'b')->chk;
+        (a*b*c,120,'c')->chk;
+        (12*6,72,'d')->chk;
+        (a*3,15,'e')->chk;
+        (3*(a*b),180,'f')->chk;
+        ((a*b)*3,180,'g')->chk;
+        (a*(b*c),120,'h')->chk;
+        ((a*b)*c,120,'i')->chk;
+        ((a*b)*(c*4),480,'j')->chk;
+        (a*(-1),-5,'k')->chk;
+        (-a*(-1),5,'l')->chk;
+        (-a*2,-10,'m')->chk;
+        (-a*(-2),10,'n')->chk;
+        (-a*4,-20,'o')->chk;
+        (-a*(-4),20,'p')->chk;
+        (-a*256,-1280,'q')->chk;
+        (-a*(-256),1280,'r')->chk;
+        's'->fill; newl;
+
+        (3*a,15,'a')->chk;
+        (a*b,60,'b')->chk;
+        (a*b*c,120,'c')->chk;
+        (12*6,72,'d')->chk;
+        (a*3,15,'e')->chk;
+        (3*(a*b),180,'f')->chk;
+        ((a*b)*3,180,'g')->chk;
+        (a*(b*c),120,'h')->chk;
+        ((a*b)*c,120,'i')->chk;
+        ((a*b)*(c*4),480,'j')->chk;
+        (0*a,0,'k')->chk;
+        (1*a,5,'l')->chk;
+        (2*a,10,'m')->chk;
+        (3*a,15,'n')->chk;
+        (4*a,20,'o')->chk;
+        (5*a,25,'p')->chk;
+        (6*a,30,'q')->chk;
+        (7*a,35,'r')->chk;
+        (8*a,40,'s')->chk;
+        (a*0,0,'t')->chk;
+        (a*1,5,'u')->chk;
+        (a*2,10,'v')->chk;
+        (a*3,15,'w')->chk;
+        (a*4,20,'x')->chk;
+        (a*5,25,'y')->chk;
+        (a*6,30,'z')->chk;
+        (a*7,35,'0')->chk;
+        (a*8,40,'1')->chk;
+        (a*256,1280,'2')->chk;
+        (a*65536,327680,'3')->chk;
+        (a*16777216,83886080,'4')->chk;
+        (13*0,0,'5')->chk;
+        '6'->fill;
+
+        'Divide' -> newl;
+        (a div 3,1,'a')->chk;
+        (b div a,2,'b')->chk;
+        (b div (a div 2),6,'c')->chk ;
+        (XX div 3,333,'d')->chk;
+        (1000 div XX,1,'e')->chk;
+        (XX mod 888,111,'f')->chk;
+        (1002 mod XX, 3,'g')->chk;
+        (XX div a,199,'h')->chk;
+        (XX mod a,4,'i')->chk;
+        ((a+b) div 3, 5, 'j')->chk;
+        ((a+b) mod 3, 2, 'k')->chk;
+        ((a+b) div a, 3, 'l')->chk;
+        ((a+b) mod a, 2, 'm')->chk;
+        ((a+b) div (a-2), 5, 'n')->chk;
+        ((a+b) mod (a-2), 2, 'o')->chk;
+        (# d,e: @integer
+        do 100->d; 200->a;
+           (d div 4, 25, 'p')->chk;
+           (a div 8, 25, 'q')->chk;
+           (d mod 16, 4, 'r')->chk;
+           (a mod 128,72,'s')->chk;
+           ((a+d) div 128, 2, 't')->chk;
+           ((a+d) mod 128, 44, 'u')->chk;
+           (a div 1, a, 'v')->chk;
+           (d div 1, d, 'w')->chk;
+           (a mod 1, 0,'x')->chk;
+           (d mod 1, 0, 'y')->chk;
+           -32->a; -1025->d;
+           (a div 4, -8, 'z')->chk;
+           (d div 8, -128,'0')->chk;
+           8 ->a;
+           (d div a, -128,'1')->chk;
+           -32->a;
+           (a * 4, -128, '2')->chk;
+        #);
+        '3'->fill; newl;
+
+        100 -> a;
+        (a div 1,100,'a')->chk;
+        (a div 2,50,'b')->chk;
+        (a div 3,33,'c')->chk;
+        (a div 4,25,'d')->chk;
+        (a div 5,20,'e')->chk;
+        (a div 6,16,'f')->chk;
+        (a div 7,14,'g')->chk;
+        (a div 8,12,'h')->chk;
+        83886080->a;
+        (a div 256,327680,'i')->chk;
+        (a div 65536,1280,'j')->chk;
+        (a div 16777216,5,'k')->chk;
+        101 -> a;
+        (a mod 1,0,'l')->chk;
+        (a mod 2,1,'m')->chk;
+        (a mod 3,2,'n')->chk;
+        (a mod 4,1,'o')->chk;
+        (a mod 5,1,'p')->chk;
+        (a mod 6,5,'q')->chk;
+        (a mod 7,3,'r')->chk;
+        (a mod 8,5,'s')->chk;
+        16777217->a;
+        (a mod 256,1,'t')->chk;
+        (a mod 65536,1,'u')->chk;
+        (a mod 16777216,1,'v')->chk;
+        'w'->fill; newl;
+
+        100 -> a;
+        (a div (-1),-100,'a')->chk;
+        (a div (-2),-50,'b')->chk;
+        (a div (-3),-33,'c')->chk;
+        (a div (-4),-25,'d')->chk;
+        (a div (-5),-20,'e')->chk;
+        (a div (-6),-16,'f')->chk;
+        (a div (-7),-14,'g')->chk;
+        (a div (-8),-12,'h')->chk;
+        83886080->a;
+        (a div (-256),-327680,'i')->chk;
+        (a div (-65536),-1280,'j')->chk;
+        (a div (-16777216),-5,'k')->chk;
+        101 -> a;
+        (a mod (-1),0,'l')->chk;
+        (a mod (-2),1,'m')->chk;
+        (a mod (-3),2,'n')->chk;
+        (a mod (-4),1,'o')->chk;
+        (a mod (-5),1,'p')->chk;
+        (a mod (-6),5,'q')->chk;
+        (a mod (-7),3,'r')->chk;
+        (a mod (-8),5,'s')->chk;
+        16777217->a;
+        (a mod (-256),1,'t')->chk;
+        (a mod (-65536),1,'u')->chk;
+        (a mod (-16777216),1,'v')->chk;
+
+        (-a mod (-16777216),-1,'w')->chk;
+        (-a mod (-65536),-1,'x')->chk;
+        101->a;
+        ((-a) mod (-8),-5,'y')->chk;
+        (-a mod (-1),0,'z')->chk;
+        83886080->a;
+        (-a div (-256),327680,'0')->chk;
+        (-a div (-65536),1280,'1')->chk;
+        (-a div (-16777216),5,'2')->chk;
+        100->a;
+        (-a div (-8),12,'3')->chk;
+        (-a div (-2),50,'4')->chk;
+        (-a div (-1),100,'5')->chk;
+        '6'->fill;
+     #);
+   TstFor:
+     (#
+     do (for i: 26 repeat ('a'-1+i)->put for);
+        (for i: - 1 repeat '!'->put for);
+        '0'->fill
+     #);
+   TstIf:
+     (#
+        a,b: @integer;
+        foo: (#  do  exit b #);
+        foo2: (# x: @integer do 123->x exit x #);
+        foo3: @foo2
+     do
+        3->a;
+        2->b;
+        (for i: 10 repeat
+             (if i
+              // 1 then
+                 'a'->put
+              // 2 then
+                 'b'->put
+              // a then
+                 'c'->put
+              // a+1 then
+                 'd'->put
+              // a+b then
+                 'e'->put
+              // 6 then
+                 'f'->put; 7->b
+              // foo then
+                 'g'->put; 100->a
+              else
+             if)
+        for);
+        (for i: 2 repeat
+             (if (i = 1) // true then 'h'->put // false then 'i'->put if)
+        for);
+        (for i: 2 repeat
+             (if (i = 1) // true then 'j'->put else 'k'->put if)
+        for);
+        (if true // (a-93) = b then 'l'->put if);
+        (if foo2 // foo3 then 'm'->put if);
+        (for i: 100 repeat
+             (if i < 14 then
+                 'n'-1+i->put
+              else
+                 (if i < 24 then '0'+i-14->put if)
+             if)
+        for);
+     #);
+   TstCase:
+     (#
+        six: (#  exit 6 #);
+        three: (#  exit 3 #);
+        ten: (#  exit 10 #)
+     do
+        (for i: 12 repeat
+             (if i
+              // 5 then
+                 'e'->put;
+	      // six then
+		 'f'->put
+	      // 8 then
+		 'h'->put
+	      // 2 then
+		 'b'->put
+	      // three then
+		 'c'->put
+	      // 9 // ten // 11 then
+                 (if i
+                  // 9 then 'i'->put // 10 then 'j'->put // 11 then 'k'->put
+                 if)
+              else
+             (if i
+              // 1 then
+                 'a'->put
+              // 4 then
+                 'd'->put
+              // 7 then
+                 'g'->put
+              // 12 then
+                 'l'->put
+              else
+                 '!'->put
+             if)
+         if);
+        for);
+        (for i: 15 repeat
+             (if i
+              // 4 then
+                 (if i = 4 then 'm'->put else '!'->put if);
+              // 6 then
+		 'o'->put
+	      // 5 then
+		 'n'->put
+	      // 9 then
+		 'r'->put
+	      // 8 then
+		 'q'->put
+	      // 7 then
+		 'p'->put
+	      // 10 then
+		 's'->put
+	      // 11 then
+		 't'->put
+	      else
+		 (if i > 11 then 'u'+i-12->put if) (* 'u'-'x' *)
+	     if);
+        for);
+        (for i: 12 repeat
+             (if i-6
+              // - 4 then
+                 'z'->put
+              // - 3 then
+		 '0'->put
+	      // - 2 then
+		 '1'->put
+	      // - 1 then
+		 '2'->put
+	      // 0 then
+		 '3'->put
+	      // 1 then
+		 '4'->put
+	      // 2 then
+		 '5'->put
+	      // 3 then
+		 '6'->put
+	      else
+		 (if i
+		  // 1 then
+		     'y'->put
+		  // 10 then
+		     '7'->put
+		  // 11 then
+		     '8'->put
+		  // 12 then
+		     '9'->put
+		  else
+		     '!'->put
+		 if)
+	     if);
+        for)
+     #);
+   TstBreak:
+     (#
+        A: (# b: @ boolean
+           do true -> b; 'a'->put;
+              L: (if b then
+                     'b'->put;
+                     false -> b;
+                     restart L;
+                 if);
+              M: (# foo: (# do 'd'->put; leave M ; true -> b#);
+                 do 'c'->put;
+                    foo;
+                    false -> b
+                 #);
+              'e'->put;
+              true -> b;
+              K: (if b then
+                     (#
+                     do 'f'->put; false -> b;
+                        restart K;
+                        '!' -> put
+                     #) (*<<SLOT N:descriptor>>*)
+                  else
+                     (#
+                     (*<<SLOT NN:doPart>>*)
+                     do L: (if true then
+                               (# #) (*<<SLOT koks:descriptor>>*);
+                               (# x: @real do leave L #);
+                               '?'->put;
+                               leave L;
+                               '!'->put
+                           if);
+                        'g'->put;   
+                     #);
+                     leave K;
+                     '?'->put;
+                     (# x: @real do leave K; '!'-> put #);
+                 if);
+           #);
+        B: (#
+           do ch->put;
+              (if not bb then
+                  true->bb;
+                  ch+1->put; ch+2->ch;
+                  restart B
+               else
+                  'k'->put;
+                  leave B;
+                  '!'->put
+              if)
+           #);
+        bb: @boolean; ch: @char;
+        BreakWithLocalDesc:
+          (# b: @boolean
+          do ch->put; true->b;
+             L1: (if b then
+                     L2:
+                       (# x: @integer
+                       do
+                          (if b then
+                              ch+1->ch;
+                              ch -> put;
+                              false -> b;
+                              restart L2
+                          if)
+                       #);
+                     ch+1->ch;
+                     ch->put;
+                     restart L1
+                 if);
+             ch+1->ch->put;
+          #);
+        Break:
+          (# ch: @char; first: @boolean;
+             foo: (# boo: @boolean
+                  enter boo
+                  do ch->put;
+                     (if boo then
+                         ch+1->ch;
+                         false->boo;
+                         restart foo
+                      else
+                         ch+1->ch->put;
+                         leave foo;
+                         '!'->put
+                     if)
+                  #);
+             bar: (# do inner #);
+             fooBar: bar
+               (# do (if ch='7' then ch+1->ch->put; restart fooBar
+                      else ch+1->ch->put; leave fooBar
+               if)#)
+          do L: (for i:4 repeat
+                     '0'-> put;
+                     leave L;
+                     '!'->put
+                for);
+             '1'->ch; true->first;
+             loop:
+               (for i:4 repeat
+                    ch->put;
+                    (if first then false->first; '2'->ch; restart loop
+                     else leave loop
+               if)for);
+             N:
+               (#  p: (# do '4'->put; leave N #)
+               do
+                  '3'->put;
+                  p;
+                  '!'->put;
+                  (# do leave N #);
+                  '?'->put;
+               #);
+             '5'->ch;
+             true->foo;
+             fooBar
+          #);
+     do A;
+        'h'->ch;
+        B;
+        'l'->ch;
+        BreakWithLocalDesc;
+        'p'->put;
+        (for i: 'z'-'p' repeat 'p'+i -> put for);
+        Break;
+     #);
+   TstBlock:
+     (# a,b,c: @char;
+        T: (# d,e: @char;
+              P: (# f,g: @char;
+                    YT:
+                      (#
+                      do a->put; b->put; c->put; d->put;
+                         e->put; f->put; g->put
+                      #);
+                 do 'f'->f; 'g'->g; YT
+	         #);
+           do 'd'->d; 'e'->e;
+              P;
+           #);
+        x: @T;
+        y: @x.P;
+        z: @y.YT;
+        W: @
+          (# d: @char;
+             V: @
+               (# e: @char
+               do 's'->e;
+                 (#
+                 do a->put; b->put; c->put; d->put; e->put; 
+                 #)
+               #);
+          do 'o'->a; 'p'->b; 'q'->c; 'r'->d; V;
+          #);
+        Q: (# ch: @char;
+              scan:
+                (# c: @char
+                do (if ch//'v' then  else 't'-1->ch if);
+                   L:
+                   (for i: 100 repeat
+                        ch+1->ch->c; 
+                        (if i < 10 then INNER else '!'->put; leave L if)
+                   for)
+                #)
+           #);
+        aq: @Q;
+        S,R: @Text;
+        tryMkTO:
+          (#
+          do '0123'->S;  S->PutText; 
+             '456789'->S->R; R->PutText
+          #);
+     do 'a'->a; 'b'->b; 'c'->c; 
+        T;
+        'h'->a; 'i'->b; 'j'->c;
+      
+        'k'->x.d; 'l'->x.e; 'm'->y.f; 'n'->y.g;
+        z;
+        W;
+(* hempe
+        L:
+          aq.scan
+          (#
+          do c->put;
+             (if c  
+              //'v' then restart L
+              //'z' then leave L
+             if)
+          #);
+hempe *)
+        tryMkTO
+     #);
+   (*tstoldprim*)
+   (*tstnewprim*)
+   TstNx:        
+     (# 
+        A: (# a,b: @char
+           enter(a,b)             
+	   do a->put; b->put;
+           exit(b,a)
+           #);        
+        A1: @ (# a,b: @char   
+              enter(a,b)
+	      do 'c'->b; 'd'->a;
+              exit(b,a)
+              #);
+        T: (# a,b: @char;
+              X,Y: @ (# x,y: @char enter(x,y) do  exit x #)
+           enter(a,X,b,(Y.x,Y.y))
+           do a->put; X.x->put; X.y->put; b->put; Y.x->put; Y.y->put
+           exit(a,b,Y)
+           #);
+        Q: (# a,b: @char do x->a; x+1->b; x+3->x exit(a,b)#);
+        q1,q2: @Q;
+        x,y: @char;
+        as: @A;
+        WWW: (# enter as #);
+        
+        NXrep:
+          (# T: (# R: [10]@char;
+	           j,k: @integer
+                enter(R[i],R[i+5])
+                do R[i]->put; R[i+5]->put; 
+	           (for i: R.range repeat 'u'+i->R[i] for);
+ 	           2->i; 3->j; 3->k
+                exit(R[i],R[j],R[k+1])
+                #);
+
+             i: @integer; a,b,c,d,e: @char
+          do  2->i;
+              ('u','v')->T->(c,d,e); 
+              c->put; d->put; e->put; 
+          #);
+
+        XXX:
+          (# XT: (# X: @ (# i,j: @char
+                         enter(i,j) do i->put; j->put
+                         #);
+
+	            a,b: @char
+                 enter(a,X,b)
+                 do a->put;  b->put; 'e'->a; 'f'->b
+                 exit(a,b)
+                 #);
+ 
+             XS: @(# a,b: @char;
+                     W: @(# do exit('g','h') #);
+                  enter(a,b)
+                  do a->put; b->put; 'i'->a
+                  exit(a,W)
+                  #);
+
+             x: @char;
+             XQ: @(# a,b: @char enter(a,b) do a->put; b->put #); 
+          do
+             ('c',('a','b'),'d')->XT->XS->(x,XQ); x->put;
+	     'jklmnopqrstuvwxyz0123456789'->PutText
+          #)
+     do (* ('q','w')->WWW; *)
+        ('a','b')->A;
+        A1->(x,y); x->put; y->put;
+        ('e','f')->A->(x,y);
+        (if x//'f' then 'g'->put else '!'->put if);
+        (if y//'e' then 'h'->put else '!'->put if);
+        ('i',('j','k'),'l',('m','n'))->T;
+        'p'->x;
+        ('o',q1,'r',q2)->T; 
+        NXrep; 'z0123456789'->PutText;
+        newl;
+        XXX
+     #);
+   TstNX2:
+     (# T1: (# q1,q2: @char
+            enter(q1,q2)
+            do q1->put; q2->put
+            exit(q1+2,q2+2)
+            #);
+        T2: (# q1,q2: @char
+            enter(q1,q2)
+            do q1->put; q2->put
+            exit(q2+1,q2+2)
+            #);
+        T3:  (# a1,a2,a3: @char
+             enter(a1,a2)
+             do a1->put; a2->put; a2+1->a3; a2+2->a2; a2+1->a1;
+             exit(a3,a2,a1)
+             #);
+        X1: @T1;
+        X2: @T2;
+        X3: @T3;
+        Q1: (# Q2: (# Q3: (# enter ch do ch+1->ch #)
+                   enter Q3
+                   do ch+2->ch
+                   #);
+               ch: @char
+            enter Q2
+            do ch+3->ch; ch->put
+            #);
+        W1: (# W2:(# W3: (# do ch-1->ch exit ch #)
+                  do ch-1->ch
+                  exit W3
+                  #);
+               ch: @char
+            do 't'+2->ch
+            exit W2 
+            #);
+        a,b,c: @char
+     do ('a','b')->X1->X2->X3->(a,b,c); a->put; b->put; c->put; (*i*)
+        ('j','k')->T1->&T2->T3->(a,b,c); a->put; b->put; c->put; (*r*)
+       's'-6->Q1;
+        W1->put;
+        'uvwxyz0123456789'->PutText
+     #);
+   TstNX3:
+     (# A: @ (# exit(R[i],R[j]) #);
+        B: @ (# enter(R[k],R[l]) #);
+        C: @ (# do exit(S[i],S[j]) #);
+        D: @ (# enter(S[k],S[l]) do #);
+        
+        R: [10] @ char;      i,j,k,l: @integer;
+        S: [11] ^ T; T: (# ch: @char enter ch do exit ch #);
+        
+        Q: (# V:< object do &V[]->W #); 
+        W: (# E: ^object enter E[] do 'e'->put; E #);  
+        E1: (# do 'g'->put #); E2: (# do 'h'->put #); 
+        E3: (# r1,r2: ^object enter (r1[],r2[]) do r1; r2 #); 
+
+        F: (# Q: (# q1,q2: @char enter(q1,q2) do q1->put; q2->put #);
+              X: @Q; a,b: @char
+           enter(a,X,b,Q) do a->put; b->put 
+           #); 
+        TTT: (# ch: @char;
+                set: (# enter ch do #)
+             enter set 
+             exit ch  
+             #);
+        NTA: (# q1,q2: @TTT enter (q1,q2) do q1->put; q2->put #); 
+
+        QQQ: (# aaa: (# a,b,c: @char
+                     enter((a,b,c)->bbb->(a,b)) exit(a,b) 
+                     #);
+                bbb: (# x,y,z: @char 
+                     enter(x,y,z) do x->put; y->put; z->put; 't'->z; 'u'->y
+                     exit (z,y)
+                     #);
+                ccc: (# ddd: 
+		          (# i,j,k: @integer 
+		          enter(i,j,k) do i->put; j->put; k->put; 'y'->w #)
+                     enter ddd
+                     do 
+                     #);
+                q,w: @char;
+                zzz: (# z1,z2,z3: @char;
+                        set: (# enter(z1,z2,z3) do  #)
+                     enter set do INNER;
+                     #);
+                zzz1: zzz(# do exit(z1,z2,z3)#); 
+                zzz2: zzz(# get: (#exit(z1,z2,z3)#) do exit get #);
+                zzz3: (# x1,x2,x3: @char;
+                         putt: (#enter(x1,x2,x3)do #);
+                         out: @ (#do exit(x1,x2,x3)#)  
+                      enter putt exit out
+                      #);
+                c1,c2,c3: @char
+	       
+             do ('q','r','s')->aaa->(q,w); q->put; w->put; 
+                ('v','w','x')->ccc; w->put;
+                ('z','0','1')->zzz1->zzz2->zzz3->(c1,c2,c3);
+                c1->put; c2->put; c3->put
+             #);
+        GUI:
+          (# T: (# S: ^ A
+                do &A[]->S[];
+                   (('2','3'),('4','5'))->S
+                exit S
+                #);
+             point: (# c1,c2: @char enter(c1,c2) exit(c1,c2) #);
+             A: (# tL,bR: @point;
+                   print:
+                     (#
+                     do tL.c1->put; tL.c2->put;
+                        bR.c1->put; bR.c2->put
+                     #)
+                enter(tL,bR)  
+                exit(tL,bR)
+                #);
+             q: @ A;
+          do
+             T->q;
+             q.print
+          #)
+                        
+     do 1->i; 2->j; 3->k; 4->l; 
+        'a'->R[1]; 'b'->R[2];
+        (for i:4 repeat &T[]->S[i][] for);
+        'c'->S[1]; 'd'->S[2];  
+        (#do A->B ; C->D #);
+        R[3]->put; R[4]->put; S[3]->put; S[4]->put;
+   
+        Q(# V::<(#do 'f'->put #) #);
+        (&E1[],&E2[])->&E3;
+        (# a1,a2,a3,a4,a5,a6: @char
+        do 'i'->a1; 'j'->a2; 'k'->a3; 'l'->a4; 'm'->a5; 'n'->a6;
+           (# q1: @char do(# q2: @char do  (a5,(a1,a2),a6,(a3,a4))->F #)#)
+        #);
+        ('o','p')->NTA;
+        QQQ;
+        GUI;
+        '6789'->PutText
+     #);
+   TstVirt:
+     (# A1: (# do 'c'->put; INNER; 'd'->put #);
+        B: (# a,b: @char;
+              V1:< (#do 'a'->put; INNER; 'b'->put #);
+              V2:< A1;
+           do V1; V2
+           #);
+     
+        D1: (# do x->put; INNER; (if c1//'l' then y->put if);z->put #);
+        D2: D1(#do y->put; INNER #);
+        x,y,z: @char;
+     
+        c1: @char;
+        T: (# a,b,c: @char;
+              V1:< 
+                (#do a->put; INNER; 
+                   (if c1//'l'//'s' then b->put; b+1->put if);
+                   c->put 
+                #);
+              V2:< D1;
+              set:< object
+           do c1->a; a+1->b; b+2->c; c+1->x; x+1->y; y+1->z;
+              (# R: ^object do set; &set[]->R[] #);
+              INNER;
+              V1; 
+              V2; 
+           #);
+     
+        TT: T(# V1::<(#do b->put; INNER; d->put #);
+                V2::< D2;
+                d: @char
+             do b+1->d
+             #);
+        TTT: T(# q: @integer #);
+        TTTT: T(# V2::< D2; #);
+        D: (# V: < (# do INNER #); 
+              x: @V;
+              W:<(# ch: @char enter ch do INNER #);
+              z: @W
+           do x; 'g'->z; 'h'->z; 
+              'ijklmnopqrstuvwxyz0123456789'->PutText
+           #);
+        DD: D(# V::< (#do 'abcdef'->PutText #);
+                W::< (#do (*ch->put; SUSPEND; ch->put*) #)
+             #)
+     do B;
+        'e'->c1; TT;  
+        'l'->c1; TTT;
+        's'->c1; TTTT;
+        'z'->fill; newl;
+        DD; 
+     #);
+   tstvirt2:
+     (# a1: @char; foo: @ (# b: @char #);
+        A: (# do a1->put; foo.b->put; INNER #);  
+        W: (# V: < A do INNER #);
+        WW: W(# c2: @char;
+	        V::< (# c1: @char do 'c'->put #); X: @V 
+             do X 
+             #);
+        B: (# C: (# W2: W(# do INNER #);
+                    D: (# W3: W2(#  V::< (# do 'f'->put #) do V #) do W3 #)
+         	 do D
+                 #)
+           do C
+   	   #);
+
+        T: (# P: (#  V: < F do 'g'->ch1; 'h'->ch2; V #);
+              F: (# do ch1->put; ch2->put; INNER #);
+              ch2: @char
+           #);
+        ch1,ch3: @char;
+        R: ^T;  
+        QQQ:
+          (# P: (# q3: @ char do inner; 's'->c6 #);
+             c6: @char;
+             T: (# A: (# q1: @ char; f: ^D;  do &A[]->f[]; inner; 'q'->c4 #);
+                   c4,c5: @char;
+                   D:<A;  
+                   X1: (# B: (# q2: @ char; g: @ D do inner ; 'r'->c5 #);
+	                  X2: (# V:<A ; W:<B; U:<P do V; W; U; Inner #)
+                       do inner
+                       #);
+                   B1: (# c1: @ char
+                       DO (# c2: @ char
+	                  do X1(# c3: @ char
+		               do (# 
+         		          do (#
+			             do X2(# V::<(# q3: @char 
+				                 do 'k'->f.q1->put; 'n'->c1
+                                                 #);
+			                     W::<(# q4: @char 
+					         do 'l'->g.q1->put; 'o'->c2
+                                                 #);
+    				             U::<(# q5: @char 
+					         do 'm'->q3->put; 'p'->c3
+                                                 #)
+			                  do c1->put; c2->put; c3->put; c4->put
+	                                  #)
+                                     #)
+                                  #)
+                               #)
+                          #)
+                       #)
+                do '!'->c4->c5; B1; c5->put
+                #)
+          do '!'->c6; T; c6->put
+          #);
+        madsn:
+          (# theA: @
+               (# B: (# C:(# V:< charValue  
+                          do ch->put; V->put; inner; ch->put 
+                          #)
+                     #)
+               #);
+             theB: @theA.B(##);
+             theC: @theB.C(# V::< (# do 'u'->value #) do  'v'->ch  #);
+             ch: @integer
+          do 't'->ch;
+             theC
+          #);
+        final1:
+          (# PO: (# TTT:< (# #) do inner#);
+             qqq: (# P: PO
+                       (# aaa: (# V:<object; i,j: @integer; #);
+                          bbb: aaa (# x,y: @integer;  V::TTT #);
+                          TTT::(# t: @Text enter t exit t #);
+                          b: @bbb;
+                          t: ^TTT
+                       do &b.V[]->t[]; 'w'->t;
+                          t.t->PutText;
+                          'xy'->&b.V->PutText
+                       #)
+                  do P
+                  #)
+          do qqq
+          #);
+        final2:
+          (# T: (# do ch->put;#);
+             A: (# V:<object do inner #);
+             AA: A(# c: @char; V::T do ;'!'->c; V #);;
+             ch: @char;
+          do 'z'->ch; AA; 
+          #);
+        final2virt:
+          (# ch: @char; 
+             P: (# do ch -> put; ch+1->ch; INNER;  #);
+             Q: (# V:< P; W:< P do V; W #);
+             R: Q(# V::< (# do ch -> put; ch+1->ch; INNER #) #);
+             S: R(# W:: V #);   
+             T: S(# V:: (# do ch -> put; ch+1->ch #)#)
+          do 'a'->ch; Q; (*a-b*) R; (*c-e*) S; (*V:f-g; W:h-i*) T; (*j-n?*)
+          exit ch
+          #);
+        final2b:
+          (# booleanValue: (# b: @ boolean do INNER exit b #);
+             trueObject: booleanValue(# enter b do INNER; ch->put; #);   
+             Y: @
+               (# X: @ 
+                    (# TkInterpreter: (# interactive:< booleanValue #);
+                       userInterface: @TkInterpreter
+                         (# interactive:: trueObject;
+                            mainLoop: (# do interactive #);
+                         #);
+                    do userInterface.mainLoop
+                    #)
+               do X 
+               #);
+             ch: @char;
+          enter ch
+          do Y.X.userInterface.interactive;
+             ch+1->ch;
+             Y;
+             ch+1->ch;   
+          exit ch
+          #)
+     do 'a'->a1; 'b'->foo.b; WW;
+        'd'->a1; 'e'->foo.b; B;
+        &T[]->R[]; 'j'->ch3;
+        R.P(# V::< (*R.F*)(# do 'i'->put; ch3->put #) #);
+        QQQ;
+        madsn;  
+        final1;
+        final2;
+        '0123456789'->PutText;
+        newl;
+        final2virt      (* a-o by final2virt *)
+          ->final2b
+          ->fill; 
+     #);
+   TstVarPtn:
+     (# T: (# do INNER #);       
+        T1: T(# do ch->put #); ch: @char;
+        T2: T(# do 'b'->put #);   
+     
+        F1,F2: ## T;
+        S,S1: ^ T;
+     
+        X: @ T(#do 'd'->put #);
+        F3: ##object;
+        IntToInt: (# x,z: @integer enter x do INNER exit z #);
+        comp: 
+          (# f,g: ##IntToInt; h: IntToInt(#do x->f->g->z #)
+          enter(f##,g##)
+          exit h##
+          #);
+        A: IntToInt(#do x+x->z #);
+        B: IntToInt(#do x*x->z #);
+        C: ##IntToInt; 
+     
+        TX: T(# do 'g'->put; INNER #);
+        D: (# V:<TX; F: ##T; R: ^T do V##->F##; &F[]->R[]; R #);
+        DD: D(# V::<(#do 'h'->put #)#);
+     
+        Y: @T(# #);
+        YY: @
+          (# X: @T(# #)
+          do (if T##>=X## //true then '4'->put else '!'->put if)
+          #)
+     do 'a'->ch; T1##->F1##; T2##->F2##; F1;  F2;
+        F1##->F2##; 'c'->ch;   F2;  
+        '!'->ch; X##->F3##; F3;
+        &F1[]->S[]; 'e'->ch; S;
+        (A##,B##)->comp->C##;
+        (if 5->C //100 then 'f'->put else '!'->put if);
+        DD;
+     
+        (if S[] // S1[] // none then if);
+        (if none // S[] then if);
+        NONE->F1##;
+        (for i: 4 repeat
+             (if F1## 
+              // none then 'i'->put; T1##->F1##
+              // T1## then 'j'->put; T2##->F1##->F2##
+              // F2## then 'k'->put; TX##->F1##
+              else 'l'->put
+             if)
+        for);
+        NONE->F1##;
+        (for i:2 repeat
+             (*EE: changed to avoid comparing NONE to both ptn and oref *)
+             (if true 
+              // NONE=F1## then 'm'->put; T1##->F1## 
+              // NONE=S[] then '!'->put
+              else 'n'->put
+             if)
+        for);
+        T1##->F1##; T##->F2##; 
+        (F1##=T1##,true, 'o')->chkBool;
+        (F1##=T2##,false,'p')->chkBool;
+        (F1##<=T1##,true,'q')->chkBool;
+        (F1##<T1##,false,'r')->chkBool;
+        (T1##=T2##,false,'s')->chkBool;
+        (T1##=T1##,true, 't')->chkBool;
+        (T1##=F1##,true, 'u')->chkBool;
+        (T1##>=F1##,true,'v')->chkBool;
+        (T1##>F1##,false,'w')->chkBool;
+        (F1##=F2##,false,'x')->chkBool;
+        (F1##<=F2##,true,'y')->chkBool;
+        (F1##<F2##, true,'z')->chkBool;
+        (F1##>=F2##,false,'0')->chkBool;
+        (F1##<>F2##,true,'1')->chkBool;
+        (T1##<>T2##,true,'2')->chkBool;
+        
+        (if Y##<= T## //true then '3'->put else '!'->put if);
+        YY;
+        &T2[]->S[]; (* none->s[]; - should give ref. is none error on S## *)
+        (if S##<=T2## // true then '5'->put else '!'->put if);
+(* hempe
+        (# P: (#  do '6'->put; suspend; '7' ->put #);
+           Pcr: ^|P;
+        do &|P[]->Pcr[];
+           Pcr;    
+           (if Pcr##// P## then 
+               Pcr; '!'->stdio 
+            else Pcr; '8'->put
+           if)
+        #);
+*)
+        '9'->PutText;
+     #);
+   TstThis:
+     (# P: (# a1: (# do exit this(P)[] #);
+              a2: (# R: ^ P do (for 1 repeat this(P)[]->R[] for) exit R[] #);
+     	      a3: (# R: ^ P do L: A(#do this(P)[]->R[] #) exit R[] #);
+              T: @ Text; S: ^object 
+           enter T
+           do  T->PutText;
+              this(P)[]-> S[]
+           exit S[]
+           #);
+        A: (# do INNER #);   
+        T1: (#do 'q'->put #);
+        T2: object(#do 'r'->put;INNER #);
+        R: ^object;
+        X: @P; S: ^P;
+
+        B: (# x,y: @char; olsen:<object;
+              M: (# do this(B)->put; this(B).x->put; This(B).olsen #) 
+           do 's'->y; 't'->x
+           exit y 
+           #);
+        aB: @B(# olsen::<(#do 'u'->put #)#);       
+        F: (#
+           do (if aF[]//NONE then this(F)[]->aF[] else 'v'->put if);
+           #)(*<<SLOT thisF:descriptor>>*);
+        aF:^F;
+        F2: (# ch: @char
+            do (#
+               (*<<SLOT thisF2:dopart>>*)
+               do (if aF2[]//NONE then this(F2)[]->aF2[]
+                   else 'w'->this(F2).ch; this(F2).ch->put 
+                  if)
+               #)
+            #);
+        aF2: ^F2;
+        hml:
+          (# A: (# display:< (# do 'x' -> put; inner #)#);
+             B: A
+               (# display::< (#do '!' -> put; inner #);
+                  C: A(# display::< (# do 'y' -> put; inner #);
+                         test: (# do this(A).display #);
+                      #);
+               #);
+             theB: @B (# theC: @C #);
+          do theB.theC.test;
+          #);
+        les:
+          (# interfaceObject: (# open:<  (#do 'z'->x; inner #); x: @char #);
+             window: interfaceObject(# open::< (#do inner #)#)  ; 
+             myWindow: window(# open::(#do this(interfaceObject).x -> put #)#);
+          do  (&myWindow[]).open
+          #);
+     do 'abcdef'->X.T; X->R[]; 
+        'ghijk'->X.T; X.a1->S[]; S.T->PutText;
+        'lmnop'->X.T; X.a2->S[]; S.T->PutText; 
+  
+        &T1[]->R[]; R;
+        &T2[]->R[]; R; 
+        aB.M;
+        F; aF;
+        F2; aF2;
+        hml;
+        les;
+        '0123456789'->PutText
+     #);
+   (*tstcproc*)
+   TstReal:
+     (# x,y,z,v,w: @real;  b: @boolean; i,j: @integer;
+        R: @real;    
+        chkR: 
+          (* Note that comparions of reals as in X+Y
+           * does in general not work satisfactory for floating point numbers.
+           * E.g 1.11->x; 3.33->y; y-x->z; x=2.22 may be false
+           *)
+          (# x,y,z: @real; ch: @char 
+          enter(x,y,ch)
+          do x-y->z; (* The difference should be close to zero *)
+             z->i;   (* round to nearest integer, should be zero *)
+             (if i<0 //true then -i->i if);
+             (if i//0 then ch->put else '!'->put if)
+          #);
+        radd: external(# x,y,z: @real enter(x,y) (*EE: dopart added *) do x+y->z exit z #);
+      
+        ch: @char;
+        nextCh: @
+          (#
+          do (if (ch+1->ch)>'z' //true then
+                '0'->ch
+             if)
+          exit ch
+          #);
+        aa: @ (# v: @real;
+              enter v
+              do (v,2.0,nextCh)->chkR;
+              #);
+        bb: @ (# v: @real
+              enter v
+              do  (v,1.5,nextCh)->chkR;
+              #);          
+        cc: @ (# v: @real
+              enter v
+              do  (v,1.0,nextCh)->chkR;
+              #);          
+        (* tstsub and tstdiv are needed to check floating point on I386
+         * which is having a floating point stack instead of registers.
+         * This means that the order of pushing the operands on
+         * the stack is IMPORTANT
+         *)
+        tstSub:
+          (# i: @integer; x,y: @real; a,b: @real;
+          do 4.0->x->a; 2.0->y->b; 
+             4.0 - 2.0 ->aa;
+             4.0 - y ->aa;
+             4.0 - (x-x+y) ->aa;
+             x - 2.0 ->aa;
+             x - y -> aa;
+             x - (x-x+y) -> aa;
+             (x+y-y) - 2.0 ->aa;
+             (x+y-y) - y ->aa;
+             (x+y-y) - (a-a+b) -> aa;
+             3.0 - 2 -> cc;
+             3.0 - 2 ->cc;  
+             3.0 - 2.0 -> cc;
+             3.0 - 2.0 ->cc;               
+             2->i;
+             3.0 - i -> cc;
+             3.0 - i ->cc;  
+          #);
+        tstDiv:
+          (# i: @integer; x,y: @real; a,b: @real; 
+          do 4.0->x->a; 2.0->y->b; 
+             4.0 div 2.0 ->aa;
+             4.0 div y ->aa;
+             4.0 div (x-x+y) ->aa;
+             x div 2.0 ->aa;
+             x div y -> aa;
+             x div (x-x+y) -> aa;
+             (x+y-y) div 2.0 ->aa;
+             (x+y-y) div y ->aa;
+             (x+y-y) div (a-a+b) -> aa;
+             3.0 div 2 -> bb;
+             3.0 div 2 ->bb;  
+             3 / 2 -> bb;
+             3.0 / 2 -> bb;
+             3.0 div 2.0 -> bb;
+             3.0 div 2.0 ->bb;               
+             3 / 2.0 -> bb;
+             3.0 / 2.0 -> bb;
+             2->i;
+             3.0 div i -> bb;
+             3.0 div i ->bb;  
+             3 / i -> bb;
+             3.0 / i -> bb;  
+          #);
+        moreTsts:    
+          (# a:@ (# aaa: @real; r: (# do 300.0 -> aaa exit aaa #) #);
+             p: (# y: @real do 3.14->y exit y #);
+             p1: (# exit 3.14 #);
+             x: @real; I: @integer
+          do (300.0 * p, 942.0,'a')->chkR;
+             (a.r * 3.14, 942.0,'b')->chkR;   
+             (a.r * p, 942.0,'c')->chkR;
+             a.r * p -> x;         
+             (if (x > -0.0001) and (x < 0.0001) // true then '!'->put if);
+             (300.0*3.14) div 180.0 -> x;
+             (a.r * p1) div 180.0 -> y;
+             (x,y,'d')->chkR;
+             3.0->x;
+             (1.11*x->I,3,'e')->chkR;
+          #);
+        again:
+          (# v: @real;
+             base: @integer;
+             ch: @char;
+             sh: @shortInt;   
+             I: @integer;
+          do 10->base; 1->v; '9'->ch; 20->sh; 30->I;
+             v*base+(ch-'0'->I)+sh->v; (v,39.0,'f')->chkR
+          #);
+        oneMore:
+          (# x,r,a,y,tauNr: @real;    
+             tau: external(# x: @real do (*EE*) 1.0->x exit x #); 
+             rcopy: external(# x: @real enter x exit x #);
+             inc: (# a1,a2: @real  enter(a1,a2) do (* !!! (a1+a2,29.0,'g')->chkR *) '_'->put #)
+          do 2.0->x; 1.0->r->a; 3.0->y;
+             (x+r*tau*(a+tau)->rcopy, y+r*tau*(a+tau)->rcopy) -> inc;
+          #);
+        qword:
+          (* datpete 6/7/95:
+           * tst that real to integer store does not destroy next long.
+           * Was a problem on NTI.
+           *)
+          (# X: @(# i, j: @integer #);
+             r: @real;
+          do 99 -> X.j;
+             1.0 -> r;
+             r -> X.i;
+             (X.j,99,'h')->chk;
+          #);
+(* hempe
+        tstFloatRangeAndExtend:
+          (# R: [10] @integer; 
+          do (if R.range = 10 then 'i'->put else '!'->put if);
+             R.range + R.range/2 -> R.extend;
+             (if R.range = 25 then 'j'->put else '!'->put if)
+          #);
+*)
+        longAnd:
+          (# cx,x0,cy,y0,midrsegx,x1,y1,midrsegy,x2,y2,midx23,midy23: @real
+          do (if ((cx=x0) and 
+                 (cy=y0) and 
+                 (midrsegx=x1) and
+                 (midrsegy=y1) and 
+                 (midx23=x2) and 
+                 (midy23=y2) and 
+                 (cy=y0) and 
+                 (midrsegx=x1) and
+                 (midrsegy=y1) and   
+                 (midx23=x2) and 
+                 (midy23=y2))
+              // true then (* test if register overflow *)  
+             if)
+          #)
+     do 1.11->x; 2.22->y; x+y->z;   z-x->v;  
+	(x,1.11,'a')->chkR; (v,2.22,'b')->chkR; (z,3.33,'c')->chkR;    
+	1.66->v; 0.55->w; x+y+v-w->x; (x,4.44,'d')->chkR;      
+	4.80->x; 4.08->y; 3.0->z; 0.33->v;
+	(x+y)-(z+v)->x; (x,5.55,'e')->chkR;
+	6->i; i->x; (x+0.66,6.66,'f')->chkR;  
+	7.49->x; (*used to be 7.99 - check rounding strategy*)
+	x->i; (i+0.77,7.77,'g')->chkR;
+	8->i; 0.88->x; (i+x,8.88,'h')->chkR;	
+	0.99->x; (9+x,9.99,'i')->chkR;
+	10->x; (x,10,'j')->chkR;
+	11->x; 10.101->y; x*y->z; (z,111.111,'k')->chkR;
+	4.4->x; 977.7768->y; (y div x,222.222,'l')->chkR;
+	2->x; 100->y; 6.66666->z; ((y*z) / x,333.333,'m')->chkR;
+	111.111->x; 222.222->y;
+	x<y->b;
+	(if b//true then 'n'->put else '!'->put if);
+	x->y; (if x // y then 'o'->put else '!'->put if);
+	x->z;  3.14->y; 3.141->v;  
+(* hempe: the following test results in numerous !!!!!!!!!!! *)
+	(for ii: 4 repeat  
+	     (if x
+	      // y then 
+		 100->i; 11->j; 
+		 111.111111->y; ((i+j)+0.111111,y,'r')->chkR   
+	      // z then 'p'->put; x->v; 111.1111->z  
+	      // v then 'q'->put; x->y; 111.11111->v  
+	      else    
+		 3.14E5->x; -3.14E5->y; 111.5E-7->z; -111.5E-7->v;
+		 ((x+y)+(z+v),0,'s')->chkR;
+	     if)
+        for); 
+        x->y;
+        (x<y,false,'t')->chkBool;
+        (x<=y,true,'u')->chkBool; 
+        (x>y,false,'v')->chkBool; 
+        (x>=y,true,'w')->chkBool;
+     
+        1010.1010E2->x; 1010.1010E3->y; 1010.1010E-2->z; x->v;
+        (*  z < x=v < y *)
+        ((x+(x-y))=(y+0),false,'x')->chkBool;
+        (x=v,true, 'y')->chkBool;
+        (x<>y,true,'z')->chkBool;
+        (x<>v,false,'0')->chkBool;
+     
+        1100.0011->x; 11.11->y; (x,11.11)->radd->z; (z,1111.1111,'1')->chkR; 
+        2200.0022->x; 22.22->y; ((x+(x-x),y)->radd,2222.2222,'2')->chkR; 
+        (*     3300.0033->x; 33.33->y; x+y->real2Text->PutText; ' '->put;*)
+(*hempe        11100.10101->R[1]; 11.0101->R[2]; 
+        R[1]+R[2]->R[3]; (R[3],11111.11111,'3')->chkR;
+        (for i:6 repeat 3.14E3*i->R[i] for);
+        (for i:6 repeat (R[i],i*3.14E3,'3'+i)->chkR for); 
+*)
+        newl;
+        'a'-1->ch;
+        tstSub;
+        tstDiv;  
+        newl;  
+        moreTsts;
+        again; 
+        oneMore;
+        qword;
+(*      tstFloatRangeAndExtend; *)
+        longAnd;
+        'k'->fill;
+     #);
+   TstDoPart:
+     (# x,y: @char;
+        A: (# q,w: @char;
+              f1: (# a,b: @char
+                  enter(a,b) (*<<SLOT f1: dopart>>*)
+                  do x->put; q->put; a->put; b->put; b+1->b;
+                  exit b
+                  #);         
+              f2: (# a,b: @char
+                  enter(a,b) (*<<SLOT f2: doPart>>*)
+                  do y->put; w->put; a->put; b->put;
+                     (for i:3 repeat b+i->put for);
+                     b+4->b
+                  exit b
+                  #);
+              f3s: (# Vput:<(# ch:@char enter ch do ch->put; inner #);
+                   do INNER
+                   #);
+              f3: f3s(# a,b: @char;
+                        Vput::<(# do #);
+                        append: (# T1: ^f3 enter T1[]
+                                (*<<SLOT append:doPart>>*)
+                                do (if true//true then
+                                       T1.scanall(#do ch ->Vput #)
+                                   if)
+                                #);
+                        scanall: 
+                          (# ch: @char   
+                          do (for i:1 repeat a->ch; INNER for)
+                          #);
+                     enter(a,b) (*<<SLOT f3: doPart>>*)
+                     do (# T,T1: @f3
+                        do x->put; q->put; a->Vput; b->T1.a;
+                           T1[]->T.append;
+                           b+1->b;
+                        #)
+                     exit b
+                     #);
+              f4: (# a,b: @char
+                  enter(a,b) (*<<SLOT f4: doPart>>*)
+                  do (for i:8 repeat
+                          (#
+                          do (if i
+                              // 1 then y->put
+                              // 2 then w->put
+                              // 3 then a->put
+                              // 4 then b->put
+                              // 5//6//7 then b+i-4->put 
+                              // 8 then b+4->b
+                             if)
+                          #)
+                     for)
+                  exit b
+                  #);
+           #);
+        f5: (# (*<<SLOT f5:doPart>>*) do inner #);
+        f6: f5(# do '0'->put #);
+        f7: (# (*<<SLOT f7:doPart>>*) do (for i:1 repeat inner for) #);
+        f8: f7(# do '1'->put #);
+        f9: (# (*<<SLOT f9:doPart>>*) do inner f9; #);
+        f10: f9(# do '2'->put #);
+        f11: (# (*<<SLOT f11:doPart>>*)
+             do (* hempe L: (if 1//1 then inner f11 if); *)
+             #); (* M18*)
+        f12: f11(# (*<<SLOT f12:doPart>>*)
+                do (for i:1 repeat for); inner
+                #); (*M19*)
+        f13: f12(#do '3'->put #);
+        
+        H: @A;
+        c1: @char;
+     do 'a'->x; 'b'->H.q; ('c','d')->H.f1->c1; c1->put; (* a-e *)
+        'f'->y; 'g'->H.w; ('h','i')->H.f2->c1; c1->put; (* f-m *)
+        'n'->x; 'o'->H.q; ('p','q')->H.f3->c1; c1->put; (* n-r *)
+        's'->y; 't'->H.w; ('u','v')->H.f4->c1; c1->put; (* s-z *)
+        f6; f8; f10; f13;
+        '456789'->PutText
+     #);
+   TstMainPart:
+     (# T:(#  f0: (# x,y,z: @integer
+	          enter(x,y)
+                  do INNER
+	          exit z
+                  #);
+             f1: f0(# 
+                   do (if a//'0' then a->b; b+1->c else a->put if);
+                      (# xxx: @char do b->put #);
+                      (for i: 1 repeat i+c-1->put for);
+                      (# ch: @char do c+1->ch; ch->put; ch+1->a #);
+                      x+y->z
+                   #)(*<<SLOT f1:mainPart>>*);
+             Y: @ f1; 
+             x: @ integer;
+             withSub: @boolean
+          enter withSub
+          do (111,222)->f1->x; 
+   	     (if x//333 then a->put (* e *) else '?'->put if);
+	     INNER; 
+             (if withSub//true then a+2->a else a+1->a if);
+             a+1->b; b+1->c;
+	     (10,100)->Y->x;
+             (if x//110 then a->put else '?'->put  if);
+          #);
+        boo: @boolean;
+        S: T(# do a+1->put; (* inner S*) #)(*<<SLOT S:mainPart>>*);
+     
+        X: @ S;
+        a,b,c: @char;
+     do 'a'->a; a+1->b; b+1->c; 
+        T; 
+        a+1->a; a+1->b; b+1->c; 
+        true->S;
+        'vwxyz'->PutText;
+        '0'->a; a+1->b; b+1->c; 
+        true->X
+     #);
+   TstCompRef:
+     (# F:(# a,b: @ char; R: ^AA
+          enter(a,b)
+          do &AA[]->R[]; a->c; b->R.ch
+          exit R[]
+          #);
+        AA: 
+          (# ch: @char;
+             P: (# do c->put; ch->put #);
+             PP: (#do exit ch #)
+          #);
+        c,d: @char;
+        R: ^AA;
+        
+        sText: Text
+          (# copy:
+               (# S: ^sText
+               do &sText[]->S[]; T->S;
+               exit S[]
+               #);    
+             append: 
+               (*  Ref error if S is a Text ref*)
+               (# S: @Text enter S 
+               do this(sText).T->PutText; S->PutText #)
+          #);
+        
+        T: @sText;
+        Q: @F;
+        W: @ |
+          (#ch: @char; R: ^AA
+          enter ch
+          do &AA[]->R[]; ch->R.ch; SUSPEND;
+             &AA[]->R[]; ch->R.ch; SUSPEND; 
+             &AA[]->R[]; ch->R.ch; SUSPEND;
+             &AA[]->R[]; ch->R.ch; 
+          exit R[]
+          #);
+        BB: (# go: (# do c->put #) #); rB,rB1: ^BB; TT: ^sText
+     do ('a','b')->F->R[]; R.P;
+        (('c','d')->F).P;
+     
+        (('!','e')->&F).ch->c; c->put;
+     
+        'fgh'->T; 
+        'ij'->(T.copy).append;
+        (('k','l')->Q).P;
+        ('m','n')->Q; (Q).P;
+         ('!','o')->Q; (Q).ch->put; 
+       (('p','q')->&|F).P;
+        ('r'->W).ch->put;
+        ('s'->W).PP->put;
+        't'->W; 
+        (W).ch->put;
+        'u'->c; (&BB[]).go;  
+        'v'->c; (&BB[]->rB[]).go;  
+        'w'->c; &BB[]->rB[]; (rB[]).go;
+        'x'->c; (rB[]->rB1[]).go;
+        'yz0123456789'->PutText
+     #);
+   tstcomprem2:      
+     (* test program made out of error reports for computed remote*)
+     (# (*compRem1: not fixed - use computedReomte to define part object.
+         * The following patterns corresponds to the test programs in
+         * ~olm/beta/system/v5.1/TST/FEJL/COMPREM
+         *)
+        compRem2:
+          (# P:(# v:< object; vi: @v; n: @char enter n do inner exit vi[] #);
+             PP: P(# v::< (# fisk: @char #)do n->vi.fisk #);
+          do ('a'->PP).fisk->put
+          #);
+        compRem3:
+          (# set: (# init:<(#do 'b'->put #)#); s: ^set
+          do (&set[]->s[]).init
+          #);
+        (* no comprem4 exists*)
+        compRem4:
+          (# list: 
+               (# set: (# X: ^Q do &Q[]->X[]; inner exit X[] #);
+                  Q: (# W: (#do 'c'->ch #)#);
+                  locate: (# S: ^T do &T[]->S[]; exit S[] #);
+                 T: (# go: (#do ch->put #)#)
+               do inner
+               #);
+             xlist: list
+               (# xset: set(#do inner #);
+                  lookup: (# do (&locate(# #)).go #) 
+               do (# do (xset(##)).W; lookup #)
+               #);
+             ch: @char
+          do '!'->ch; xlist
+          #);
+        compRem5:
+          (# p: (# kill: (# do 'd'-> put #)#);
+             qua:
+               (# as:< object; R: ^object; thisObj: ^as;
+               enter R[]
+               do (if R## <=as## // true then 
+                      R[]->thisObj[]; 
+                      INNER 
+                   else '!?!'->PutText; R[]->thisObj[]
+                  if);
+               exit thisObj[]
+               #);
+             x: @p 
+          do (&p[] -> qua (# as:: p #)).kill  
+          #);
+        compRem6:
+          (# R: @ (# A: (# foo: (# S: ^ P do &P[]->S[] exit S[] #)#)#);
+             P: (# bar: (# do 'e'->put #) #);
+             X:  @R.A(# #)
+          do (X.foo).bar
+          #);
+        compRem7: (* !!! Changed to avoid a <dynref>.<pattern> shaped decl
+                     which gives ref-none during object creation: 
+          (# A: (# AA: (# AAA: (# ch: @char #)#)#);
+             anA: ^A; anAA: ^anA.AA;
+             dyt: (# x: ^anAA.AAA do &anAA.AAA[]->X[]; 'f'->x.ch exit x[] #);
+          do &A[]->anA[]; &anA.AA[]->anAA[];
+             (dyt).ch->put
+          #); end-of-!!! *)
+          (# A: (# AA: (# AAA: (# ch: @char #)#)#);
+             anA: ^A;
+          do &A[]->anA[]; 
+             (# anAA: ^anA.AA;
+                dyt: (# x: ^anAA.AAA do &anAA.AAA[]->x[]; 'f'->x.ch exit x[] #);
+             do &anA.AA[]->anAA[];
+                (dyt).ch->put
+             #)
+          #);
+        compRem8:
+          (# A: (# B: (# do exit (# s: ^C do &C[]->s[] exit s[] #) #);
+                   C: (# foo: (#do 'g'->put #)#)
+                #);
+             x: @A
+          do  (x.B).foo
+          #);
+        compRem9:
+          (# A: (# foo: (# bar: (# do 'h'->put #) #);
+                do (&foo(# yyy: @integer #)[]).bar;
+                #);
+             B: (# foo: (# bar:< (# do inner #) #)
+                do (&foo(# bar:: (# do 'i'->put #) #)[]).bar
+                #)
+          do A; B;
+          #);
+        compRem10:
+          (# A: (# W:< object; V:< (# elm: ^W #);  
+                   head: (# R: ^ V do &V[]->R[]; &W[]->R.elm[] exit R[] #);
+                #);
+             X: @A(# W::(#do 'j'->put #) #);  
+          do (X.head).elm
+          #);
+        array:
+          (# element:< object;
+             low:< (# value: @integer do INNER exit value #);
+             high:< (# value: @integer do INNER exit value #);
+             put: (# e: ^element enter e[] do e[]->ee[] #);
+             get: (# index: @integer; e: ^element
+                  enter index do ee[]->e[] exit e[] #);
+             ee: ^element
+          #);
+(* ilsoe
+        compRem11:
+          (# vers2:
+               (# A: @array
+                    (# low::(#do 13->value #); high::(#do 17->value #);
+                       element::<array
+                         (# element::Text; 
+                            low::(#do 12->value#); high::(#do 15->value#);
+                         #);
+                    #)  ;
+                  E: @A.element; T: @Text
+               do 'kl'->E.put; E[]->A.put; 14->(13->A.get).get->T[];
+                  T->PutText
+               #)
+          do vers2;
+          #);
+*)
+        compRem12:
+          (# dataType: (# help:< (# do inner exit 'no'#)#);
+             fieldType:
+               (# typeSpec:< dataType;
+                  length:< IntegerValue;
+                  type: @typeSpec; 
+               #);
+             Record: 
+               (# fieldSpec:< 
+                    (# inx: @integer;
+                       spec: ^fieldType;
+                    enter inx
+                    do &fieldType(# length::(#do inx->value#)#)[]->spec[]
+                    exit spec[]
+                    #);
+                  fieldLength:< 
+                    (# inx: @integer;
+                    enter inx  
+                    exit (inx -> fieldSpec).length 
+                    #);
+                  
+               do 'm'->fieldLength->put;
+               #);
+             R: @Record
+          do R; (12->R.fieldSpec).type.help->PutText
+          #);
+        compRem13: (* FEJL/compremsb2.bet*)
+          (# ObjPool: @ 
+               (# get:(# type:< object; obj: ^type 
+                      do &type[]->obj[]; obj
+                      exit obj[] 
+               #)#);
+             GUI: 
+               (# window: (# getMoveableList: ObjPool.get(# type::list#)#)
+               do inner 
+               #);
+             list: (# c: @char; 
+                      scan: (# ch: @char do c->ch; inner #);
+                   do 'p'->c
+               #)
+          do GUI
+             (# main: @window(##);
+             do (main.getMoveableList).scan(# do ch->put #)  
+             #)
+          #)
+     do compRem2;
+	compRem3;
+	compRem4;
+	compRem5;
+	compRem6;
+	compRem7;
+	compRem8;
+	compRem9;
+	compRem10;
+(*ilsoe	compRem11;*)
+	compRem12;
+	compRem13;
+	'q'->fill
+     #);
+   TstLVRA:
+     (# 
+        R: [1777]@integer;
+        S: [1]@integer;
+        T: [10]@integer;
+        ch: [400]@char;
+        sh: [401]@shortInt;
+        in: [402]@integer;
+        dum:[401]@integer;
+        re: [403]@real;
+        sum: @integer;
+        fail: @boolean;
+        txt: @Text;
+     do 
+        (* AlloVR1, AlloVR2, AlloVR4, AlloVR8 *)
+        (if (ch.range=400)
+            and (sh.range=401)
+            and (in.range=402)
+            and (re.range=403)
+         // true then 'a' -> put 
+        if);
+        (for i:ch.range repeat 'x' -> ch[i] for);
+        (for i:sh.range repeat i+7 -> sh[i] for);
+        (for i:in.range repeat -i-i-i -> in[i] for);
+        (for i:re.range repeat i*4.2 -> re[i] for);  
+        false -> fail;
+        (for i:400 repeat (if ch[i]<>'x'//true then true -> fail if) for);
+        (for i:1 repeat (if sh[i]<>i+7//true then true -> fail if) for);  
+        (for i:402 repeat (if in[i]<>-3*i//true then true -> fail if) for);
+        (for i:403 repeat 
+             (if (re[i]-i*4.2)*(re[i]-i*4.2)>0.0001 // true then
+                 true->fail
+             if) 
+        for);
+        (if fail//true then '!' -> put else 'b' -> put if);
+        (for i:R.range repeat i->R[i] for);
+        (for i:R.range repeat R[i]+R[i] -> R[i] for);
+        false -> fail;
+        (for i:R.range repeat (if R[i]<>i+i//true then true -> fail if) for);
+        (if fail//true then '!' -> put else 'c' -> put if);
+     
+        (* ExtVR *)
+        R.range-S.range -> S.extend;
+        (if S.range//1777 then 'd' -> put else '!' -> put if);
+        (for i:S.range repeat R[i] -> S[i] for);
+        0 -> sum;
+        (for i:S.range repeat sum+S[i] -> sum for);
+        (if sum//(S.range)*(S.range+1) then 'e' -> put else '!' -> put if);
+     
+        (* CopyVR *)
+        S -> T;
+        0 -> sum;
+        (for i:T.range repeat T[i]->T[i]; sum+T[i] -> sum for);
+        (if sum//(T.range)*(T.range+1) then 'f' -> put else '!' -> put if);
+     
+        (* NewVR *)
+        1222 -> T.new;
+        (if T.range//1222 then 'g' -> put else '!' -> put if);
+        false -> fail;
+        (for i:T.range repeat (if T[i]<>0//true then true -> fail if) for);
+        (if fail//true then '!' -> put else 'h' -> put if);
+     
+        (* CopySVR *) (* Doesn`t currently allocate in LVRA, actually *)
+        R[318:1654] -> T; 
+        (if T.range//1337 then 'i' -> put else '!' -> put if);
+        false -> fail;
+        (for i:T.range repeat (if T[i]<>R[i+317]//true then true->fail if)for);
+        (if fail//true then '!' -> put else 'j' -> put if);
+     
+        (* CopyT *)
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -> txt;
+        (if txt.T.length//888 then 'k' -> put else '!' -> put if);
+        false -> fail;
+        (for i:txt.T.length repeat
+(* original      (if txt.T[i]<>'a'//true then
+                 newline; i->putInt; ' '->put; txt.T[i]->put;
+*)
+	         (if (i->txt.T.at)<>'a'//true then
+                 newline; i->putInt; ' '->put; i->txt.T.at->put;
+                 true->fail
+             if) 
+        for);
+        (if fail//true then '!' -> put else 'l' -> put if);
+     
+        'm'->fill;
+     #);
+   TstBigObject:
+     (# (*  12 + 27 *4 = 120 + alignment *)
+	QQ:(# a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z: @integer#);
+
+	(* 12 + 27 * 120 = 3962 *)
+	WW: (# a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z: @QQ
+	    do a.a->put; b.b->put; c.c->put; d.d->put; e.e->put; f.f->put; 
+	       g.g->put; h.h->put; i.i->put;
+	      INNER;
+	    #);
+
+	X: @WW
+	  (# a0,a1,a2,a3,a4,a5,a6,a7,a8(*,a9*): @WW
+	       (# foo: (# ch: @char enter ch do ch->put #);
+		  R: @integer;
+		  RR: (# do 'y'->yCh exit 1 #);
+		  bar:<(# ch: @integer enter ch do ch->put; inner #);
+	       #);
+	 do j.j->put; k.k->put; l.l->put; m.m->put; n.n->put; o.o->put; 
+	    p.p->put; q.q->put; r.r->put;;
+	    (for i: 5 repeat
+		 (if i
+		  // 1 then s.s->put
+		  // 2 then t.t->put 
+		  // 3 then u.u->put
+		  // 4 then v.v->put
+		  else w.w->put
+		 if)
+	    for);
+	    x.x->put; y.y->put; 
+	    (if z.z //1000 // 1000000 then '?'->put
+	     // 101202 then 'z'->put
+	     else '!'->put
+	    if);
+	    a0.a.a->put; a1.b.b->put; a2.c.c->put; a3.d.d->put; a4.e.e->put; 
+	    a5.f.f->put; a6.g.g->put; a7.h.h->put;
+	    (*a8.i.i->put; a9.j.j->put*)
+	    (# x: @char do a8.i.i->x; x->a8.bar #)
+	  #);
+	yCh: @char
+     do 'a'->X.a.a; 'b'->X.b.b; 'c'->X.c.c; 'd'->X.d.d; 'e'->X.e.e; 'f'->X.f.f;
+	'g'->X.g.g; 'h'->X.h.h; 'i'->X.i.i; 'j'->X.j.j; 'k'->X.k.k; 'l'->X.l.l;
+	'm'->X.m.m; 'n'->X.n.n; 'o'->X.o.o; 'p'->X.p.p; 'q'->X.q.q; 'r'->X.r.r;
+	's'->X.s.s; 't'->X.t.t; 'u'->X.u.u; 'v'->X.v.v; 'w'->X.w.w; 'x'->X.x.x; 
+	yCh->X.y.y; 
+	101202->X.z.z;
+	'0'->X.a0.a.a; '1'->X.a1.b.b; '2'->X.a2.c.c; '3'->X.a3.d.d;
+	'4'->X.a4.e.e; '5'->X.a5.f.f; '6'->X.a6.g.g; '7'->X.a7.h.h; 
+	'8'->X.a8.i.i; 
+	(*'9'->X.a9.j.j;*)
+	(*X;*) 
+	(# c: @char do '9'->X.a8.foo #)
+     #);
+   tstGeneralRep:
+     (# A:
+          (# R4: [14] @ Foo; 
+             R5: [15] @ Bar;
+             R6: [16] @ Fisk;
+             R7: [17] @ | GoGo;
+             R8: [18] @ | Run;
+             Bar: < object;
+             Fisk: (# a: @integer #)(* <<SLOT Fisk:descriptor>>*);
+             GoGo: 
+               (# T: @Text 
+               enter T
+               do N->put; T->PutText; 
+                  suspend; 
+                  T->PutText; N->put
+               exit N+5
+               #);
+             Run:<
+               (# V: @integer
+               enter V
+               do L: (#do V+N->put; inner Run; suspend; restart L #)
+               #);
+             cpXt:<
+               (# R5x,R5y: [1] (*EE: was @ *)^ Bar;
+	          R8x,R8y: [1] (*EE: was @ *)^ | Run;
+                  ch: @char;
+               enter ch
+               do (*EE: changed these from R5->R5x because of 
+                    different semantics! *)
+                  R5[]->R5x[];  (* virtual copy valueRep *)
+                  R8[]->R8x[];  (* virtual copy component valueRep *)
+                  inner
+               #);
+          #);
+        Foo: (# ch: @char; t: @Text #);   
+        X: @ A(# Bar::< (# ch: @char #);
+                 Run::< (# do V+N+1->put #);
+	         cpXt::
+		   (#
+		   do ch->R5[3].ch;
+                      (if (R5[3].ch = R5x[3].ch)  
+                          and (ch = R5x[3].ch)  then ch->put else '!'->put 
+                      if);
+                      ch + 1 -> ch;
+                      ch -> R5x[3].ch;
+		      (*EE-removed: R5x[2:4]->R5y; *) (* virtual value rep slice *)
+                      (*EE:*) 3->R5y.new; 
+                              (for i:3 repeat R5x[1+i][]->R5y[i][] for);
+                      (if R5y[2].ch = ch then ch->put else '!' ->put if);
+                      'x'->ch; ch->R8x[4].V; 1->N; 
+                      R8x[4]; (* y-z *)
+                      '0'->R8x[4].V;
+		      (*EE-removed: R8x[2:5]->R8y; instead: *) 
+                      (*EE:*) 4->R8y.new;
+                              (for i:4 repeat R8x[i+1][]->R8y[i][] for);
+                      (if R8y[3].V = '0' then '0'->put else '!' ->put if);  
+                    #)
+              #);
+        N: @char;
+        astr:
+          (# n: @integer; t: @Text
+          enter n
+          do (if n
+              //1 // 4 then 'ab'->t
+              //2 then 'mn'->t
+              //3 then 'yz'->t
+              //4 then 'vw'->t
+              //5 // 11 then 'fg'->t
+              //6 // 12 then 'hi'->t
+              //7 then 'rs'->t
+              //8 then 'tu'->t
+              //9 then '34'->t
+              //10 then '56'->t
+             if);
+          exit t
+          #);
+        M: @integer;
+        R9: [1] @ | Go;
+        R9x: [1] (*EE: was @ *)^ | Go;
+        Go: (# i: @integer do N->put; suspend; N+1->put; #);   
+        Home: (# ch: @char enter ch do ch->put #);
+        R10: [1] @Home;
+        R11: [1] (*EE: was @ *)^Home;
+     do (for i: 4 repeat 
+             i->astr->X.R4[i].t;
+             (if i
+              // 1 // 4 then 
+                 'c'->X.R4[i].ch; 
+                 'd'->X.R5[i].ch; 
+              // 2 then 
+                 'o'->X.R4[i].ch; 
+                 'p'->X.R5[i].ch; 
+              // 3 then 
+                 '0'->X.R4[i].ch; 
+                 '1'->X.R5[i].ch; 
+             if)
+        for);
+        4->M;
+        (for i: 4 repeat
+             X.R4[i].t->PutText;             (* ab     mn    yz   ab *)
+             X.R4[i].ch->put;                (* c      o     0    c  *)
+             X.R5[i].ch->put;                (* d      p     1    d  *)
+             (if i
+              // 1 // 4 then 'e'->N    
+              // 2 then 'q'->N               
+              // 3 then '2'->N               
+             if);
+             i + M -> astr -> X.R7[i] -> N;  (* efg    qrs   234  efg *)
+             i + 1 + M ->astr -> X.R7[i];    (* hij    tuv   567  hij *)
+             M+1->M;
+             1->X.R8[i];                     (* kl     wx    89   kl  *)
+             (if i = 3 then newl if);
+        for);
+        5->R9.new;
+        'm'->N; 
+        R9[2]; 
+        R9[2];
+        1000->R9.extend;
+        'o'->N;
+        R9[999]; R9[999];
+     
+        'q'->R10[1];
+   
+        5000->R10.extend; (* 50000 gir IOA full *)
+        'r'->R10[4999]; 
+
+        R10[]->R11[]; (*EE: added '[]' *)'s'->R11[4001];
+
+        401->R9[401].i;
+        (*EE-removed: R9[201:403]->R9x; should add '[]', but that does not parse, instead: *)
+        (*EE:*) 203->R9x.new; (for i:203 repeat R9[200+i][]->R9x[i][] for);
+        (if R9x[201].i = 401 then 't'->put else '!'->put; if);
+        'u'->N; R9x[200]; R9x[200];
+   
+        'w'->X.cpXt;
+
+        '1'->fill; 
+     #)
+do
+   'O'->put;
+   'K'->put; newline;
+   &program;
+   newline
+#)
+

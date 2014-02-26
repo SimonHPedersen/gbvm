@@ -1,0 +1,7 @@
+//$Id: ByteCodeLoader.hpp_our,v 1.1 2000/10/27 07:54:05 ilsoe Exp $
+class ByteCodeLoader_t {
+public:
+  void                       *loadCode(char* input);
+                                //dont know about this...
+private:
+}

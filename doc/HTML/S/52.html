@@ -1,0 +1,353 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Pop.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Pop.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Pop.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#246>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#7>Instr_PopBool_t</A>
+<LI><A HREF=#14>printOn</A>
+<LI><A HREF=#21>Instr_PopChar_t</A>
+<LI><A HREF=#28>printOn</A>
+<LI><A HREF=#35>Instr_PopCharPushInt_t</A>
+<LI><A HREF=#41>printOn</A>
+<LI><A HREF=#47>Instr_PopCharPushReal_t</A>
+<LI><A HREF=#53>printOn</A>
+<LI><A HREF=#59>Instr_PopCharPushStr_t</A>
+<LI><A HREF=#65>printOn</A>
+<LI><A HREF=#71>Instr_PopInt_t</A>
+<LI><A HREF=#78>printOn</A>
+<LI><A HREF=#85>Instr_PopIntPushCharAt_t</A>
+<LI><A HREF=#92>printOn</A>
+<LI><A HREF=#99>Instr_PopIntPushChar_t</A>
+<LI><A HREF=#105>printOn</A>
+<LI><A HREF=#111>Instr_PopIntPushReal_t</A>
+<LI><A HREF=#117>printOn</A>
+<LI><A HREF=#123>Instr_PopObjPushPtn_t</A>
+<LI><A HREF=#129>printOn</A>
+<LI><A HREF=#135>Instr_PopObjPushTmp_t</A>
+<LI><A HREF=#141>printOn</A>
+<LI><A HREF=#147>Instr_PopObjRef_t</A>
+<LI><A HREF=#154>printOn</A>
+<LI><A HREF=#161>Instr_PopPtnRef_t</A>
+<LI><A HREF=#168>printOn</A>
+<LI><A HREF=#175>Instr_PopReal_t</A>
+<LI><A HREF=#182>printOn</A>
+<LI><A HREF=#189>Instr_PopRealPushInt_t</A>
+<LI><A HREF=#195>printOn</A>
+<LI><A HREF=#201>Instr_PopStr_t</A>
+<LI><A HREF=#208>printOn</A>
+<LI><A HREF=#216>Instr_PopStrPushChar_t</A>
+<LI><A HREF=#222>printOn</A>
+<LI><A HREF=#228>Instr_PopStrPushInt_t</A>
+<LI><A HREF=#234>printOn</A>
+<LI><A HREF=#240>Instr_PopStrPushReal_t</A>
+<LI><A HREF=#246>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: Instr_Pop.cc,v 1.9 2001/05/10 12:36:54 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// ----- Pop Bool -----</FONT></I>
+
+<A NAME=7>Instr_PopBool_t::<A HREF=../S/44.html#810>Instr_PopBool_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#14>[&gt;]</A>[^]<A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPBOOL_ID;
+<A NAME=10>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=14><B>void</B> Instr_PopBool_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#7>[&lt;]</A><A HREF=#21>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopBool_t: rtp = ";
+<A NAME=16>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Char -----</FONT></I>
+
+<A NAME=21>Instr_PopChar_t::<A HREF=../S/44.html#826>Instr_PopChar_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#14>[&lt;]</A><A HREF=#28>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPCHAR_ID;
+<A NAME=24>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=28><B>void</B> Instr_PopChar_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#21>[&lt;]</A><A HREF=#35>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopChar_t: rtp = ";
+<A NAME=30>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Char Push Int -----</FONT></I>
+
+<A NAME=35>Instr_PopCharPushInt_t::<A HREF=../S/44.html#814>Instr_PopCharPushInt_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#28>[&lt;]</A><A HREF=#41>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPCHARPUSHINT_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=41><B>void</B> Instr_PopCharPushInt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#35>[&lt;]</A><A HREF=#47>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopCharPushInt_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop CharPushReal -----</FONT></I>
+
+<A NAME=47>Instr_PopCharPushReal_t::<A HREF=../S/44.html#818>Instr_PopCharPushReal_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#41>[&lt;]</A><A HREF=#53>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPCHARPUSHREAL_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=53><B>void</B> Instr_PopCharPushReal_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#47>[&lt;]</A><A HREF=#59>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopCharPushReal_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Char Push String -----</FONT></I>
+
+<A NAME=59>Instr_PopCharPushStr_t::<A HREF=../S/44.html#822>Instr_PopCharPushStr_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#53>[&lt;]</A><A HREF=#65>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPCHARPUSHSTR_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=65><B>void</B> Instr_PopCharPushStr_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#59>[&lt;]</A><A HREF=#71>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopCharPushStr_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Int -----</FONT></I>
+
+<A NAME=71>Instr_PopInt_t::<A HREF=../R/49.html>Instr_PopInt_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#65>[&lt;]</A><A HREF=#78>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPINT_ID;
+<A NAME=74>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=78><B>void</B> Instr_PopInt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#71>[&lt;]</A><A HREF=#85>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopInt_t: rtp = ";
+<A NAME=80>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Int Push Char -----</FONT></I>
+
+<A NAME=85>Instr_PopIntPushCharAt_t::<A HREF=../S/44.html#830>Instr_PopIntPushCharAt_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#78>[&lt;]</A><A HREF=#92>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPINTPUSHCHARAT_ID;
+<A NAME=88>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=92><B>void</B> Instr_PopIntPushCharAt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#85>[&lt;]</A><A HREF=#99>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopIntPushCharAt_t: rtp = ";
+<A NAME=94>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Int Push Char -----</FONT></I>
+
+<A NAME=99>Instr_PopIntPushChar_t::<A HREF=../S/44.html#834>Instr_PopIntPushChar_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#92>[&lt;]</A><A HREF=#105>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPINTPUSHCHAR_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=105><B>void</B> Instr_PopIntPushChar_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#99>[&lt;]</A><A HREF=#111>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopIntPushChar_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Int Push Real -----</FONT></I>
+
+<A NAME=111>Instr_PopIntPushReal_t::<A HREF=../S/44.html#838>Instr_PopIntPushReal_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#105>[&lt;]</A><A HREF=#117>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPINTPUSHREAL_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=117><B>void</B> Instr_PopIntPushReal_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#111>[&lt;]</A><A HREF=#123>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopIntPushReal_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Obj Push Ptn -----</FONT></I>
+
+<A NAME=123>Instr_PopObjPushPtn_t::<A HREF=../S/44.html#846>Instr_PopObjPushPtn_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#117>[&lt;]</A><A HREF=#129>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPOBJPUSHPTN_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=129><B>void</B> Instr_PopObjPushPtn_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#123>[&lt;]</A><A HREF=#135>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopObjPushPtn_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Obj Push Tmp -----</FONT></I>
+
+<A NAME=135>Instr_PopObjPushTmp_t::<A HREF=../S/44.html#850>Instr_PopObjPushTmp_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#129>[&lt;]</A><A HREF=#141>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPOBJPUSHTMP_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=141><B>void</B> Instr_PopObjPushTmp_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#135>[&lt;]</A><A HREF=#147>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopObjPushTmp_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Objref -----</FONT></I>
+
+<A NAME=147>Instr_PopObjRef_t::<A HREF=../S/44.html#854>Instr_PopObjRef_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#141>[&lt;]</A><A HREF=#154>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPOBJREF_ID;
+<A NAME=150>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=154><B>void</B> Instr_PopObjRef_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#147>[&lt;]</A><A HREF=#161>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopObjref_t: rtp = ";
+<A NAME=156>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Ptnref -----</FONT></I>
+
+<A NAME=161>Instr_PopPtnRef_t::<A HREF=../S/44.html#858>Instr_PopPtnRef_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#154>[&lt;]</A><A HREF=#168>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPPTNREF_ID;
+<A NAME=164>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=168><B>void</B> Instr_PopPtnRef_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#161>[&lt;]</A><A HREF=#175>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopPtnref_t: rtp = ";
+<A NAME=170>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Real -----</FONT></I>
+
+<A NAME=175>Instr_PopReal_t::<A HREF=../S/44.html#866>Instr_PopReal_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#168>[&lt;]</A><A HREF=#182>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPREAL_ID;
+<A NAME=178>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=182><B>void</B> Instr_PopReal_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#175>[&lt;]</A><A HREF=#189>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopReal_t: rtp = ";
+<A NAME=184>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Real Push Int -----</FONT></I>
+
+<A NAME=189>Instr_PopRealPushInt_t::<A HREF=../S/44.html#862>Instr_PopRealPushInt_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#182>[&lt;]</A><A HREF=#195>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPREALPUSHINT_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=195><B>void</B> Instr_PopRealPushInt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#189>[&lt;]</A><A HREF=#201>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopRealPushInt_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Str -----</FONT></I>
+
+<A NAME=201>Instr_PopStr_t::<A HREF=../S/44.html#882>Instr_PopStr_t</A>(<B>char</B> *pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#195>[&lt;]</A><A HREF=#208>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPSTR_ID;
+<A NAME=204>  <A HREF=../S/44.html#1016>parseRuntimePath</A>(pc, <B>this</B>);
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=208><B>void</B> Instr_PopStr_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#201>[&lt;]</A><A HREF=#216>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopStr_t: rtp = ";
+<A NAME=210>  <A HREF=../S/44.html#1051>printRuntimePath</A>(rtp.first(), stream);
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// ----- Pop Str Push Char -----</FONT></I>
+
+<A NAME=216>Instr_PopStrPushChar_t::<A HREF=../S/44.html#870>Instr_PopStrPushChar_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#208>[&lt;]</A><A HREF=#222>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPSTRPUSHCHAR_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=222><B>void</B> Instr_PopStrPushChar_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#216>[&lt;]</A><A HREF=#228>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopStrPushChar_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Str Push Int -----</FONT></I>
+
+<A NAME=228>Instr_PopStrPushInt_t::<A HREF=../S/44.html#874>Instr_PopStrPushInt_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#222>[&lt;]</A><A HREF=#234>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPSTRPUSHINT_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=234><B>void</B> Instr_PopStrPushInt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#228>[&lt;]</A><A HREF=#240>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopStrPushInt_t";
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>// ----- Pop Str Push Real -----</FONT></I>
+
+<A NAME=240>Instr_PopStrPushReal_t::<A HREF=../S/44.html#878>Instr_PopStrPushReal_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#234>[&lt;]</A><A HREF=#246>[&gt;]</A><A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  id = POPSTRPUSHREAL_ID;
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=246><B>void</B> Instr_PopStrPushReal_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#240>[&lt;]</A>[&gt;]<A HREF=#7>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_PopStrPushReal_t";
+<FONT COLOR=blue>}</FONT>
+
+
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#7>[^]</A><A HREF=#246>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

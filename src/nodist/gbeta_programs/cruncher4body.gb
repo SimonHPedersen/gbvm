@@ -1,0 +1,89 @@
+ORIGIN 'cruncher4'
+
+-- i2strlib:attributes --
+
+i: @integer;
+w: [12]@char;
+neg: @boolean
+
+-- i2str1:dopart --
+do
+   (if n<0 then true->neg; -n->n else false->neg if);
+   L: (if n=0 then
+          (if i=0 then '0'->result else
+              (# wres: [i] @char
+              do (for j:i repeat w[i-j+1]+'0'->wres[j] for);
+                 wres->result
+              #)
+          if)
+       else
+          n mod 10 -> w[i+1->i];
+          n div 10 -> n;
+          restart L
+      if);
+   (if neg then '-'+result->result if)
+
+-- listlib:attributes --
+
+head,tail: ^cell;
+elements: @integer
+
+-- listscan:dopart --
+do
+   head->c[];
+   L: (if c[]<>NONE then
+          c.elm[]->current[]; INNER; c.next[]->c[]; restart L
+      if)
+
+-- listadd:dopart --
+do
+   (if elements=0 then
+       c->head[]->tail[]; 1->elements
+    else
+       c->tail.next[]->tail[]; (elements+1)->elements
+   if)
+
+-- makeEmpty:dopart --
+do
+   0->elements;
+   tail[]->head[]
+
+-- isEmpty:dopart --
+do
+   (elements=0)->result
+
+-- nodelib:attributes --
+
+pr: (# n: ^node enter n[] do (if n[]<>NONE then n.printMe if)#);
+
+-- printMe:dopart --
+do
+   id->stdio;
+   child1[]->pr; child2[]->pr; child3[]->pr
+
+-- isMarked:dopart --
+do
+   true->result;
+   (if n<>NONE then n.myMark->result if)
+
+-- dfs:dopart --
+do
+   n.mark;
+   n.printMe;
+   (for i:3 repeat (if i->n.isMarked then i->n.getChild->dfs if)for)
+
+-- makeTreeLib:attributes --
+
+nodeList: list(# element::node #);
+
+listOld,listNew: ^nodeList
+
+-- makeTree:dopart --
+do
+   'root '->node.init->root[]->(&listOld).add;
+   (for i:depth repeat
+        &listNew;
+        listOld.scan(# do current.makeChildren->listNew.add3 #);
+        listOld.makeEmpty;
+        listNew->listOld[]
+   for)

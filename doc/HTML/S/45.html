@@ -1,0 +1,137 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/GBetaEntities.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/GBetaEntities.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/GBetaEntities.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#5>[^]</A>[v][top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#5>getPredef</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: GBetaEntities.cc,v 1.18 2001/05/10 12:36:52 hempe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<A NAME=5>PartObject_t *<A HREF=../S/65.html#35>getPredef</A>(Scheduler_t* myScheduler)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^][v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <I><FONT COLOR=green>//make part object</FONT></I>
+
+  DB_OUT(vm_gbe, "getPredef(): *making surrounding po* \n");
+
+  <I><FONT COLOR=green>//Making the surrounding partObject predef. Predef is a UserPartObject</FONT></I>
+  <I><FONT COLOR=green>//because it has primitive types and it should be possible to extend</FONT></I>
+  <I><FONT COLOR=green>//the number of these in the future</FONT></I>
+  ObjectDescriptor_t* poDesc =
+<A NAME=15>    <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(UserPartObject_t)+
+                           (PREDEF_NOF_ATTR-1)*<B>sizeof</B>(<B>void</B>*), 0);
+
+  DB_OUT(vm_gbe, "getPredef(): *made surrounding poDesc* "
+         &lt;&lt; " poDesc: " &lt;&lt; poDesc &lt;&lt; endl);
+
+  <B>void</B>* poData = allocateVM(poDesc);
+  <I><FONT COLOR=green>//this initializes the object descriptor...</FONT></I>
+<A NAME=23>  free(<B>new</B>(malloc(<B>sizeof</B>(UserPartObject_t))) <A HREF=../D/119.html>UserPartObject_t</A>(poDesc));
+
+  MainPart* predefMainPart = <B>new</B> MainPart();
+<A NAME=26>  predefMainPart-&gt;<A HREF=../S/44.html#41>setNumberOfAttributes</A>(PREDEF_NOF_ATTR);
+<A NAME=27>  Mixin_t* preMixin = <B>new</B>(allocateVM(mixinDesc)) <A HREF=../D/99.html>Mixin_t</A>(predefMainPart, 0);
+
+  <I><FONT COLOR=green>//create the object</FONT></I>
+<A NAME=30>  PartObject_t* predef = <B>new</B>(poData) <A HREF=../D/119.html>UserPartObject_t</A>(preMixin, 0);
+
+  DB_OUT(vm_gbe, "getPredef(): *made predef po* \n");
+
+  <I><FONT COLOR=green>//install empty object pattern at 0</FONT></I>
+<A NAME=35>  ((UserPartObject_t*)predef)-&gt;<A HREF=../S/61.html#116>setAttribute</A>(0, myScheduler-&gt;
+<A NAME=36>                                            <A HREF=../S/65.html#142>getEmptyObjectPattern</A>());
+
+  <I><FONT COLOR=green>//make boolean mixin</FONT></I>
+  Mixin_t* boolPreMixin =
+    <B>new</B>(allocateVM(mixinDesc)) PredefinedMixin_t&lt;bool&gt;(predef);
+
+  DB_OUT(vm_gbe, "getPredef(): *made boolean mixin po* \n");
+
+  <I><FONT COLOR=green>//Making the boolean Pattern having this mixin</FONT></I>
+<A NAME=45>  ObjectDescriptor_t *patDesc = <B>new</B> <A HREF=../D/101.html>ObjectDescriptor_t</A>(<B>sizeof</B>(Pattern_t), 0);
+<A NAME=46>  Pattern_t *pattern = <B>new</B>(allocateVM(patDesc)) <A HREF=../S/62.html#9>Pattern_t</A>(patDesc);
+<A NAME=47>  pattern-&gt;<A HREF=../D/127.html>addMixin</A>(0, boolPreMixin);
+
+  <I><FONT COLOR=green>//install boolean pattern at 1</FONT></I>
+<A NAME=50>  ((UserPartObject_t*)predef)-&gt;<A HREF=../S/61.html#116>setAttribute</A>(1, pattern);
+
+  DB_OUT(vm_gbe, "getPredef(): *installed boolean pattern* \n");
+
+  <I><FONT COLOR=green>//make char mixin</FONT></I>
+  PredefinedMixin_t&lt;<B>char</B>&gt;* charPreMixin =
+    <B>new</B>(allocateVM(mixinDesc)) PredefinedMixin_t&lt;<B>char</B>&gt;(predef);
+
+  <I><FONT COLOR=green>//Making the char Pattern having this mixin</FONT></I>
+<A NAME=59>  pattern = <B>new</B>(allocateVM(patDesc)) <A HREF=../S/62.html#9>Pattern_t</A>(patDesc);
+<A NAME=60>  pattern-&gt;<A HREF=../D/127.html>addMixin</A>(0, charPreMixin);
+
+  <I><FONT COLOR=green>//install char pattern at 2</FONT></I>
+<A NAME=63>  ((UserPartObject_t*)predef)-&gt;<A HREF=../S/61.html#116>setAttribute</A>(2, pattern);
+
+  DB_OUT(vm_gbe, "getPredef(): *installed char pattern* \n");
+
+  <I><FONT COLOR=green>//make int mixin</FONT></I>
+  PredefinedMixin_t&lt;<B>int</B>&gt;* intPreMixin =
+    <B>new</B>(allocateVM(mixinDesc)) PredefinedMixin_t&lt;<B>int</B>&gt;(predef);
+
+  <I><FONT COLOR=green>//Making the int Pattern having this mixin</FONT></I>
+<A NAME=72>  pattern = <B>new</B>(allocateVM(patDesc)) <A HREF=../S/62.html#9>Pattern_t</A>(patDesc);
+<A NAME=73>  pattern-&gt;<A HREF=../D/127.html>addMixin</A>(0, intPreMixin);
+
+  <I><FONT COLOR=green>//install int pattern at 3</FONT></I>
+<A NAME=76>  ((UserPartObject_t*)predef)-&gt;<A HREF=../S/61.html#116>setAttribute</A>(3, pattern);
+
+  DB_OUT(vm_gbe, "getPredef(): *installed int pattern* \n");
+
+  <I><FONT COLOR=green>//make real mixin</FONT></I>
+  PredefinedMixin_t&lt;real&gt;* realPreMixin =
+    <B>new</B>(allocateVM(mixinDesc)) PredefinedMixin_t&lt;real&gt;(predef);
+
+  <I><FONT COLOR=green>//Making the char Pattern having this mixin</FONT></I>
+<A NAME=85>  pattern = <B>new</B>(allocateVM(patDesc)) <A HREF=../S/62.html#9>Pattern_t</A>(patDesc);
+<A NAME=86>  pattern-&gt;<A HREF=../D/127.html>addMixin</A>(0, realPreMixin);
+
+  <I><FONT COLOR=green>//install real pattern at 4</FONT></I>
+<A NAME=89>  ((UserPartObject_t*)predef)-&gt;<A HREF=../S/61.html#116>setAttribute</A>(4, pattern);
+
+  DB_OUT(vm_gbe, "getPredef(): *installed real pattern* \n");  
+
+  <I><FONT COLOR=green>//make string mixin </FONT></I>
+  PredefinedStringMixin_t* stringPreMixin =
+<A NAME=95>    <B>new</B>(allocateVM(mixinDesc)) <A HREF=../S/58.html#82>PredefinedStringMixin_t</A>(predef);
+
+  <I><FONT COLOR=green>//Making the char Pattern having this mixin</FONT></I>
+<A NAME=98>  pattern = <B>new</B>(allocateVM(patDesc)) <A HREF=../S/62.html#9>Pattern_t</A>(patDesc);
+<A NAME=99>  pattern-&gt;<A HREF=../D/127.html>addMixin</A>(0, stringPreMixin);
+
+  <I><FONT COLOR=green>//install string pattern at 5</FONT></I>
+<A NAME=102>  ((UserPartObject_t*)predef)-&gt;<A HREF=../S/61.html#116>setAttribute</A>(5, pattern);
+
+  DB_OUT(vm_gbe, "getPredef(): *installed string pattern* \n");
+
+  DB_OUTDENT;
+  <B>return</B> predef;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;][^]<A HREF=#5>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

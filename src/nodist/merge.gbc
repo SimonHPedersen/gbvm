@@ -1,0 +1,11 @@
+MainPart("'250"
+|
+  PUSHI-real 42.1
+  PUSHI-string "hallohallo"
+  PUSHI-string "hajfdksadfjklæ"
+  PUSH-ptn_"object"
+  PUSH-ptn_"object"
+  MERGE-ptn
+  PUSH-ptn_"object"
+  MERGE-ptn
+)

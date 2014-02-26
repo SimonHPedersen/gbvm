@@ -1,0 +1,251 @@
+<HTML>
+<HEAD>
+<TITLE>src/gc/mature_generation.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/gc/mature_generation.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/gc/mature_generation.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#14>[^]</A><A HREF=#188>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#14>MatureGeneration_t</A>
+<LI><A HREF=#23>MatureGeneration_t</A>
+<LI><A HREF=#40>addNewObject</A>
+<LI><A HREF=#47>addRootObject</A>
+<LI><A HREF=#52>garbageCollect</A>
+<LI><A HREF=#129>addTrain</A>
+<LI><A HREF=#144>renumberTrains</A>
+<LI><A HREF=#151>getCarAddress</A>
+<LI><A HREF=#164>freeCar</A>
+<LI><A HREF=#169>heapDump</A>
+<LI><A HREF=#178>gatherObjRefs</A>
+<LI><A HREF=#188>checkObjRefs</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>//$Id: mature_generation.cc,v 1.20 2001/03/12 13:39:44 ilsoe Exp $</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> &lt;stdlib.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;stdio.h&gt;
+<FONT COLOR=darkred>#include</FONT> &lt;iostream.h&gt;
+
+<FONT COLOR=darkred>#include</FONT> "ObjectDescriptor.hpp"
+<FONT COLOR=darkred>#include</FONT> "garbage_collector.hpp"
+<FONT COLOR=darkred>#include</FONT> "Train.hpp"
+<FONT COLOR=darkred>#include</FONT> "Car.hpp"
+<FONT COLOR=darkred>#include</FONT> "Generation.hpp"
+
+
+<A NAME=14>MatureGeneration_t::<A HREF=../S/14.html#72>MatureGeneration_t</A>(<B>int</B> heapSize) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#23>[&gt;]</A>[^]<A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  nextTrainNumber = 0; <I><FONT COLOR=green>// UINT_MAX-4; //for debug only should start from 0</FONT></I>
+<A NAME=16>  trainList = <B>new</B> <A HREF=../D/117.html>Train_t</A>(*<B>this</B>, nextTrainNumber++, MAX_NUMBER_OF_CARS);
+  lastTrain = trainList;
+<A NAME=18>  rootTrain = <B>new</B> <A HREF=../D/117.html>Train_t</A>(*<B>this</B>, UINT_MAX, UINT_MAX);
+
+<A NAME=20>  Generation_t::<A HREF=../D/256.html>init</A>(heapSize);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=23>MatureGeneration_t::~<A HREF=../S/14.html#72>MatureGeneration_t</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#14>[&lt;]</A><A HREF=#40>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_mg, "~MatureGeneration_t(): farveller 1\n");
+  <B>delete</B> rootTrain;
+  <I><FONT COLOR=green>//delete trains in list</FONT></I>
+  Train_t *nextTrain = trainList, *train;
+  <B>while</B>(nextTrain) <FONT COLOR=blue>{</FONT>
+    train = nextTrain;
+<A NAME=31>    nextTrain = nextTrain-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+    <B>delete</B> train;
+  <FONT COLOR=blue>}</FONT>
+  DB_OUT(gc_mg, "~MatureGeneration_t(): farveller end\n");
+  <I><FONT COLOR=green>//super(size);</FONT></I>
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+
+<A NAME=40>VMObject_t *MatureGeneration_t::<A HREF=../R/122.html>addNewObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#23>[&lt;]</A><A HREF=#47>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_mg, "MatureGeneration_t::addNewObject()\n");
+  DB_OUTDENT;
+<A NAME=44>  <B>return</B> lastTrain-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=47>VMObject_t *MatureGeneration_t::<A HREF=../R/127.html>addRootObject</A>(ObjectDescriptor_t *objDes) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#40>[&lt;]</A><A HREF=#52>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=48>  <B>return</B> rootTrain-&gt;<A HREF=../D/128.html>addNewObject</A>(objDes);
+<FONT COLOR=blue>}</FONT>
+
+<I><FONT COLOR=green>//Garbage collection with the hot, new and famous train algorithm</FONT></I>
+<A NAME=52><B>void</B> MatureGeneration_t::<A HREF=../R/154.html>garbageCollect</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#47>[&lt;]</A><A HREF=#129>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  DB_OUT(gc_mg, "*** MG: garbage collecting ***\n");
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  DB_OUT(gc_mg_heapdump, "MG: dumping heap\n");
+  Train_t *tmpTrain = trainList;
+  <B>while</B>(tmpTrain) <FONT COLOR=blue>{</FONT>
+    DB_OUT0(gc_mg_heapdump, tmpTrain);
+<A NAME=61>    tmpTrain = tmpTrain-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+
+  <I><FONT COLOR=green>//avoid segfault if there are no trains</FONT></I>
+  <B>if</B>(!trainList) <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_mg, "MatureGeneration_t::garbageCollect(): tried to garbage collect when there"
+           " no trains\n");
+    DB_OUTDENT;
+    <B>return</B>;
+  <FONT COLOR=blue>}</FONT>
+  <I><FONT COLOR=green>//check first train for outside references</FONT></I>
+<A NAME=73>  <B>if</B>(!trainList-&gt;<A HREF=../S/12.html#88>isExternallyReferenced</A>())<FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_mg, "MatureGeneration_t::garbageCollect(): first train not externally referenced\n");
+    Train_t* oldFirstTrain = trainList;
+    <I><FONT COLOR=green>//make train list point to next train in list</FONT></I>
+<A NAME=77>    trainList = trainList-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+    <B>delete</B> oldFirstTrain;
+    DB_OUT(gc_mg, "MatureGeneration_t::garbageCollect(): removed garbage-train\n");
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+<A NAME=81>    Car_t* firstCar = trainList-&gt;<A HREF=../D/194.html>getFirstCar</A>();
+    <I><FONT COLOR=green>//check first car for outside references</FONT></I>
+<A NAME=83>    <B>if</B>(firstCar-&gt;<A HREF=../S/11.html#241>isReferencedOutsideCar</A>())<FONT COLOR=blue>{</FONT>
+      
+      RememberedSetNode_t* carRemSet;
+      VMObject_t* vmo;
+
+      <I><FONT COLOR=green>//iterate cars remembered set - first move only objects that are referenced outside train</FONT></I>
+<A NAME=89>      <B>for</B>(carRemSet = firstCar-&gt;<A HREF=../S/11.html#509>getCarsRememberSetPtr</A>();
+          carRemSet != NULL;
+          carRemSet = carRemSet-&gt;nextRemSetNodePtr)<FONT COLOR=blue>{</FONT>
+        vmo = carRemSet-&gt;vmIdObjectPtr;
+        <I><FONT COLOR=green>//this is a bit bad, as this is also done in moveObject</FONT></I>
+<A NAME=94>        <B>if</B>(vmo-&gt;<A HREF=../S/13.html#367>getARefObjOutsideTrain</A>()) <FONT COLOR=blue>{</FONT>
+<A NAME=95>          vmo-&gt;<A HREF=../D/282.html>moveObject</A>();
+        <FONT COLOR=blue>}</FONT>
+      <FONT COLOR=blue>}</FONT>
+      <I><FONT COLOR=green>//iterate cars remembered set - the rest of the referenced objects will be moved now</FONT></I>
+<A NAME=99>      <B>for</B>(carRemSet = firstCar-&gt;<A HREF=../S/11.html#509>getCarsRememberSetPtr</A>();
+          carRemSet != NULL;
+          carRemSet = carRemSet-&gt;nextRemSetNodePtr)<FONT COLOR=blue>{</FONT>
+        vmo = carRemSet-&gt;vmIdObjectPtr;
+<A NAME=103>        vmo-&gt;<A HREF=../D/282.html>moveObject</A>();
+      <FONT COLOR=blue>}</FONT>
+    <FONT COLOR=blue>}</FONT>
+    <I><FONT COLOR=green>//delete car</FONT></I>
+<A NAME=107>    trainList-&gt;<A HREF=../S/12.html#152>freeFirstCar</A>();      
+    <I><FONT COLOR=green>// ***NEW*** CHECK IF THE TRAIN IS NOW EMPTY AND FREE IT IF SO</FONT></I>
+<A NAME=109>    <B>if</B>(!trainList-&gt;<A HREF=../D/194.html>getFirstCar</A>()) <FONT COLOR=blue>{</FONT>
+      Train_t* oldFirstTrain = trainList;
+<A NAME=111>      trainList = trainList-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+      <B>delete</B> oldFirstTrain;
+      DB_OUT(gc_mg, "MatureGeneration_t::garbageCollect(): removed empty garbage-train\n");
+    <FONT COLOR=blue>}</FONT>
+  <FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+  DB_OUT(gc_mg_heapdump, "MG: after gc, dumping heap\n");
+  tmpTrain = trainList;
+  <B>while</B>(tmpTrain) <FONT COLOR=blue>{</FONT>
+    DB_OUT0(gc_mg_heapdump, tmpTrain);
+<A NAME=122>    tmpTrain = tmpTrain-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=darkred>#endif</FONT>
+
+  DB_OUTDENT;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=129>Train_t *MatureGeneration_t::<A HREF=../R/128.html>addTrain</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#52>[&lt;]</A><A HREF=#144>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  <B>if</B>((nextTrainNumber + 1) == UINT_MAX) <FONT COLOR=blue>{</FONT>
+    <I><FONT COLOR=green>//we should renumber trains now</FONT></I>
+    DB_OUT(gc_mg, "MatureGeneration_t::addTrain(): ***** WARNING: TRAIN NUMBERS WRAPPING AROUND"
+           " ***** this will probably crash!\n");
+<A NAME=135>    <A HREF=../S/20.html#144>renumberTrains</A>();
+  <FONT COLOR=blue>}</FONT>
+
+<A NAME=138>  Train_t* newTrain = <B>new</B> <A HREF=../D/117.html>Train_t</A>(*<B>this</B>, nextTrainNumber++, MAX_NUMBER_OF_CARS);
+<A NAME=139>  lastTrain-&gt;<A HREF=../S/12.html#171>setNextTrainPtr</A>(newTrain);
+  DB_OUTDENT;
+  <B>return</B> lastTrain = newTrain;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=144><B>void</B> MatureGeneration_t::<A HREF=../S/20.html#135>renumberTrains</A>(<B>void</B>) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#129>[&lt;]</A><A HREF=#151>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  nextTrainNumber = 0;
+<A NAME=146>  <B>for</B>(Train_t *tmpTrain = trainList; tmpTrain; tmpTrain = tmpTrain-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>()) <FONT COLOR=blue>{</FONT>
+<A NAME=147>    tmpTrain-&gt;<A HREF=../S/12.html#167>setTrainNumber</A>(nextTrainNumber++);
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=151>Car_t *MatureGeneration_t::<A HREF=../R/163.html>getCarAddress</A>() <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#144>[&lt;]</A><A HREF=#164>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_INDENT;
+  Car_t *carSpace = (Car_t*)malloc(<B>sizeof</B>(Car_t));
+  <B>if</B>(carSpace) <FONT COLOR=blue>{</FONT>
+    DB_OUTDENT;
+    <B>return</B> carSpace;
+  <FONT COLOR=blue>}</FONT> <B>else</B> <FONT COLOR=blue>{</FONT>
+    DB_OUT(gc_mg, "MatureGeneration_t::getCarAddress(): could not get mem for car.\n");
+    DB_OUTDENT;
+    <B>return</B> 0;
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=164><B>void</B> MatureGeneration_t::<A HREF=../R/152.html>freeCar</A>(Car_t *carPtr) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#151>[&lt;]</A><A HREF=#169>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  free(carPtr);
+<FONT COLOR=blue>}</FONT>
+
+<FONT COLOR=darkred>#ifdef</FONT> DEBUG
+<A NAME=169><B>void</B> MatureGeneration_t::<A HREF=../R/227.html>heapDump</A>(<B>void</B>)<FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#164>[&lt;]</A><A HREF=#178>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  DB_OUT(gc_mg_heapdump, "MG: dumping heap\n");
+  Train_t *tmpTrain = trainList;
+  <B>while</B>(tmpTrain) <FONT COLOR=blue>{</FONT>
+    DB_OUT0(gc_mg_heapdump, tmpTrain);
+<A NAME=174>    tmpTrain = tmpTrain-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=178>VMObject_t **MatureGeneration_t::<A HREF=../R/155.html>gatherObjRefs</A>(VMObject_t **vmoRefArray) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#169>[&lt;]</A><A HREF=#188>[&gt;]</A><A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<A NAME=179>  vmoRefArray = rootTrain-&gt;<A HREF=../D/172.html>gatherObjRefs</A>(vmoRefArray);
+  Train_t *train = trainList;
+  <B>while</B> (train) <FONT COLOR=blue>{</FONT>
+<A NAME=182>    vmoRefArray = train-&gt;<A HREF=../D/172.html>gatherObjRefs</A>(vmoRefArray);
+<A NAME=183>    train = train-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> vmoRefArray;
+<FONT COLOR=blue>}</FONT>
+
+<A NAME=188><B>int</B> MatureGeneration_t::<A HREF=../R/138.html>checkObjRefs</A>(VMObject_t **vmoRefArray, <B>unsigned</B> <B>int</B> length) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#178>[&lt;]</A>[&gt;]<A HREF=#14>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  <B>int</B> retval = 0;
+<A NAME=190>  retval += rootTrain-&gt;<A HREF=../D/147.html>checkObjRefs</A>(vmoRefArray, length);
+  Train_t *train = trainList;
+  <B>while</B> (train) <FONT COLOR=blue>{</FONT>
+<A NAME=193>    retval += train-&gt;<A HREF=../D/147.html>checkObjRefs</A>(vmoRefArray, length);
+<A NAME=194>    train = train-&gt;<A HREF=../S/12.html#175>getNextTrainPtr</A>();
+  <FONT COLOR=blue>}</FONT>
+  <B>return</B> retval;
+<FONT COLOR=blue>}</FONT>
+
+
+<FONT COLOR=darkred>#endif</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#14>[^]</A><A HREF=#188>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

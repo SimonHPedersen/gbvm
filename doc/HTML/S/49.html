@@ -1,0 +1,117 @@
+<HTML>
+<HEAD>
+<TITLE>src/vm/Instr_Mulop.cc</TITLE>
+<META NAME='ROBOTS' CONTENT='NOINDEX,NOFOLLOW'>
+<META NAME='GENERATOR' CONTENT='GLOBAL-4.0.1'>
+<SCRIPT LANGUAGE=javascript>
+<!--
+self.defaultStatus = 'src/vm/Instr_Mulop.cc'
+<!-- end of script -->
+</SCRIPT>
+</HEAD>
+<BODY>
+<A NAME=TOP><H2>src/vm/Instr_Mulop.cc</H2>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#10>[^]</A><A HREF=#68>[v]</A>[top]<A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+<HR>
+<H2>DEFINITIONS</H2>
+This source file includes following functions.
+<OL>
+<LI><A HREF=#10>Instr_MulOpMul_t</A>
+<LI><A HREF=#16>printOn</A>
+<LI><A HREF=#23>Instr_MulOpDiv_t</A>
+<LI><A HREF=#29>printOn</A>
+<LI><A HREF=#36>Instr_MulOpAnd_t</A>
+<LI><A HREF=#42>printOn</A>
+<LI><A HREF=#49>Instr_MulOpDivInt_t</A>
+<LI><A HREF=#55>printOn</A>
+<LI><A HREF=#62>Instr_MulOpMod_t</A>
+<LI><A HREF=#68>printOn</A>
+</OL>
+<HR>
+<PRE>
+<I><FONT COLOR=green>// $Id: Instr_Mulop.cc,v 1.4 2001/05/10 12:36:53 hempe Exp $</FONT></I>
+
+<I><FONT COLOR=green>//#include "Thread.hpp"</FONT></I>
+<I><FONT COLOR=green>//#include "Instr_Mulop.hpp"</FONT></I>
+
+<FONT COLOR=darkred>#include</FONT> "vm.hpp"
+
+<I><FONT COLOR=green>// --- MUL MUL --</FONT></I>
+
+<A NAME=10>Instr_MulOpMul_t::<A HREF=../S/44.html#770>Instr_MulOpMul_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* [&lt;]<A HREF=#16>[&gt;]</A>[^]<A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = MULOPMUL_ID;
+<A NAME=12>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=16><B>void</B> Instr_MulOpMul_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#10>[&lt;]</A><A HREF=#23>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_MulOpMul_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// --- MUL DIV --</FONT></I>
+
+<A NAME=23>Instr_MulOpDiv_t::<A HREF=../S/44.html#774>Instr_MulOpDiv_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#16>[&lt;]</A><A HREF=#29>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = MULOPDIV_ID;
+<A NAME=25>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=29><B>void</B> Instr_MulOpDiv_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#23>[&lt;]</A><A HREF=#36>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_MulOpDiv_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// --- MUL AND --</FONT></I>
+
+<A NAME=36>Instr_MulOpAnd_t::<A HREF=../S/44.html#778>Instr_MulOpAnd_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#29>[&lt;]</A><A HREF=#42>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = MULOPAND_ID;
+<A NAME=38>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=42><B>void</B> Instr_MulOpAnd_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#36>[&lt;]</A><A HREF=#49>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_MulOpAnd_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// --- MUL DIVINT --</FONT></I>
+
+<A NAME=49>Instr_MulOpDivInt_t::<A HREF=../S/44.html#782>Instr_MulOpDivInt_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#42>[&lt;]</A><A HREF=#55>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = MULOPDIVINT_ID;
+<A NAME=51>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=55><B>void</B> Instr_MulOpDivInt_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#49>[&lt;]</A><A HREF=#62>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_MulOpDivInt_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+
+
+<I><FONT COLOR=green>// --- MUL MOD --</FONT></I>
+
+<A NAME=62>Instr_MulOpMod_t::<A HREF=../S/44.html#786>Instr_MulOpMod_t</A>(<B>char</B>* pc) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#55>[&lt;]</A><A HREF=#68>[&gt;]</A><A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  id = MULOPMOD_ID;
+<A NAME=64>  <A HREF=../S/57.html#13>parseType</A>(pc);
+<FONT COLOR=blue>}</FONT>;
+
+
+<A NAME=68><B>void</B> Instr_MulOpMod_t::<A HREF=../R/275.html>printOn</A>(ostream &amp;stream) <FONT COLOR=blue>{</FONT>
+<I><FONT COLOR=green>/* <A HREF=#62>[&lt;]</A>[&gt;]<A HREF=#10>[^]</A>[v]<A HREF=#TOP>[top]</A><A HREF=#BOTTOM>[bottom]</A><A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+  stream &lt;&lt; "Instr_MulOpMod_t: type = " &lt;&lt; type;
+<FONT COLOR=blue>}</FONT>
+</PRE>
+<HR>
+<A NAME=BOTTOM>
+<I><FONT COLOR=green>/* [&lt;][&gt;]<A HREF=#10>[^]</A><A HREF=#68>[v]</A><A HREF=#TOP>[top]</A>[bottom]<A HREF=../mains.html>[index]</A><A HREF=../help.html>[help]</A> */</FONT></I>
+</BODY>
+</HTML>

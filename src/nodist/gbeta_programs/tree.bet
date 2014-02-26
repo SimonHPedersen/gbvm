@@ -1,0 +1,85 @@
+(* font-lock-mode:
+ * load /user/glaesner/projects/speciale/gbeta0.18/emacs/beta-mode, font-lock-mode*)
+
+-- betaenv:descriptor -- 
+(#
+   (* this should be a compute heavy method *)
+   changeSubTree1: (#
+	oldNodePtr: ^node;
+	newNodePtr: ^node;
+	enter (oldNodePtr, newNodePtr)
+	do
+	   newNodePtr[]->oldNodePtr.child1[]
+	#);
+(*
+   dfs: (# rootPtr: ^node
+		enter rootPtr
+		do 
+			(if rootPtr.child1[] <> NONE then rootPtr.child1->dfs->rootPtr if);
+			(if rootPtr.child2[] <> NONE then rootPtr.child2[]->dfs->rootPtr if);
+			(if rootPtr.child3[] <> NONE then rootPtr.child3[]->dfs->rootPtr if);
+		exit rootPtr
+	#);	
+   i2c: (# ch: @integer 
+        enter ch
+        do ch->stdio;
+	   'TEST OK'->puttext;
+        #);	
+*)
+
+   
+   node: (# 
+            init: (# enter id exit this(node)[] #);
+            child1: ^node;
+            child2: ^node; 
+            child3: ^node;
+            id: @string;        
+            
+            changeChildN: (#   tmpNode: ^node;
+                             i: @integer; 	
+                          enter (i, tmpNode[])
+                          do 
+                             (if i=1 then tmpNode[]->child1[] if); 
+                             (if i=2 then tmpNode[]->child2[] if); 
+                             (if i=3 then tmpNode[]->child3[] if); 
+                          exit tmpNode
+                          #);
+            setId: (# tmpId: @string;
+                   enter tmpId
+		            do
+                      tmpId->id;
+                   #);
+            printMe: (#
+                     do	id->stdio;
+                        (if child1[] <> NONE then child1.printMe; if);
+                        (if child2[] <> NONE then child2.printMe; if);
+                        (if child3[] <> NONE then child3.printMe; if);
+                     #);
+             
+         do id->stdio; INNER
+         exit this(node)[]
+         #);
+   nd :@node;
+   n1, n2, n3 : ^nd;
+   str: @string;
+do
+   
+   
+   'root'->node.init->n1[];
+   (for i:10000 repeat  
+    'b'->stdio;
+       (* stdio->str; *)	   
+    (for i:3 repeat   
+   		(i,'1'->node.init)->n1.changeChildN;
+   		(i, '2'->node.init->n3[])->n1.changeChildN;
+   		(i, '3'->node.init)->n1.changeChildN;
+   	 	(*n1.printMe;*)
+    for);
+        (* str->stdio; *)
+    'a'->stdio;
+    (* i->stdio; *)        
+   for);
+(*
+   (&node[],&node[])->changeSubTree1;
+*)
+#)
